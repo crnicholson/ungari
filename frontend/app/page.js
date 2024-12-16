@@ -91,6 +91,40 @@ export default function Home() {
           Get Started
         </a>
         <h1 className="w-1/2 text-center mt-14 text-stone-600 text-2xl font-semibold">
+          Popular interests
+        </h1>
+        <div className="flex flex-row justify-center space-x-3 text-stone-700 w-1/2">
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
+            <span class="material-symbols-outlined">bolt</span>
+            <h1>Electronics</h1>
+          </div>
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
+            <span class="material-symbols-outlined">travel</span>
+            <h1>Aviation</h1>
+          </div>
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
+            <span class="material-symbols-outlined">network_intel_node</span>
+            <h1>Artificial intelligence</h1>
+          </div>
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
+            <span class="material-symbols-outlined">rocket_launch</span>
+            <h1>Space</h1>
+          </div>
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
+            <span class="material-symbols-outlined">computer</span>
+            <h1>Programming</h1>
+          </div>
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
+            <span class="material-symbols-outlined">wind_power</span>
+            <h1>Renewable energy</h1>
+          </div>
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
+            <span class="material-symbols-outlined">biotech</span>
+            <h1>Biotech</h1>
+          </div>
+        </div>
+
+        <h1 className="w-1/2 text-center mt-14 text-stone-600 text-2xl font-semibold">
           Featured collaborations
         </h1>
         <div className="flex flex-row justify-center space-x-3 text-stone-700 w-1/2">
