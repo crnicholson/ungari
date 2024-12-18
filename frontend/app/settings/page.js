@@ -96,17 +96,17 @@ export default function Settings() {
         </header>
 
         <div className="mt-[120px] w-1/2">
-          <div className="border border-gray-300 rounded-lg p-4 bg-white shadow-lg">
-            <h2 className="text-lg font-semibold">User Settings</h2>
+          <div className="border border-gray-200 rounded-xl p-4 bg-slate-100 shadow-lg">
+            <h2 className="text-2xl font-semibold mb-2">Settings</h2>
             <Link
               href="match"
-              className="italic underline text-xs text-stone-500 mb-5"
+              className="italic underline text-base text-stone-500 mb-6 hover:text-stone-400"
             >
               Back to match
             </Link>
 
             <div className="mt-5 mb-4">
-              <label className="block text-sm font-medium mb-2">Name:</label>
+              <label className="block mb-2">Name:</label>
               <input
                 type="text"
                 className="w-full p-2 border rounded-lg"
@@ -117,7 +117,7 @@ export default function Settings() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Email:</label>
+              <label className="block mb-2">Email:</label>
               <input
                 type="email"
                 className="w-full p-2 border rounded-lg"
@@ -128,9 +128,7 @@ export default function Settings() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Availability:
-              </label>
+              <label className="block mb-2">Availability:</label>
               <input
                 type="text"
                 className="w-full p-2 border rounded-lg"
@@ -141,7 +139,7 @@ export default function Settings() {
             </div>
 
             <div className="mb-3">
-              <label className="block text-sm font-medium mb-2">Bio:</label>
+              <label className="block mb-2">Bio:</label>
               <textarea
                 className="w-full p-2 border rounded-lg"
                 placeholder="Tell us about yourself, and some past projects you've worked on"
@@ -152,7 +150,7 @@ export default function Settings() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
+              <label className="block mb-2">
                 Interests and confidence ranking:
               </label>
               <input

@@ -43,7 +43,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/api/auth/logout"
-                className="relative inline-block p-3 text-stone-600 bg-opacity-100 border-1 border text-sm font-semibold rounded-xl shadow-lg bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
+                className="relative inline-block p-3 bg-opacity-100 border-1 border text-sm font-semibold rounded-xl shadow-lg bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
               >
                 Logout
               </Link>
@@ -51,10 +51,11 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="mt-[120px] w-1/2">
-          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit">
-            <h2 className="text-lg font-semibold mb-2">Match</h2>
-          </div>
+        <h1 className="mt-[120px] text-2xl w-1/2 font-semibold">
+          Find a match
+        </h1>
+        <div className="w-1/2 flex flex-row justify-center items-center">
+          <div className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-5 w-fit"></div>
         </div>
 
         <footer className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-[60px] mb-5 w-fit">

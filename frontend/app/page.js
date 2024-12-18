@@ -38,14 +38,14 @@ export default function Home() {
               {user ? (
                 <Link
                   href="/match"
-                  className="relative inline-block p-3 text-stone-600 bg-opacity-100 border-1 border text-sm font-semibold rounded-xl shadow-lg bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
+                  className="relative inline-block p-3 bg-opacity-100 border-1 border text-sm font-semibold rounded-xl shadow-lg bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
                 >
                   Login
                 </Link>
               ) : (
                 <Link
                   href="/api/auth/login"
-                  className="relative inline-block p-3 text-stone-600 bg-opacity-100 border-1 border text-sm font-semibold rounded-xl shadow-lg bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
+                  className="relative inline-block p-3 bg-opacity-100 border-1 border text-sm font-semibold rounded-xl shadow-lg bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
                 >
                   Login
                 </Link>
@@ -53,19 +53,20 @@ export default function Home() {
             </nav>
           </div>
         </header>
+
         <div className="w-1/3 mt-[120px] mb-[60px]">
           <h1
-            className="animate-fade-up bg-gradient-to-br from-black to-stone-400 bg-clip-text text-center font-display text-4xl font-bold tracking-[-0.02em] text-transparent opacity-0 drop-shadow-sm [text-wrap:balance] md:text-6xl md:leading-[5rem]"
+            className="animate-fade-up bg-gradient-to-br from-black to-stone-300 bg-clip-text text-center font-display text-4xl font-bold tracking-[-0.02em] text-transparent opacity-0 drop-shadow-sm [text-wrap:balance] md:text-6xl md:leading-[5rem]"
             style={{ animationDelay: "0.15s", animationFillMode: "forwards" }}
           >
             Connecting problems with thinkers{" "}
             <span className="text-black">⚡</span>
           </h1>
-          <p className="text-center pt-3 text-lg text-stone-600">
+          <p className="text-center pt-3 text-lg">
             A tool to help you find your next project - with impact.
           </p>
         </div>
-        <div className="flex flex-row justify-center space-x-3 text-stone-700 w-1/2">
+        <div className="flex flex-row justify-center space-x-3 w-1/2">
           {[
             {
               step: "Step 1 📝",
@@ -96,23 +97,23 @@ export default function Home() {
         {user ? (
           <Link
             href="/match"
-            className="relative inline-block px-6 text-stone-600 bg-opacity-100 py-3 border-1 border text-xl font-semibold rounded-xl shadow-lg mt-14 bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
+            className="relative inline-block px-6 bg-opacity-100 py-3 border-1 border text-xl font-semibold rounded-xl shadow-lg mt-14 bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
           >
             Find New Projects
           </Link>
         ) : (
           <Link
             href="/api/auth/login"
-            className="relative inline-block px-6 text-stone-600 bg-opacity-100 py-3 border-1 border text-xl font-semibold rounded-xl shadow-lg mt-14 bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
+            className="relative inline-block px-6 bg-opacity-100 py-3 border-1 border text-xl font-semibold rounded-xl shadow-lg mt-14 bg-gradient-to-r from-indigo-50 via-slate-50 to-cyan-50 animate-gradient-x hover:scale-105"
           >
             Get Started
           </Link>
         )}
 
-        <h1 className="w-1/2 text-center mt-14 text-stone-600 text-2xl font-semibold">
+        <h1 className="w-1/2 text-center mt-14 text-2xl font-semibold">
           Popular interests
         </h1>
-        <div className="flex flex-row justify-center space-x-3 text-stone-700 w-fit">
+        <div className="flex flex-row justify-center space-x-3 w-fit overflow-clip">
           {[
             { icon: "bolt", title: "Electronics" },
             { icon: "travel", title: "Aviation" },
@@ -132,10 +133,10 @@ export default function Home() {
           ))}
         </div>
 
-        <h1 className="w-1/2 text-center mt-14 text-stone-600 text-2xl font-semibold">
+        <h1 className="w-1/2 text-center mt-14 text-2xl font-semibold">
           Featured collaborations
         </h1>
-        <div className="flex flex-row justify-center space-x-3 text-stone-700 w-1/2">
+        <div className="flex flex-row justify-center space-x-3 w-1/2">
           {[
             {
               image: "/james-hojnowski.png",
@@ -162,7 +163,7 @@ export default function Home() {
                   alt={item.alt}
                   width={500}
                   height={500}
-                  className="object-cover rounded-lg"
+                  className="object-cover rounded-xl"
                 />
               </div>
               <h1 className="font-bold mt-5 mb-1">{item.title}</h1>
