@@ -22,7 +22,6 @@ export default function Home() {
 
   return (
     <>
-      <div className="text-stone-600 h-fit w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100 animate-gradient-x flex flex-col justify-center items-center">
         <header
           className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
             ? "bg-stone-500/10 backdrop-blur-lg shadow-md border border-gray-300 mx-4 rounded-xl"
@@ -170,20 +169,6 @@ export default function Home() {
             </div>
           ))}
         </div>
-
-        <footer className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-[60px] mb-5 w-fit">
-          <p>
-            Copyright Charles Nicholson 2024. Open source on{" "}
-            <Link
-              href="www.github.com/crnicholson/problem-dating-app"
-              className="underline hover:text-stone-500"
-            >
-              GitHub
-            </Link>{" "}
-            and hosted on Vercel. Licensed under GPL v3.
-          </p>
-        </footer>
-      </div >
     </>
   );
 }

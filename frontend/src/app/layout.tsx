@@ -2,6 +2,7 @@ import "./globals.css";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Footer from "../components/footer";
 
 export const metadata = {
   title: "Create Next App",
@@ -20,7 +21,9 @@ export default function RootLayout({ children }) {
         <SpeedInsights />
       </head>
       <UserProvider>
-        <body className="antialiased vsc-initialized">{children}</body>
+        <body className="antialiased vsc-initialized text-stone-600 h-fit w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100 animate-gradient-x flex flex-col justify-center items-center">{children}
+          <Footer />
+        </body>
       </UserProvider>
     </html>
   );
