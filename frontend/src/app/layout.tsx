@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
         <SpeedInsights />
       </head>
       <UserProvider>
-        <body className="antialiased vsc-initialized text-stone-600 h-fit w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100 animate-gradient-x flex flex-col justify-center items-center">
+        <body className="antialiased vsc-initialized text-stone-600 min-h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100 animate-gradient-x flex flex-col justify-center items-center">
             {children}
             <Footer />
         </body>
