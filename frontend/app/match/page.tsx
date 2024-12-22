@@ -25,7 +25,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="text-stone-600 h-fit w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100 animate-gradient-x flex flex-col justify-center items-center">
+      <div className="text-stone-600 min-h-screen max-h-fit w-full bg-gradient-to-br from-indigo-50 via-white to-cyan-100 animate-gradient-x flex flex-col justify-center items-center">
         <header
           className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 ${
             isScrolled
