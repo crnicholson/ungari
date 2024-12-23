@@ -6,11 +6,17 @@ interface CardProps {
     alt: string;
     children: React.ReactNode;
     className?: string;
+    size: number;
+    inputName: string;
+    inputPlaceholder: string;
+    inputOnChange: () => void;
+    inputValue: string;
+
 }
 
 export function Card(CardProps) {
     return (
-        <div className={`border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg w-fit ${CardProps.className}`}>
+        <div className={`border border-1 border-stone-200 bg-slate-100 rounded-xl p-3 shadow-lg w-fit ${CardProps.className}`}>
             {CardProps.children}
         </div>
     );
@@ -31,7 +37,21 @@ export function CardImage(CardProps) {
 };
 
 export function CardTitle(CardProps) {
-    return <h1 className={`font-semibold mb-2 ${CardProps.className}`}>{CardProps.children}</h1>;
+    if (CardProps.size >= 1 && CardProps.size < 2) {
+        return <h1 className={`font-semibold mb-2 text-lg ${CardProps.className}`}>{CardProps.children}</h1>;
+    }
+    if (CardProps.size >= 2 && CardProps.size < 3) {
+        return <h1 className={`font-semibold mb-2 text-xl ${CardProps.className}`}>{CardProps.children}</h1>;
+    }
+    if (CardProps.size >= 3 && CardProps.size < 4) {
+        return <h1 className={`font-semibold mb-2 text-2xl ${CardProps.className}`}>{CardProps.children}</h1>;
+    }
+    if (CardProps.size >= 4 && CardProps.size < 5) {
+        return <h1 className={`font-semibold mb-2 text-3xl ${CardProps.className}`}>{CardProps.children}</h1>;
+    }
+    else {
+        return <h1 className={`font-semibold mb-2 text-lg ${CardProps.className}`}>{CardProps.children}</h1>;
+    }
 };
 
 export function CardContent(CardProps) {
@@ -45,3 +65,18 @@ export function CardContainer(CardProps) {
         </div>
     );
 };
+
+export function CardInput(CardProps) {
+    return (
+        <div className={`mb-3 ${CardProps.className}`}>
+            <p className="mb-2">{CardProps.inputName}</p>
+            <input
+                type="text"
+                className={`w-full p-3 border border-stone-200 rounded-xl `}
+                placeholder={CardProps.inputPlaceholder}
+                value={CardProps.inputValue}
+                onChange={CardProps.inputOnChange}
+            />
+        </div>
+    );
+}

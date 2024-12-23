@@ -84,7 +84,7 @@ export default function Home() {
         <GradientButton href="/api/auth/login" className="px-6 mt-14 text-xl">Get Started</GradientButton>
       )}
 
-      <Heading size={3}>
+      <Heading size={3} className="mt-10">
         Popular interests
       </Heading>
       <CardContainer className="w-fit overflow-y-clip">
@@ -132,7 +132,7 @@ export default function Home() {
         </Card>
       </CardContainer>
 
-      <Heading size={3}>
+      <Heading size={3} className="mt-10">
         Featured collaborations
       </Heading>
       <CardContainer>
