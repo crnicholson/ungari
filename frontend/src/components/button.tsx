@@ -11,7 +11,7 @@ export default function Button(ButtonProps) {
     return (
         <Link
             href={ButtonProps.href}
-            className={`relative inline-block p-3 bg-opacity-100 border-1 border text-sm font-semibold rounded-xl shadow-lg m-3 hover:scale-105 ${ButtonProps.className}`}
+            className={`relative p-3 bg-opacity-100 border-1 border text-md font-semibold rounded-xl shadow-lg m-3 hover:scale-105 ${ButtonProps.className}`}
             onClick={ButtonProps.onClick}
         >
             {ButtonProps.children}

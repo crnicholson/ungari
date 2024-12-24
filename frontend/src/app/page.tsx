@@ -87,7 +87,7 @@ export default function Home() {
       <Heading size={3} className="mt-10">
         Popular interests
       </Heading>
-      <CardContainer className="w-fit overflow-y-clip">
+      <CardContainer className="w-fit overflow-x-clip">
         <Card>
           <CardContent>
             <span className="material-symbols-outlined">bolt</span>

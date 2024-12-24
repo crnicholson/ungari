@@ -17,7 +17,6 @@ CORS(app)
 def get_settings():
     received = request.get_json()
     id = received["id"]
-    print(id)
 
     user = users.find_one({"id": id})
 
@@ -101,6 +100,50 @@ def set_settings():
     )
 
     return jsonify({"": ""}), 200
+
+
+@app.route("/api/get-match", methods=["POST"])
+def get_match():
+    received = request.get_json()
+    user_id = received["id"]
+
+    user = users.find_one({"id": user_id})
+
+    if user is None:
+        users.insert_one({"id": user_id, "interests": []})
+        return jsonify({"error": "Please fill in settings."})
+
+    all_users = users.find()
+
+    common_interest_users = []
+    for person in all_users:
+        if person["id"] == user_id:
+            continue
+
+        common_interests = set(user["interests"]).intersection(
+            set(person.get("interests", []))
+        )
+        if common_interests:
+            common_interest_users.append(
+                {"id": person["id"], "common_interests": list(common_interests)}
+            )
+
+    print(common_interest_users)
+
+    common_interest_users = {
+        "name": "Sam",
+        "email": "sam@gmail.com",
+        "linkedIn": "https://linkedin.com/",
+        "bio": "sams are pretty cool",
+        "availability": 5000,
+        "interests": {
+            "Bean engineering": 5,
+            "Electrical engineering": 4,
+            "Espresso": 3,
+        },
+    }
+
+    return jsonify({"matches": common_interest_users})
 
 
 if __name__ == "__main__":

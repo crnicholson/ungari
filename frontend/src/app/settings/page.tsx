@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import GradientButton from "../../components/gradientButton";
-import { Card, CardContainer, CardTitle, CardInput, CardContent, CardImage } from "../../components/card";
+import { Card, CardContainer, CardTitle, CardInput, CardContent, CardImage, CardSubtitle, CardBlock, CardButton } from "../../components/card";
 import Heading from "../../components/heading";
 import StyledLink from "../../components/styledLink";
 
@@ -103,23 +103,6 @@ export default function Settings() {
     }
   };
 
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-
-  const handleLinkedInChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLinkedIn(e.target.value);
-  };
-
-  const handleAvailabilityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAvailability(e.target.value);
-  };
-
   return (
     <>
       <Header>
@@ -141,110 +124,113 @@ export default function Settings() {
             Back to match
           </StyledLink>
 
-          <CardInput
-            inputValue={name}
-            inputOnChange={handleNameChange}
-            inputPlaceholder="Enter your full name"
-            inputName="Name:"
-            className=""
-          />
+          {isLoading && !user ? (
+            <p>Loading...</p>
+          ) : (
+            <>
+              <CardBlock>
+                <CardSubtitle className="mb-2">Name:</CardSubtitle>
+                <CardInput
+                  inputValue={name}
+                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+                  inputPlaceholder="Enter your full name"
+                />
+              </CardBlock>
 
-          <CardInput
-            inputValue={email}
-            inputOnChange={handleEmailChange}
-            inputPlaceholder="We'll shoot you an email if we find a match"
-            inputName="Email:"
-            className=""
-          />
+              <CardBlock>
+                <CardSubtitle className="mb-2">Email:</CardSubtitle>
+                <CardInput
+                  inputValue={email}
+                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                  inputPlaceholder="We'll shoot you an email if we find a match"
+                />
+              </CardBlock>
 
-          <CardInput
-            inputValue={linkedIn}
-            inputOnChange={handleLinkedInChange}
-            inputPlaceholder="To help with credibility"
-            inputName="LinkedIn:"
-            className=""
-          />
+              <CardBlock>
+                <CardSubtitle className="mb-2">LinkedIn:</CardSubtitle>
+                <CardInput
+                  inputValue={linkedIn}
+                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setLinkedIn(e.target.value)}
+                  inputPlaceholder="To help with credibility"
+                />
+              </CardBlock>
 
-          <CardInput
-            inputValue={availability}
-            inputOnChange={handleAvailabilityChange}
-            inputPlaceholder="How many hours per week are you available?"
-            inputName="Availibility (hours per week):"
-            className=""
-          />
+              <CardBlock>
+                <CardSubtitle className="mb-2">Availability (hours per week):</CardSubtitle>
+                <CardInput
+                  inputValue={availability}
+                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setAvailability(e.target.value)}
+                  inputPlaceholder="How many hours per week are you available?"
+                />
+              </CardBlock>
 
-          <div className="mb-3">
-            <p className="block mb-2">Bio:</p>
-            <textarea
-              className="w-full p-3 border border-stone-200 rounded-xl"
-              placeholder="Tell us about yourself, and some past projects you've worked on"
-              rows={3}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-            ></textarea>
-          </div>
+              <CardBlock>
+                <CardSubtitle className="mb-2">About you:</CardSubtitle>
+                <textarea
+                  className="w-full p-3 border border-stone-200 rounded-xl"
+                  placeholder="Tell us about yourself, and some past projects you've worked on"
+                  rows={3}
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                ></textarea>
+              </CardBlock>
 
-          <div className="mb-3">
-            <p className="block mb-2">
-              Interests and confidence ranking:
-            </p>
-            <input
-              type="text"
-              placeholder="Search interests..."
-              className="w-full p-3 border border-stone-200 rounded-xl mb-3"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+              <CardBlock>
+                <CardSubtitle className="mb-2">Interests and confidence levels:</CardSubtitle>
+                <input
+                  type="text"
+                  placeholder="Search interests..."
+                  className="w-full p-3 border border-stone-200 rounded-xl mb-3"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
 
-            <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
-              {filteredInterests.map((interest) => (
-                <div
-                  key={interest}
-                  className="flex justify-between items-center p-2 hover:bg-gray-200 rounded"
-                >
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={selectedInterests.hasOwnProperty(interest)}
-                      onChange={() => handleSelectInterest(interest)}
-                    />
-                    <span className="ml-2">{interest}</span>
-                  </label>
+                <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
+                  {filteredInterests.map((interest) => (
+                    <div
+                      key={interest}
+                      className="flex justify-between items-center p-2 hover:bg-gray-200 rounded"
+                    >
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={selectedInterests.hasOwnProperty(interest)}
+                          onChange={() => handleSelectInterest(interest)}
+                        />
+                        <span className="ml-2">{interest}</span>
+                      </label>
 
-                  {selectedInterests[interest] !== undefined && (
-                    <input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={selectedInterests[interest]}
-                      onChange={(e) =>
-                        handleSkillChange(interest, e.target.value)
-                      }
-                      className="w-16 border rounded p-1"
-                    />
-                  )}
+                      {selectedInterests[interest] !== undefined && (
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={selectedInterests[interest]}
+                          onChange={(e) =>
+                            handleSkillChange(interest, e.target.value)
+                          }
+                          className="w-16 border rounded p-1"
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </CardBlock>
 
-          <button
-            className="border border-stone-200 shadow-lg bg-slate-100 rounded-xl p-3 w-fit hover:scale-105"
-            onClick={saveSettings}
-          >
-            Save Settings
-          </button>
+              <CardButton onClick={saveSettings}>Save settings</CardButton>
+            </>
+          )}
         </Card>
 
         {Object.keys(selectedInterests).length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">
-              Selected Interests & Skill Levels:
-            </h3>
-            <ul className="list-disc pl-5">
+          <div className="mt-5">
+            <Heading size={2}>
+              Selected interests and skill levels:
+            </Heading>
+            <ul className="list-disc ml-5">
               {Object.entries(selectedInterests).map(([interest, level]) => (
                 <li key={interest} className="mb-1">
-                  {interest}: <strong>Level {level as number}</strong>
+                  <strong>{interest}</strong> at a level of <strong>{level as number}</strong>
                 </li>
               ))}
             </ul>

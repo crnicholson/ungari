@@ -5,36 +5,36 @@ interface HeadingProps {
 }
 
 export default function Heading(HeadingProps) {
-    if (HeadingProps.size <= 1) {
+    if (HeadingProps.size == 1) {
         return (
-            <header className={`mx-3 mt-10 mb-4 text-lg font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-lg font-semibold ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
             </header>
         );
     }
-    if (HeadingProps.size > 1 && HeadingProps.size <= 2) {
+    if (HeadingProps.size == 2) {
         return (
-            <header className={`mx-3 mb-4 text-xl font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-xl font-semibold ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
             </header>
         );
     }
-    if (HeadingProps.size > 2 && HeadingProps.size <= 3) {
+    if (HeadingProps.size == 3) {
         return (
-            <header className={`mx-3 mb-4 text-2xl font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-2xl font-semibold ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
             </header>
         );
     }
-    if (HeadingProps.size > 3 && HeadingProps.size <= 4) {
+    if (HeadingProps.size == 4) {
         return (
-            <header className={`mx-3 mb-4 text-3xl font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-3xl font-semibold ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
@@ -42,7 +42,7 @@ export default function Heading(HeadingProps) {
         );
     } else {
         return (
-            <header className={`mx-3 mt-10 mb-4 text-xl font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-lg font-semibold ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
