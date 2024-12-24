@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import GradientButton from "../../components/gradientButton";
 import { Card, CardContainer, CardTitle, CardInput, CardContent, CardImage, CardSubtitle, CardBlock, CardButton } from "../../components/card";
 import Heading from "../../components/heading";
 import StyledLink from "../../components/styledLink";
+import Error from "../../components/error";
 
 const SERVER = "http://127.0.0.1:5000";
 
@@ -16,10 +16,12 @@ export default function Settings() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [linkedIn, setLinkedIn] = useState("");
+  const [skillsCheck, setSkillsCheck] = useState(false);
   const [bio, setBio] = useState("");
   const [availability, setAvailability] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInterests, setSelectedInterests] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { user, isLoading } = useUser();
 
@@ -28,6 +30,16 @@ export default function Settings() {
       redirect("/api/auth/login");
     }
   }, [isLoading, user]);
+
+  useEffect(() => {
+    if (errorMessage !== "") {
+      const timer = setTimeout(() => {
+        setErrorMessage("");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
 
   const handleSelectInterest = (interest: string) => {
     setSelectedInterests((prev) => {
@@ -63,15 +75,22 @@ export default function Settings() {
             },
             body: JSON.stringify({ id: user.sub }),
           });
-          const data = await response.json();
-          setName(data.name || "");
-          setEmail(data.email || "");
-          setLinkedIn(data.linkedIn || "");
-          setBio(data.bio || "");
-          setAvailability(data.availability || "");
-          setSelectedInterests(data.interests || {});
+          if (!response.ok) {
+            const error = await response.json();
+            setErrorMessage("Server-side error: " + error.error);
+          } else {
+            const data = await response.json();
+            setName(data.name || "");
+            setEmail(data.email || "");
+            setSkillsCheck(data.skillsCheck || false);
+            setLinkedIn(data.linkedIn || "");
+            setBio(data.bio || "");
+            setAvailability(data.availability || "");
+            setSelectedInterests(data.interests || {});
+          }
         } catch (error) {
           console.error("Failed to fetch settings:", error);
+          setErrorMessage("Client-side error: " + error);
         }
       };
 
@@ -91,15 +110,20 @@ export default function Settings() {
           id: user.sub,
           name: name,
           email: email,
+          skillsCheck: skillsCheck,
           linkedIn: linkedIn,
           bio: bio,
           availability: availability,
           interests: selectedInterests,
         }),
       });
-      // const data = await response.json();
+      if (!response.ok) {
+        const error = await response.json();
+        setErrorMessage("Server-side error: " + error.error);
+      }
     } catch (error) {
-      console.error("Failed to set user information:", error);
+      console.error("Failed to set user information: ", error);
+      setErrorMessage("Client-side error: " + error);
     }
   };
 
@@ -114,7 +138,9 @@ export default function Settings() {
         </HeaderNav>
       </Header>
 
-      <div className="mt-24 w-1/2">
+      <Error className="mt-24 w-1/2">{errorMessage}</Error>
+
+      <CardContainer className={`${errorMessage == "" ? 'mt-24' : 'mt-5'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Settings</CardTitle>
           <StyledLink
@@ -156,6 +182,30 @@ export default function Settings() {
               </CardBlock>
 
               <CardBlock>
+                <CardSubtitle className="mb-2">
+                  Are you looking for someone with these skills or do you have these skills?
+                </CardSubtitle>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={!skillsCheck}
+                      onChange={() => setSkillsCheck(false)}
+                    />
+                    I have these skills
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={skillsCheck}
+                      onChange={() => setSkillsCheck(true)}
+                    />
+                    Looking for these skills
+                  </label>
+                </div>
+              </CardBlock>
+
+              <CardBlock>
                 <CardSubtitle className="mb-2">Availability (hours per week):</CardSubtitle>
                 <CardInput
                   inputValue={availability}
@@ -176,7 +226,7 @@ export default function Settings() {
               </CardBlock>
 
               <CardBlock>
-                <CardSubtitle className="mb-2">Interests and confidence levels:</CardSubtitle>
+                <CardSubtitle className="mb-2">Skills and confidence levels:</CardSubtitle>
                 <input
                   type="text"
                   placeholder="Search interests..."
@@ -221,7 +271,9 @@ export default function Settings() {
             </>
           )}
         </Card>
+      </CardContainer>
 
+      <div className="mt-5 w-full">
         {Object.keys(selectedInterests).length > 0 && (
           <div className="mt-5">
             <Heading size={2}>

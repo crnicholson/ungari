@@ -42,6 +42,7 @@ def get_settings():
                 "name": user.get("name", ""),
                 "email": user.get("email", ""),
                 "linkedIn": user.get("linkedIn", ""),
+                "skillsCheck": user.get("skillsCheck", ""),
                 "bio": user.get("bio", ""),
                 "availability": user.get("availability", ""),
                 "interests": user.get("interests", {}),
@@ -58,6 +59,7 @@ def set_settings():
     name = received["name"]
     email = received["email"]
     linkedIn = received["linkedIn"]
+    skillsCheck = received["skillsCheck"]
     bio = received["bio"]
     availability = received["availability"]
     interests = received["interests"]
@@ -71,6 +73,8 @@ def set_settings():
         email,
         " LinkedIn: ",
         linkedIn,
+        " Skills Check: ",
+        skillsCheck,
         " Bio: ",
         bio,
         " Availability: ",
@@ -92,6 +96,7 @@ def set_settings():
                 "name": name,
                 "email": email,
                 "linkedIn": linkedIn,
+                "skillsCheck": skillsCheck,
                 "bio": bio,
                 "availability": availability,
                 "interests": interests,
@@ -115,35 +120,41 @@ def get_match():
 
     all_users = users.find()
 
-    common_interest_users = []
+    potential_matches = []
+
     for person in all_users:
-        if person["id"] == user_id:
+        if person["name"] == received["name"]:
             continue
 
         common_interests = set(user["interests"]).intersection(
             set(person.get("interests", []))
         )
+
         if common_interests:
-            common_interest_users.append(
-                {"id": person["id"], "common_interests": list(common_interests)}
+            score = 0
+            for interest in common_interests:
+                user_skill = user["interests"].get(interest, 0)
+                person_skill = person["interests"].get(interest, 0)
+                score += min(user_skill, person_skill)
+
+            potential_matches.append(
+                {
+                    "name": person["name"],
+                    "email": person["email"],
+                    "linkedIn": person["linkedIn"],
+                    "bio": person["bio"],
+                    "availability": person["availability"],
+                    "common_interests": list(common_interests),
+                    "score": score,
+                }
             )
 
-    print(common_interest_users)
+    potential_matches.sort(key=lambda x: x["score"], reverse=True)
 
-    common_interest_users = {
-        "name": "Sam",
-        "email": "sam@gmail.com",
-        "linkedIn": "https://linkedin.com/",
-        "bio": "sams are pretty cool",
-        "availability": 5000,
-        "interests": {
-            "Bean engineering": 5,
-            "Electrical engineering": 4,
-            "Espresso": 3,
-        },
-    }
+    if not potential_matches:
+        return jsonify({"matches": []})
 
-    return jsonify({"matches": common_interest_users})
+    return jsonify({"matches": potential_matches})
 
 
 if __name__ == "__main__":

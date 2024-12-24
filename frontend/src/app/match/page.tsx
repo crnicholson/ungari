@@ -23,13 +23,23 @@ export default function Home() {
   const [bio, setBio] = useState("");
   const [availability, setAvailability] = useState("");
   const [interests, setInterests] = useState({});
-  const [errorMessage, setError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (!isLoading && !user) {
       redirect("/api/auth/login");
     }
   }, [isLoading, user]);
+
+  useEffect(() => {
+    if (errorMessage !== "") {
+      const timer = setTimeout(() => {
+        setErrorMessage("");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
 
   const getMatch = useCallback(async () => {
     try {
@@ -38,20 +48,23 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: user.sub }),
+        body: JSON.stringify({ id: user.sub, name: user.name }),
       });
-      const data = await response.json();
-      setName(data.matches.name || "");
-      setEmail(data.matches.email || "");
-      setLinkedIn(data.matches.linkedIn || "");
-      setBio(data.matches.bio || "");
-      setAvailability(data.matches.availability || "");
-      setInterests(data.matches.interests || {});
-      setError("Failed to fetch settings");
-
+      if (!response.ok) {
+        const error = await response.json();
+        setErrorMessage("Server-side error: " + error.error);
+      } else {
+        const data = await response.json();
+        setName(data.matches.name || "");
+        setEmail(data.matches.email || "");
+        setLinkedIn(data.matches.linkedIn || "");
+        setBio(data.matches.bio || "");
+        setAvailability(data.matches.availability || "");
+        setInterests(data.matches.interests || {});
+      }
     } catch (error) {
-      console.error("Failed to fetch settings:", error);
-      setError("Failed to fetch settings");
+      console.error("Error: Failed to fetch settings: ", error);
+      setErrorMessage("Client-side error: " + error);
     }
   }, [user]);
 
@@ -75,7 +88,9 @@ export default function Home() {
         </HeaderNav>
       </Header>
 
-      <div className="w-1/2 mt-24">
+      <Error className="mt-24 w-1/2">{errorMessage}</Error>
+
+      <CardContainer className={`${errorMessage == "" ? 'mt-24' : 'mt-5'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
           <CardContent>
@@ -89,7 +104,7 @@ export default function Home() {
                 </CardBlock>
                 <CardBlock>
                   <CardSubtitle>LinkedIn:</CardSubtitle>
-                  <p>{name}</p>
+                  <p>{linkedIn}</p>
                 </CardBlock>
                 <CardBlock>
                   <CardSubtitle>About {name.split(' ')[0].charAt(0).toUpperCase() + name.split(' ')[0].slice(1)}:</CardSubtitle>
@@ -120,8 +135,7 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
-        <Error className="w-full mt-5">{errorMessage}</Error>
-      </div>
+      </CardContainer>
     </>
   );
 }

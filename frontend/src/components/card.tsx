@@ -2,104 +2,97 @@ import React from "react";
 import Image from "next/image";
 
 interface CardProps {
-    src: string;
-    alt: string;
-    children: React.ReactNode;
+    src?: string;
+    alt?: string;
+    children?: React.ReactNode;
     className?: string;
-    size: number;
-    inputName: string;
-    inputPlaceholder: string;
-    inputOnChange: () => void;
-    inputValue: string;
-    onClick: () => void;
-
+    size?: number;
+    inputName?: string;
+    inputPlaceholder?: string;
+    inputOnChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    inputValue?: string;
+    onClick?: () => void;
 }
 
-export function Card(CardProps) {
+export function Card({ children, className }: CardProps) {
     return (
-        <div className={`border border-1 border-stone-200 bg-slate-100 rounded-xl p-5 shadow-lg w-fit ${CardProps.className}`}>
-            {CardProps.children}
+        <div className={`border border-1 border-stone-200 bg-slate-100 rounded-xl p-5 shadow-lg w-fit ${className}`}>
+            {children}
         </div>
     );
-};
+}
 
-export function CardImage(CardProps) {
+export function CardImage({ src = "", alt = "", className }: CardProps) {
     return (
-        <div className={`w-full flex justify-center mb-5 ${CardProps.className}`}>
+        <div className={`w-full flex justify-center mb-5 ${className}`}>
             <Image
-                src={CardProps.src}
-                alt={CardProps.alt}
+                src={src}
+                alt={alt}
                 width={500}
                 height={500}
                 className="object-cover rounded-xl"
             />
         </div>
     );
-};
+}
 
-export function CardTitle(CardProps) {
-    if (CardProps.size == 1) {
-        return <h1 className={`font-semibold mb-2 text-lg ${CardProps.className}`}>{CardProps.children}</h1>;
-    }
-    if (CardProps.size == 2) {
-        return <h1 className={`font-semibold mb-2 text-xl ${CardProps.className}`}>{CardProps.children}</h1>;
-    }
-    if (CardProps.size == 3) {
-        return <h1 className={`font-semibold mb-2 text-2xl ${CardProps.className}`}>{CardProps.children}</h1>;
-    }
-    if (CardProps.size == 4) {
-        return <h1 className={`font-semibold mb-2 text-3xl ${CardProps.className}`}>{CardProps.children}</h1>;
-    }
-    else {
-        return <h1 className={`font-semibold mb-2 text-lg ${CardProps.className}`}>{CardProps.children}</h1>;
-    }
-};
+export function CardTitle({ size = 1, children, className }: CardProps) {
+    const sizeClasses = {
+        1: "text-lg",
+        2: "text-xl",
+        3: "text-2xl",
+        4: "text-3xl",
+    };
+    const textSize = sizeClasses[size] || "text-lg";
 
-export function CardContent(CardProps) {
-    return <div className={`${CardProps.className}`}>{CardProps.children}</div>;
-};
+    return <h1 className={`font-semibold mb-2 ${textSize} ${className}`}>{children}</h1>;
+}
 
-export function CardContainer(CardProps) {
+export function CardContent({ children, className }: CardProps) {
+    return <div className={`${className}`}>{children}</div>;
+}
+
+export function CardContainer({ children, className }: CardProps) {
     return (
-        <div className={`flex flex-row justify-center space-x-3 w-1/2 ${CardProps.className}`}>
-            {CardProps.children}
+        <div className={`flex flex-row justify-center space-x-3 w-1/2 ${className}`}>
+            {children}
         </div>
     );
-};
+}
 
-export function CardInput(CardProps) {
+export function CardInput({ inputPlaceholder, inputValue, inputOnChange, className }: CardProps) {
     return (
-        <div className={`${CardProps.className}`}>
+        <div className={`${className}`}>
             <input
                 type="text"
-                className={`w-full p-3 border border-stone-200 rounded-xl `}
-                placeholder={CardProps.inputPlaceholder}
-                value={CardProps.inputValue}
-                onChange={CardProps.inputOnChange}
+                className="w-full p-3 border border-stone-200 rounded-xl"
+                placeholder={inputPlaceholder}
+                value={inputValue}
+                onChange={inputOnChange}
             />
         </div>
     );
 }
 
-export function CardBlock(CardProps) {
+export function CardBlock({ children, className }: CardProps) {
     return (
-        <div className={`mb-3 ${CardProps.className}`}>
-            {CardProps.children}
+        <div className={`mb-3 ${className}`}>
+            {children}
         </div>
     );
 }
 
-export function CardSubtitle(CardProps) {
-    return <p className={`font-semibold ${CardProps.className}`}>{CardProps.children}</p>;
+export function CardSubtitle({ children, className }: CardProps) {
+    return <p className={`font-semibold ${className}`}>{children}</p>;
 }
 
-export function CardButton(CardProps) {
+export function CardButton({ children, onClick, className }: CardProps) {
     return (
         <button
-            className="font-semibold w-full border border-stone-200 shadow-lg bg-slate-100 rounded-xl p-3 hover:scale-105"
-            onClick={CardProps.onClick}
+            className={`font-semibold w-full border border-stone-200 shadow-lg bg-slate-100 rounded-xl p-3 hover:scale-105 ${className}`}
+            onClick={onClick}
         >
-            {CardProps.children}
+            {children}
         </button>
     );
 }
