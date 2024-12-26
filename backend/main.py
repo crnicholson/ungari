@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
+import json
 
 FLASK_PORT = 5000
 MONGO_ADDRESS = "mongodb://localhost:27017/"
@@ -120,41 +121,50 @@ def get_match():
 
     all_users = users.find()
 
-    potential_matches = []
+    matches = []
 
     for person in all_users:
-        if person["name"] == received["name"]:
+        if person["name"] == user["name"]:
             continue
 
-        common_interests = set(user["interests"]).intersection(
-            set(person.get("interests", []))
-        )
+        user_interests = user["interests"]
+        person_interests = person.get("interests", {})
 
-        if common_interests:
-            score = 0
-            for interest in common_interests:
-                user_skill = user["interests"].get(interest, 0)
-                person_skill = person["interests"].get(interest, 0)
-                score += min(user_skill, person_skill)
+        common_interests = {
+            interest: person_interests[interest]
+            for interest in user_interests
+            if interest in person_interests
+        }
 
-            potential_matches.append(
+        counter = 0
+        score = 0
+        for interest in common_interests:
+            counter += 1
+            score += int(common_interests[interest])
+
+        if counter > 0:
+            matches.append(
                 {
                     "name": person["name"],
                     "email": person["email"],
                     "linkedIn": person["linkedIn"],
                     "bio": person["bio"],
                     "availability": person["availability"],
-                    "common_interests": list(common_interests),
-                    "score": score,
+                    "interests": person["interests"],
+                    "commonInterests": list(common_interests),
+                    "score": score * counter,
                 }
             )
 
-    potential_matches.sort(key=lambda x: x["score"], reverse=True)
+    matches = sorted(
+        matches, key=lambda x: x["score"], reverse=True
+    )
 
-    if not potential_matches:
-        return jsonify({"matches": []})
+    # print(json.dumps(matches, indent=4))
 
-    return jsonify({"matches": potential_matches})
+    print(f"Match: {json.dumps(matches[0], indent=4)}")
+
+    return jsonify({"match": matches[0]})
 
 
 if __name__ == "__main__":

@@ -48,7 +48,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: user.sub, name: user.name }),
+        body: JSON.stringify({ id: user.sub }),
       });
       if (!response.ok) {
         const error = await response.json();
