@@ -65,6 +65,9 @@ def set_settings():
     availability = received["availability"]
     interests = received["interests"]
 
+    for interest in interests:
+        interests[interest] = int(interests[interest])
+
     print(
         "ID: ",
         id,
@@ -111,12 +114,11 @@ def set_settings():
 @app.route("/api/get-match", methods=["POST"])
 def get_match():
     received = request.get_json()
-    user_id = received["id"]
 
-    user = users.find_one({"id": user_id})
+    user = users.find_one({"id": received["id"]})
 
     if user is None:
-        users.insert_one({"id": user_id, "interests": []})
+        users.insert_one({"id": received["id"], "interests": []})
         return jsonify({"error": "Please fill in settings."})
 
     all_users = users.find()
@@ -156,15 +158,39 @@ def get_match():
                 }
             )
 
-    matches = sorted(
-        matches, key=lambda x: x["score"], reverse=True
-    )
+    matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
     # print(json.dumps(matches, indent=4))
 
     print(f"Match: {json.dumps(matches[0], indent=4)}")
 
     return jsonify({"match": matches[0]})
+
+
+@app.route("/api/save-match", methods=["POST"])
+def save_match():
+    received = request.get_json()
+
+    update_operation = {
+        "$push": {
+            "savedMatches": received["matchID"],
+        }
+    }
+
+    users.update_one({"id": received["id"]}, update_operation)
+
+
+@app.route("/api/delete-saved-match", methods=["POST"])
+def delete_saved_match():
+    received = request.get_json()
+
+    update_operation = {
+        "$pull": {
+            "savedMatches": received["matchID"],
+        }
+    }
+
+    users.update_one({"id": received["id"]}, update_operation)
 
 
 if __name__ == "__main__":
