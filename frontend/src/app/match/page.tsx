@@ -1,29 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { redirect } from "next/navigation";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header"
 import GradientButton from "../../components/gradientButton";
-import Heading from "../../components/heading";
-import { Card, CardContainer, CardTitle, CardImage, CardContent, CardSubtitle, CardBlock, CardButton } from "../../components/card"
+import { Card, CardContainer, CardTitle, CardContent, CardSubtitle, CardBlock, CardButton } from "../../components/card"
 import StyledLink from "../../components/styledLink"
-import { useCallback } from "react";
 import Error from "../../components/error";
-import { set } from "@auth0/nextjs-auth0/dist/session";
 
 const SERVER = "http://127.0.0.1:5000";
 
 export default function Home() {
-  const { user, isLoading } = useUser();
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [linkedIn, setLinkedIn] = useState("");
+  const [needHelp, setNeedHelp] = useState(false);
   const [bio, setBio] = useState("");
   const [availability, setAvailability] = useState("");
-  const [interests, setInterests] = useState({});
+  const [skills, setSkills] = useState([]);
+  const [themes, setThemes] = useState([]);
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [helpDescription, setHelpDescription] = useState("");
+  const [projectLink, setProjectLink] = useState("");
+  const [timeFrame, setTimeFrame] = useState(0);
+
   const [errorMessage, setErrorMessage] = useState("");
+  const [errorPresent, setErrorPresent] = useState(false);
+
+  const { user, isLoading } = useUser();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -53,18 +59,27 @@ export default function Home() {
       if (!response.ok) {
         const error = await response.json();
         setErrorMessage("Server-side error: " + error.error);
+        setErrorPresent(true);
       } else {
         const data = await response.json();
-        setName(data.matches.name || "");
-        setEmail(data.matches.email || "");
-        setLinkedIn(data.matches.linkedIn || "");
-        setBio(data.matches.bio || "");
-        setAvailability(data.matches.availability || "");
-        setInterests(data.matches.interests || {});
+        setName(data.match.name || "");
+        setEmail(data.match.email || "");
+        setLinkedIn(data.match.linkedIn || "");
+        setBio(data.match.bio || "");
+        setAvailability(data.match.availability || "");
+        setSkills(data.match.skills || []);
+        setThemes(data.match.themes || []);
+        setNeedHelp(data.match.needHelp || false);
+        setProjectName(data.match.projectName || "");
+        setProjectDescription(data.match.projectDescription || "");
+        setHelpDescription(data.match.helpDescription || "");
+        setProjectLink(data.match.projectLink || "");
+        setTimeFrame(data.match.timeFrame || "");
       }
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);
       setErrorMessage("Client-side error: " + error);
+      setErrorPresent(true);
     }
   }, [user]);
 
@@ -84,7 +99,7 @@ export default function Home() {
           <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
             <span className="material-symbols-outlined">settings</span>
           </StyledLink>
-          <GradientButton href="/api/auth/logout">Logout</GradientButton>
+          <GradientButton className="m-3" href="/api/auth/logout">Logout</GradientButton>
         </HeaderNav>
       </Header>
 
@@ -96,35 +111,79 @@ export default function Home() {
           <CardContent>
             {isLoading && !user ? (
               <p>Loading...</p>
+            ) : errorPresent ? (
+              <p>Looks like you{"'"}re not getting your match... try reloading.</p>
             ) : (
               <>
                 <CardBlock>
-                  <CardSubtitle>Name:</CardSubtitle>
-                  <p>{name}</p>
-                </CardBlock>
-                <CardBlock>
-                  <CardSubtitle>LinkedIn:</CardSubtitle>
-                  <p>{linkedIn}</p>
-                </CardBlock>
-                <CardBlock>
-                  <CardSubtitle>About {name.split(' ')[0].charAt(0).toUpperCase() + name.split(' ')[0].slice(1)}:</CardSubtitle>
-                  <p>{bio}</p>
-                </CardBlock>
-                <CardBlock>
-                  <CardSubtitle>Available hours per week:</CardSubtitle>
-                  <p>{availability}</p>
+                  <CardSubtitle>
+                    <StyledLink href={linkedIn}>{name.split(" ")[0]}</StyledLink>
+                  </CardSubtitle>
+
+                  <p className="italic text-sm">{name.split(" ")[0]} {needHelp ? "is looking for someone with skills in:" : "has skills in:"} {skills.join(", ")} </p>
+
+                  {!needHelp && (
+                    <p>{availability} hours per week</p>
+                  )}
+
                 </CardBlock>
 
                 <CardBlock>
-                  <CardSubtitle>Interests:</CardSubtitle>
-                  <ul className="list-disc ml-5">
-                    {Object.entries(interests).map(([interest, level]) => (
-                      <li key={interest}>
-                        <div className="font-semibold inline">{interest}</div> at a level of <div className="font-semibold inline">{String(level)}</div>
-                      </li>
-                    ))}
-                  </ul>
+                  <CardSubtitle>Bio</CardSubtitle>
+                  <p>{bio}</p>
                 </CardBlock>
+
+                {needHelp ? (
+                  <>
+                    <CardTitle size={2}>Project info</CardTitle>
+                    <CardBlock>
+                      <CardSubtitle>
+                        <StyledLink href={projectLink}>{projectName}</StyledLink>
+                      </CardSubtitle>
+                    </CardBlock>
+                    <CardBlock>
+                      <CardSubtitle>Project description</CardSubtitle>
+                      <p>{projectDescription}</p>
+                    </CardBlock>
+                    <CardBlock>
+                      <CardSubtitle> Project themes</CardSubtitle>
+                      <p>{themes.join(", ")}</p>
+                    </CardBlock>
+                    <CardBlock>
+                      <CardSubtitle>Specific help information</CardSubtitle>
+                      <p>{helpDescription}</p>
+                    </CardBlock>
+                    <CardBlock>
+                      <CardSubtitle>Time frame</CardSubtitle>
+                      <p>
+                        {name.split(" ")[0]} estimates the project will take{" "}
+                        {timeFrame === 0
+                          ? "an unknown number of months"
+                          : `${timeFrame} ${timeFrame > 1 ? "months" : "month"}`}.
+                      </p>
+                    </CardBlock>
+                  </>
+                ) : (
+                  <>
+                    <CardBlock>
+                      <CardSubtitle>Availability</CardSubtitle>
+                      <p>{name.split(" ")[0]} is availble {availability} per week.</p>
+                    </CardBlock>
+                    <CardBlock>
+                      <CardSubtitle>Time frame</CardSubtitle>
+                      <p>
+                        {name.split(" ")[0]} wants to work on a projecct for{" "}
+                        {timeFrame === 0
+                          ? "an unknown number of months"
+                          : `${timeFrame} ${timeFrame > 1 ? "months" : "month"}`}.
+                      </p>
+                    </CardBlock>
+                    <CardBlock>
+                      <CardSubtitle>Themes</CardSubtitle>
+                      <p>{name.split(" ")[0]} wants to work on a project with themes: {themes.join(", ")}</p>
+                    </CardBlock>
+                  </>
+                )}
 
                 <CardButton onClick={getMatch}>Match!</CardButton>
                 <div className="mt-3 flex flex-row gap-3">
@@ -134,8 +193,8 @@ export default function Home() {
               </>
             )}
           </CardContent>
-        </Card>
-      </CardContainer>
+        </Card >
+      </CardContainer >
     </>
   );
 }

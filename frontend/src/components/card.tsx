@@ -11,6 +11,7 @@ interface CardProps {
     inputPlaceholder?: string;
     inputOnChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     inputValue?: string;
+    inputType?: string;
     onClick?: () => void;
 }
 
@@ -60,11 +61,11 @@ export function CardContainer({ children, className }: CardProps) {
     );
 }
 
-export function CardInput({ inputPlaceholder, inputValue, inputOnChange, className }: CardProps) {
+export function CardInput({ inputPlaceholder, inputValue, inputOnChange, className, inputType }: CardProps) {
     return (
         <div className={`${className}`}>
             <input
-                type="text"
+                type={inputType === "" ? "text" : inputType}
                 className="w-full p-3 border border-stone-200 rounded-xl"
                 placeholder={inputPlaceholder}
                 value={inputValue}
