@@ -3,7 +3,7 @@ from flask_cors import CORS
 from pymongo import MongoClient
 import json
 
-FLASK_PORT = 5000
+FLASK_PORT = 40247
 MONGO_ADDRESS = "mongodb://root:example@hackclub.app:34209/?authSource=admin"
 
 client = MongoClient(MONGO_ADDRESS)
