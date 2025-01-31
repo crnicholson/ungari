@@ -1,6 +1,6 @@
 # Ungari
 
-<img src="https://github.com/crnicholson/ungari/raw/main/media/hero.png" alt="Hero image" width="300"/> 
+<img src="https://github.com/crnicholson/ungari/blob/master/media/hero.png" alt="Hero image" width="300"/> 
 
 An [app](ungari.vercel.app) that connects problems to thinkers. 
 
@@ -28,10 +28,10 @@ The algorithim to connect users with each other takes into account the number of
 
 ## Images!
 
-<img src="https://github.com/crnicholson/ungari/raw/main/media/settings.png" alt="Settings page" width="500"/> 
+<img src="https://github.com/crnicholson/ungari/blob/master/media/settings.png" alt="Settings page" width="500"/> 
 *Settings*
 
-<img src="https://github.com/crnicholson/ungari/raw/main/media/match.png" alt="Match page" width="500"/> 
+<img src="https://github.com/crnicholson/ungari/blob/master/media/match.png" alt="Match page" width="500"/> 
 *Match*
 
 ## License
