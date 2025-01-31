@@ -20,11 +20,20 @@ An [app](ungari.vercel.app) that connects problems to thinkers.
 
 ## Tech stack
 
-The backend is programmed in Python, while the frontend is made in Next.js and deployed with Vercel. I am hosting the backend on Hack Club Nest and using port forwarding to make the API available. To store data, I am running a MongoDB instance in Docker container also on Nest. 
+The backend is programmed in Python, while the frontend is made in Next.js and deployed with Vercel. I am hosting the backend on Hack Club Nest and using port forwarding to make the API available. To store data, I am running a MongoDB instance in Docker container also on Nest. For authentication, I am using Auth0. 
 
 ## Connection algorithim
 
-The algorithim to connect users with each other takes into account the number of common skills and common themes along with the prefered time frame. 
+The algorithim to connect users with each other takes into account the number of common skills and common themes along with the prefered time frame. It is still being refined to give better results. 
 
 ## Images!
 
+<img src="https://github.com/crnicholson/ungari/raw/main/media/settings.png" alt="Settings page" width="500"/> 
+*Settings*
+
+<img src="https://github.com/crnicholson/ungari/raw/main/media/match.png" alt="Match page" width="500"/> 
+*Match*
+
+## License
+
+Everything is licensed under the [GNU GPL v3 license](https://choosealicense.com/licenses/gpl-3.0/). 
