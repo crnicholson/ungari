@@ -11,7 +11,8 @@ import StyledLink from "../../components/styledLink";
 import Error from "../../components/error";
 import { set } from "@auth0/nextjs-auth0/dist/session";
 
-const SERVER = "http://127.0.0.1:5000";
+// const SERVER = "http://127.0.0.1:5000";
+const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
 
 export default function Settings() {
   const [name, setName] = useState("");

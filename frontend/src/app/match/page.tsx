@@ -9,7 +9,8 @@ import { Card, CardContainer, CardTitle, CardContent, CardSubtitle, CardBlock, C
 import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
 
-const SERVER = "http://127.0.0.1:5000";
+// const SERVER = "http://127.0.0.1:5000";
+const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
 
 export default function Home() {
   const [name, setName] = useState("");

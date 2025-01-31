@@ -5,7 +5,7 @@ import StyledLink from "./styledLink";
 import { set } from "@auth0/nextjs-auth0/dist/session";
 
 // const SERVER = "http://127.0.0.1:5000"
-const SERVER = "http://problem-dating-app.cnicholson.hackclub.app"
+const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
 
 export default function Hero() {
     const [name, setName] = useState("");
