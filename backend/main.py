@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import json
 
 FLASK_PORT = 5000
-MONGO_ADDRESS = "mongodb://localhost:27017/"
+MONGO_ADDRESS = "mongodb://root:example@hackclub.app:34209/?authSource=admin"
 
 client = MongoClient(MONGO_ADDRESS)
 db = client["problem-dating-app"]

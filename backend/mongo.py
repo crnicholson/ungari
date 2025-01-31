@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongodb://root:example@hackclub.app:34209/?authSource=admin")
 db = client["problem-dating-app"]
 users = db.users
 
