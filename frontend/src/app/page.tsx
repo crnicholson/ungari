@@ -27,7 +27,7 @@ export default function Home() {
     <>
       <Header>
         <HeaderLogo href="/">
-          Acme
+          Ungari
         </HeaderLogo>
         <HeaderNav>
           {user ? (
@@ -58,7 +58,7 @@ export default function Home() {
               Step 2 🔗
             </CardTitle>
             <CardContent>
-              Get matched with someone whose problem matches your skillset! This could be anyone from a researcher to an entrepreneur.
+              Get matched with someone whose problem matches your skillset, or vice versa! This could be anyone from a researcher to an entrepreneur.
             </CardContent>
           </Card>
           <Card className="w-1/3">

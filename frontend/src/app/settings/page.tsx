@@ -207,7 +207,7 @@ export default function Settings() {
     <>
       <Header>
         <HeaderLogo href="/">
-          Acme
+          Ungari
         </HeaderLogo>
         <HeaderNav>
           <GradientButton className="m-3" href="/api/auth/logout">Logout</GradientButton>

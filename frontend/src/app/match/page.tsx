@@ -94,7 +94,7 @@ export default function Home() {
     <>
       <Header>
         <HeaderLogo href="/">
-          Acme
+          Ungari
         </HeaderLogo>
         <HeaderNav>
           <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
