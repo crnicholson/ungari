@@ -287,7 +287,7 @@ def get_match():
         
         if missing_fields:
             print(f"Missing fields: {', '.join(missing_fields)}")
-            return jsonify({"error": "Some settings are missing. Please fill in all settings."})
+            return jsonify({"error": "Some settings are missing. Please fill in all settings."}), 404
 
         all_users = users.find({"needHelp": not user.get("needHelp")})
         user_skills = user.get("skills")

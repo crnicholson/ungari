@@ -229,7 +229,7 @@ export default function Settings() {
           {isLoading && !user ? (
             <p>Loading...</p>
           ) : errorPresent ? (
-            <p>We{"'"}re down right now, try later!</p>
+            <p>We{"'"}re down right now, try reloading!</p>
           ) : (
             <>
               <CardBlock>

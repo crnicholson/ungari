@@ -113,7 +113,7 @@ export default function Home() {
             {isLoading && !user ? (
               <p>Loading...</p>
             ) : errorPresent ? (
-              <p>Looks like you{"'"}re not getting your match... try reloading.</p>
+              <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
             ) : (
               <>
                 <CardBlock>
