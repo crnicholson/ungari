@@ -375,7 +375,7 @@ def get_match():
                     return jsonify({"error": "No new matches, all have been saved for later."})
                 for saved in user["savedMatches"]:
                     if matches[0]["id"] == saved:
-                        print(f"{matches[0]["name"]} is already saved.")
+                        print(f"{matches[0]['name']} is already saved.")
                         matches.pop(0)
                         check_saved()
                 
