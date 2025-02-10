@@ -2,15 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { redirect } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import { Header, HeaderLogo, HeaderNav } from "../../components/header"
 import GradientButton from "../../components/button";
 import { Card, CardContainer, CardTitle, CardContent, CardSubtitle, CardBlock, CardButton } from "../../components/card"
 import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
+import { set } from "@auth0/nextjs-auth0/dist/session";
 
-// const SERVER = "http://127.0.0.1:5000";
-const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
+const SERVER = "http://127.0.0.1:38321";
+// const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
 
 export default function Home() {
   const [name, setName] = useState("");
@@ -26,17 +27,20 @@ export default function Home() {
   const [helpDescription, setHelpDescription] = useState("");
   const [projectLink, setProjectLink] = useState("");
   const [timeFrame, setTimeFrame] = useState(0);
+  const [polled, setPolled] = useState(false);
+  const [settingsPresent, setSettingsPresent] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
   const [errorPresent, setErrorPresent] = useState(false);
 
   const { user, isLoading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      redirect("/api/auth/login");
+      router.push("/api/auth/login");
     }
-  }, [isLoading, user]);
+  }, [isLoading, user, router]);
 
   useEffect(() => {
     if (errorMessage !== "") {
@@ -63,6 +67,12 @@ export default function Home() {
         setErrorPresent(true);
       } else {
         const data = await response.json();
+
+        if (data.match.noSettings) {
+          router.push("/settings");
+          setSettingsPresent(false);
+        }
+
         setName(data.match.name || "");
         setEmail(data.match.email || "");
         setLinkedIn(data.match.linkedIn || "");
@@ -82,7 +92,8 @@ export default function Home() {
       setErrorMessage("Client-side error: " + error);
       setErrorPresent(true);
     }
-  }, [user]);
+    setPolled(true);
+  }, [user, router]);
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -110,10 +121,12 @@ export default function Home() {
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
           <CardContent>
-            {isLoading && !user ? (
+            {isLoading && !user && !polled ? (
               <p>Loading...</p>
             ) : errorPresent ? (
               <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
+            ) : !settingsPresent ? (
+              <p>Setting empty. Redirecting...</p>
             ) : (
               <>
                 <CardBlock>

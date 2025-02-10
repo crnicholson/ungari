@@ -5,8 +5,8 @@ import StyledLink from "./styledLink";
 import ProfileCard from "./profileCard";
 import { Card } from "./card";
 
-// const SERVER = "http://127.0.0.1:5000"
-const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
+const SERVER = "http://127.0.0.1:38321"
+// const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
 
 export default function Demo() {
     const [name, setName] = useState("");

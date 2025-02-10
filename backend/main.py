@@ -62,19 +62,19 @@ def set_settings():
     needHelp = received.get("needHelp", "")
     pastMatches = received.get("pastMatches", [])
     savedMatches = received.get("savedMatches", [])
-    
+
     user = users.find_one({"id": id})
 
     if user is None:
         users.insert_one({"id": id})
         return jsonify({"error": "User not found in database."}), 404
-    
+
     if needHelp:
         projectName = received.get("projectName", "")
         projectDescription = received.get("projectDescription", "")
         helpDescription = received.get("helpDescription", "")
         projectLink = received.get("projectLink", "")
-    
+
         print(
             "ID: ",
             id,
@@ -187,44 +187,60 @@ def get_match():
     received = request.get_json()
 
     demo = received.get("demo", False)
-    
+
     if demo:
         print("\nDemo mode enabled.\n")
-        
+
         all_users = users.find({"needHelp": not received.get("needHelp")})
         user_skills = received.get("skills")
 
         matches = []
-        
+
         print(f"User skills: {user_skills}")
         print(f"All users: {all_users}")
-        
+
         for person in all_users:
-            required_fields = ["name", "email", "linkedIn", "bio", "availability", "skills", "themes", "timeFrame"]
+            required_fields = [
+                "name",
+                "email",
+                "linkedIn",
+                "bio",
+                "availability",
+                "skills",
+                "themes",
+                "timeFrame",
+            ]
             if received.get("needHelp"):
-                required_fields.extend(["projectName", "projectDescription", "helpDescription", "projectLink"])
+                required_fields.extend(
+                    [
+                        "projectName",
+                        "projectDescription",
+                        "helpDescription",
+                        "projectLink",
+                    ]
+                )
             missing_fields = [field for field in required_fields if field not in person]
-            
+
             if missing_fields:
                 print("Missing fields. Skipping.")
-                continue 
+                continue
 
             person_skills = person.get("skills")
 
             common_skills = []
-            
+
             for skill in user_skills:
                 for person_skill in person_skills:
                     if skill.lower() == person_skill.lower():
                         common_skills.append(skill)
-                        
+
                         print(f"Common skill found: {skill}")
                         break
 
             counter = 0
             for skill in common_skills:
                 counter += 1
-                
+
             if counter > 0 and not person.get("needHelp"):
                 matches.append(
                     {
@@ -266,28 +282,50 @@ def get_match():
 
         if len(matches) == 0:
             print("\nNo matches found. Try adding more interests.\n")
-            return jsonify({"error": "No matches found. Try adding more interests.", "noMatches": True}), 404
-        
+            return (
+                jsonify(
+                    {
+                        "error": "No matches found. Try adding more interests.",
+                        "noMatches": True,
+                    }
+                ),
+                404,
+            )
+
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
-                    
+
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
         return jsonify({"match": matches[0]})
-        
+
     else:
         user = users.find_one({"id": received.get("id", "")})
 
         if user is None:
-            return jsonify({"error": "User not found. Please fill in settings."})
-        
-        required_fields = ["name", "email", "linkedIn", "bio", "availability", "skills", "themes"]
+            # return jsonify({"error": "User not found. Please fill in settings."})
+            print("Redirecting to settings page.")
+            return jsonify({"noSettings": True})
+
+        required_fields = [
+            "name",
+            "email",
+            "linkedIn",
+            "bio",
+            "availability",
+            "skills",
+            "themes",
+        ]
         if user.get("needHelp"):
-            required_fields.extend(["projectName", "projectDescription", "helpDescription", "projectLink"])
+            required_fields.extend(
+                ["projectName", "projectDescription", "helpDescription", "projectLink"]
+            )
         missing_fields = [field for field in required_fields if field not in user]
-        
+
         if missing_fields:
             print(f"Missing fields: {', '.join(missing_fields)}")
-            return jsonify({"error": "Some settings are missing. Please fill in all settings."}), 404
+            print("Redirecting to settings page.")
+            # return jsonify({"error": "Some settings are missing. Please fill in all settings."}), 404
+            return jsonify({"match": {"noSettings": True}})
 
         all_users = users.find({"needHelp": not user.get("needHelp")})
         user_skills = user.get("skills")
@@ -295,24 +333,40 @@ def get_match():
         matches = []
 
         for person in all_users:
-            
+
             # CHANGE THIS TO ID LATER, FOR TESINTG ONLY.
             if person.get("name") == user.get("name"):
                 continue
-            
-            # MISSING FIELDS DOESN"T SEEM TO BE WORKING WITH helpDescription. 
-            required_fields = ["name", "email", "linkedIn", "bio", "availability", "skills", "themes", "timeFrame"]
+
+            # MISSING FIELDS DOESN"T SEEM TO BE WORKING WITH helpDescription.
+            required_fields = [
+                "name",
+                "email",
+                "linkedIn",
+                "bio",
+                "availability",
+                "skills",
+                "themes",
+                "timeFrame",
+            ]
             if user.get("needHelp"):
-                required_fields.extend(["projectName", "projectDescription", "helpDescription", "projectLink"])
+                required_fields.extend(
+                    [
+                        "projectName",
+                        "projectDescription",
+                        "helpDescription",
+                        "projectLink",
+                    ]
+                )
             missing_fields = [field for field in required_fields if field not in person]
-            
+
             if missing_fields:
-                continue 
+                continue
 
             person_skills = person.get("skills")
 
             common_skills = []
-            
+
             for skill in user_skills:
                 for person_skill in person_skills:
                     if skill.lower() == person_skill.lower():
@@ -322,7 +376,7 @@ def get_match():
             counter = 0
             for skill in common_skills:
                 counter += 1
-                
+
             if counter > 0 and not person.get("needHelp"):
                 matches.append(
                     {
@@ -364,46 +418,67 @@ def get_match():
 
         if len(matches) == 0:
             print("\nNo matches found. Try adding more interests.\n")
-            return jsonify({"error": "No matches found. Try adding more interests."}), 404
-        
+            return (
+                jsonify({"error": "No matches found. Try adding more interests."}),
+                404,
+            )
+
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
         def check_saved():
             if user.get("savedMatches") is not None:
                 if len(matches) == 0:
                     print("\nNo new matches, all have been saved for later.\n")
-                    return jsonify({"error": "No new matches, all have been saved for later."})
+                    return jsonify(
+                        {"error": "No new matches, all have been saved for later."}
+                    )
                 for saved in user["savedMatches"]:
                     if matches[0]["id"] == saved:
                         print(f"{matches[0]['name']} is already saved.")
                         matches.pop(0)
                         check_saved()
-                
+
         def check_past():
             if user.get("pastMatches") is not None:
                 for past in user["pastMatches"]:
                     if len(matches) == 0:
                         print("\nNo new matches, all have been matched in the past.\n")
-                        return jsonify({"error": "No new matches, all have been matched in the past."}), 404
+                        return (
+                            jsonify(
+                                {
+                                    "error": "No new matches, all have been matched in the past."
+                                }
+                            ),
+                            404,
+                        )
                     print(f"Past: {past}")
                     print(f"Match: {matches[0]}")
                     if matches[0]["_id"] == past:
                         print(f"{matches[0]['name']} is a past match.")
                         matches.pop(0)
                         if len(matches) == 0:
-                            print("\nNo new matches, all have been matched in the past.\n")
-                            return jsonify({"error": "No new matches, all have been matched in the past."}), 404
+                            print(
+                                "\nNo new matches, all have been matched in the past.\n"
+                            )
+                            return (
+                                jsonify(
+                                    {
+                                        "error": "No new matches, all have been matched in the past."
+                                    }
+                                ),
+                                404,
+                            )
 
         result = check_past()
         if result:
             return result
-                
+
         # check_saved()
-            
+
         # user.setdefault("pastMatches", [])
         # user["pastMatches"].append(matches[0]["_id"])
-        # users.update_one({"_id": user["_id"]}, {"$set": {"pastMatches": user["pastMatches"]}}) 
-                    
+        # users.update_one({"_id": user["_id"]}, {"$set": {"pastMatches": user["pastMatches"]}})
+
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
         return jsonify({"match": matches[0]})
