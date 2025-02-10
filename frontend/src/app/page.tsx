@@ -2,26 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { redirect } from "next/navigation";
 import Heading from "../components/heading";
 import { Card, CardImage, CardTitle, CardContent, CardContainer } from "../components/card";
 import { Header, HeaderNav, HeaderLogo } from "../components/header";
 import Demo from "../components/demo";
 import Button from "../components/button";
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
   const { user, error, isLoading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    if (!isLoading && user) {
+      router.push("/match");
+    }
+  }, [isLoading, user, router]);
 
   return (
     <div className="min-h-screen">

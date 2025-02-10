@@ -126,7 +126,7 @@ export default function Home() {
             ) : errorPresent ? (
               <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
             ) : !settingsPresent ? (
-              <p>Setting empty. Redirecting...</p>
+              <p>Settings empty or missing fields. Redirecting...</p>
             ) : (
               <>
                 <CardBlock>
