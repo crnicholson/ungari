@@ -5,7 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "../components/footer";
 
 export const metadata = {
-  title: "Problem Dating App",
+  title: "Ungari",
   description: "Connecting problems with thinkers",
 };
 
