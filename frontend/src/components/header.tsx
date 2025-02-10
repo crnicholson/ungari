@@ -22,7 +22,7 @@ export function Header(HeaderProps) {
     return (
         <div
             className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                ? "bg-stone-500/10 backdrop-blur-lg shadow-md border border-gray-300 mx-4 rounded-xl"
+                ? "bg-[--card-bg] shadow-md border border-[--border] mx-4 rounded-xl"
                 : "bg-transparent mx-4"
                 }`}
         >
@@ -35,7 +35,7 @@ export function Header(HeaderProps) {
 
 export function HeaderLogo(HeaderProps) {
     return (
-        <Link href={HeaderProps.href} className="text-xl font-semibold">
+        <Link href={HeaderProps.href} className={`text-xl font-semibold ${HeaderProps.className}`}>
             {HeaderProps.children}
         </Link>
     );

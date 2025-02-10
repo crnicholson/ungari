@@ -1,20 +1,32 @@
 import Link from "next/link";
 
 interface ButtonProps {
-    href?: string;
+    href: string;
     className?: string;
     onClick?: () => void;
     children: React.ReactNode;
+    type: string;
 }
 
-export default function Button({ href, className, onClick, children }: ButtonProps) {
-    return (
-        <Link
-            href={href}
-            className={`relative p-3 bg-opacity-100 border-1 border text-md font-semibold rounded-xl shadow-lg m-3 hover:scale-105 ${className}`}
-            onClick={onClick}
-        >
-            {children}
-        </Link >
-    );
-};
+export default function Button(ButtonProps) {
+    if (ButtonProps.type == "button") {
+        return (
+            <button
+                className={`font-semibold relative p-3 border-1 border text-md rounded-xl shadow-lg hover:scale-105 ${ButtonProps.className}`}
+                onClick={ButtonProps.onClick}
+            >
+                {ButtonProps.children}
+            </button>
+        );
+    } else {
+        return (
+            <Link
+                href={ButtonProps.href}
+                className={`font-semibold relative p-3 border-1 border text-md rounded-xl shadow-lg hover:scale-105 ${ButtonProps.className}`}
+                onClick={ButtonProps.onClick}
+            >
+                {ButtonProps.children}
+            </Link>
+        );
+    }
+}

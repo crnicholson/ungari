@@ -7,6 +7,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -21,9 +22,11 @@
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -32,4 +35,42 @@
 .animate-gradient-x {
   background-size: 200% 200%;
   animation: gradient-x 3s ease infinite;
+}
+
+@font-face {
+  font-family: tiempos-black;
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("/TiemposHeadline-Black.otf") format("opentype");
+}
+
+@font-face {
+  font-family: tiempos-light;
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("/TiemposHeadline-Light.otf") format("opentype");
+}
+
+@font-face {
+  font-family: tiempos;
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("/TiemposHeadline-Regular.otf") format("opentype");
+}
+
+:root {
+  --accent: #FFA362;
+  /* gray-600 or stone-600 */
+  --primary: #57534e;
+  --bg: #FBFBF9;
+  --card-bg: #F7F6EF;
+  /* stone-200 */
+  --border: #e7e5e4;
+  /* stone-500 */
+  --light: #78716c;
+  /* stone-400 */
+  --lighter: #a8a29e;
 }

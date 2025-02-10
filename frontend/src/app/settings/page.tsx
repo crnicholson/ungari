@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { redirect } from "next/navigation";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
-import GradientButton from "../../components/gradientButton";
+import GradientButton from "../../components/button";
 import { Card, CardContainer, CardTitle, CardInput, CardContent, CardImage, CardSubtitle, CardBlock, CardButton } from "../../components/card";
 import Heading from "../../components/heading";
 import StyledLink from "../../components/styledLink";
@@ -66,13 +66,13 @@ export default function Settings() {
     }
   };
 
-    const handleSelectTheme = (theme) => {
-      if (themes.includes(theme)) {
-        setThemes(themes.filter((t) => t !== theme));
-      } else {
-        setThemes([...themes, theme]);
-      }
-    };
+  const handleSelectTheme = (theme) => {
+    if (themes.includes(theme)) {
+      setThemes(themes.filter((t) => t !== theme));
+    } else {
+      setThemes([...themes, theme]);
+    }
+  };
 
   const filteredSkills = listOfSkills
     .filter((skill) =>

@@ -23,7 +23,7 @@ export default function StyledLink(StyledLinkProps) {
         return (
             <Link
                 href={StyledLinkProps.href}
-                className={`underline text-stone-500 hover:text-stone-400 ${StyledLinkProps.className}`}
+                className={`underline decoration-[--accent] text-[--light] hover:text-[--lighter] ${StyledLinkProps.className}`}
                 onClick={StyledLinkProps.onClick}
             >
                 {StyledLinkProps.children}

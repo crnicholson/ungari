@@ -2,7 +2,7 @@ import StyledLink from "./styledLink";
 
 export default function Footer() {
     return (
-        <footer className="border border-1 border-stone-200 bg-slate-100 rounded-xl p-4 shadow-lg mt-[60px] mx-5 mb-5 w-fit">
+        <footer className="border border-1 border-[--border] bg-[--card-bg] rounded-xl p-4 shadow-lg mt-[60px] mx-5 mb-5 w-fit">
             <p>
                 Copyright Charles Nicholson 2024. Open source on{" "}
                 <StyledLink

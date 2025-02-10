@@ -17,7 +17,7 @@ interface CardProps {
 
 export function Card({ children, className }: CardProps) {
     return (
-        <div className={`border border-1 border-stone-200 bg-slate-100 rounded-xl p-5 shadow-lg w-fit ${className}`}>
+        <div className={`border border-1 border-[--border] bg-[--card-bg] rounded-xl p-5 shadow-lg w-fit ${className}`}>
             {children}
         </div>
     );
@@ -46,7 +46,7 @@ export function CardTitle({ size = 1, children, className }: CardProps) {
     };
     const textSize = sizeClasses[size] || "text-lg";
 
-    return <h1 className={`font-semibold mb-2 ${textSize} ${className}`}>{children}</h1>;
+    return <h1 className={`mb-2 font-[tiempos] ${textSize} ${className}`}>{children}</h1>;
 }
 
 export function CardContent({ children, className }: CardProps) {
@@ -66,7 +66,7 @@ export function CardInput({ inputPlaceholder, inputValue, inputOnChange, classNa
         <div className={`${className}`}>
             <input
                 type={inputType === "" ? "text" : inputType}
-                className="w-full p-3 border border-stone-200 rounded-xl"
+                className="w-full p-3 border border-[--border] rounded-xl"
                 placeholder={inputPlaceholder}
                 value={inputValue}
                 onChange={inputOnChange}
@@ -90,7 +90,7 @@ export function CardSubtitle({ children, className }: CardProps) {
 export function CardButton({ children, onClick, className }: CardProps) {
     return (
         <button
-            className={`font-semibold w-full border border-stone-200 shadow-lg bg-slate-100 rounded-xl p-3 hover:scale-105 ${className}`}
+            className={`font-semibold w-full border border-[--border] shadow-lg bg-none rounded-xl p-3 hover:scale-105 ${className}`}
             onClick={onClick}
         >
             {children}

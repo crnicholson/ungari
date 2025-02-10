@@ -7,7 +7,7 @@ interface HeadingProps {
 export default function Heading(HeadingProps) {
     if (HeadingProps.size == 1) {
         return (
-            <header className={`mb-4 text-lg font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-lg font-semibold font-[tiempos] ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
@@ -16,7 +16,7 @@ export default function Heading(HeadingProps) {
     }
     if (HeadingProps.size == 2) {
         return (
-            <header className={`mb-4 text-xl font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-xl font-semibold font-[tiempos] ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
@@ -25,7 +25,7 @@ export default function Heading(HeadingProps) {
     }
     if (HeadingProps.size == 3) {
         return (
-            <header className={`mb-4 text-2xl font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-2xl font-semibold font-[tiempos] ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
@@ -34,7 +34,7 @@ export default function Heading(HeadingProps) {
     }
     if (HeadingProps.size == 4) {
         return (
-            <header className={`mb-4 text-3xl font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-3xl font-semibold font-[tiempos] ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>
@@ -42,7 +42,7 @@ export default function Heading(HeadingProps) {
         );
     } else {
         return (
-            <header className={`mb-4 text-lg font-semibold ${HeadingProps.className}`}>
+            <header className={`mb-4 text-lg font-semibold font-[tiempos] ${HeadingProps.className}`}>
                 <p>
                     {HeadingProps.children}
                 </p>

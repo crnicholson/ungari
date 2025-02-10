@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { redirect } from "next/navigation";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header"
-import GradientButton from "../../components/gradientButton";
+import GradientButton from "../../components/button";
 import { Card, CardContainer, CardTitle, CardContent, CardSubtitle, CardBlock, CardButton } from "../../components/card"
 import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
