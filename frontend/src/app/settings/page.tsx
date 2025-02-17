@@ -5,7 +5,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import { redirect } from "next/navigation";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import GradientButton from "../../components/button";
-import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardBlock, CardButton } from "../../components/card";
+import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardRow, CardBlock, CardButton } from "../../components/card";
 import Heading from "../../components/heading";
 import StyledLink from "../../components/styledLink";
 import Error from "../../components/error";
@@ -94,7 +94,7 @@ export default function Settings() {
     .sort((a, b) => a.localeCompare(b));
 
 
-  function isValidUrl(url: string): boolean {
+  function isValidURL(url: string): boolean {
     try {
       new URL(url);
       return true;
@@ -135,7 +135,8 @@ export default function Settings() {
             setTimeFrame(data.timeFrame || "");
 
             if (data.imageLink === "" || user.picture === "") {
-              setImageLink("https://ui-avatars.com/api/?size=256&name=" + data.name.split(" ") + "&background=random");
+              setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name);
+              setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name);
               setImageChange(true);
             } else if (data.imageChange) {
               setImageLink(data.imageLink || "");
@@ -195,10 +196,10 @@ export default function Settings() {
       setSubmitMessage("Oh shoot! That email address seems invalid.");
 
       return;
-    } else if (!linkedIn.includes("linkedin.com") || !isValidUrl(linkedIn)) {
+    } else if (!linkedIn.includes("linkedin.com") || !isValidURL(linkedIn)) {
       console.log("LinkedIn link is invalid.");
 
-      setSubmitMessage("Oh snap! That LinkedIn link seems invalid.");
+      setSubmitMessage("Oh snap! That LinkedIn link seems invalid. Did you remember that https://? :-P");
 
       return;
     }
@@ -299,21 +300,19 @@ export default function Settings() {
               {imageDialog && (
                 <CardBlock>
                   <CardSubtitle className="mb-2">Enter a new image link</CardSubtitle>
-                  <CardContainer className="w-full">
+                  <CardRow>
                     <CardInput
                       value={tempImageLink}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setTempImageLink(e.target.value);
-                      }}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTempImageLink(e.target.value)}
                       placeholder="Make it blank to use the default image!"
                       className="w-full"
                     />
                     <CardButton
                       onClick={() => {
-                        if (isValidUrl(tempImageLink) || tempImageLink === "") {
+                        if (isValidURL(tempImageLink) || tempImageLink !== "") {
                           setImageLink(tempImageLink);
                           setImageChange(true);
-                          setImageError(false);
+                          setImageError("");
                         } else {
                           setImageError("Invalid URL!");
                         }
@@ -321,7 +320,7 @@ export default function Settings() {
                     >
                       Update image
                     </CardButton>
-                  </CardContainer>
+                  </CardRow>
                   {imageError !== "" && (
                     <p className="mt-2">{imageError}</p>
                   )}
@@ -338,13 +337,14 @@ export default function Settings() {
               </CardBlock>
 
               <CardBlock>
-                <CardSubtitle className="mb-2">Tell us about yourself!</CardSubtitle>
+                <CardSubtitle className="mb-2">Tell us about yourself! (50 chars)</CardSubtitle>
                 <textarea
                   className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
-                  placeholder="Special notes, preferences, favorite color?"
+                  placeholder="Special notes, preferences, favorite color? Max 50 characters."
                   rows={3}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
+                  maxLength={50}
                 ></textarea>
               </CardBlock>
 
@@ -411,24 +411,26 @@ export default function Settings() {
                   </CardBlock>
 
                   <CardBlock>
-                    <CardSubtitle className="mb-2">Tell us about your project!</CardSubtitle>
+                    <CardSubtitle className="mb-2">Tell us about your project! (100 chars)</CardSubtitle>
                     <textarea
                       className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
-                      placeholder="What's it do? Why's it cool?"
+                      placeholder="What's it do? Why's it cool? Max 100 characters."
                       rows={3}
                       value={projectDescription}
                       onChange={(e) => setProjectDescription(e.target.value)}
+                      maxLength={100}
                     ></textarea>
                   </CardBlock>
 
                   <CardBlock>
-                    <CardSubtitle className="mb-2">Anything specific you need help on?</CardSubtitle>
+                    <CardSubtitle className="mb-2">Anything specific you need help on? (100 chars)</CardSubtitle>
                     <textarea
                       className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
-                      placeholder="I need to make sure the electric boogaloo can attract rhinos"
+                      placeholder="I need to make sure the electric boogaloo can attract rhinos. Max 100 characters."
                       rows={3}
                       value={helpDescription}
                       onChange={(e) => setHelpDescription(e.target.value)}
+                      maxLength={100}
                     ></textarea>
                   </CardBlock>
 

@@ -22,6 +22,7 @@ export default function Demo() {
     const [helpDescription, setHelpDescription] = useState("");
     const [projectLink, setProjectLink] = useState("");
     const [timeFrame, setTimeFrame] = useState(0);
+    const [imageLink, setImageLink] = useState("");
 
     const [errorMessage, setErrorMessage] = useState("");
     const [errorPresent, setErrorPresent] = useState(false);
@@ -29,6 +30,15 @@ export default function Demo() {
     const [polled, setPolled] = useState(false);
 
     const { user, isLoading } = useUser();
+
+    function isValidURL(url: string): boolean {
+        try {
+            new URL(url);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
 
     const handleSelectSkill = (skill) => {
         if (skills.includes(skill)) {
@@ -76,6 +86,12 @@ export default function Demo() {
                 setHelpDescription(data.match.helpDescription || "");
                 setProjectLink(data.match.projectLink || "");
                 setTimeFrame(data.match.timeFrame || "");
+
+                if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
+                    setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name);
+                } else {
+                    setImageLink(data.match.imageLink);
+                }
 
                 setNoMatches(false);
 

@@ -2,9 +2,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=f"{os.getcwd()}/.env.local")
 
 FLASK_PORT = 38321
-# MONGO_ADDRESS = "mongodb://root:example@hackclub.app:34209/?authSource=admin"
+# MONGO_ADDRESS = os.getenv("MONGO_ADDRESS")
 MONGO_ADDRESS = "mongodb://localhost:27017"
 
 client = MongoClient(MONGO_ADDRESS)
@@ -107,6 +111,10 @@ def set_settings():
         skills,
         " Themes: ",
         themes,
+        " Image Change: ",
+        imageChange,
+        " Image Link: ",
+        imageLink,
         end="",
     )
 
@@ -162,6 +170,10 @@ def get_match():
 
             print(f"Random user: {random_user}")
 
+            if check_fields(need_help, random_user, True):
+                print("Check again")
+                return check_length(message, array, need_help, _id)
+
             return {
                 "name": random_user.get("name", ""),
                 "email": random_user.get("email", ""),
@@ -179,6 +191,7 @@ def get_match():
                 "imageLink": random_user.get("imageLink", ""),
                 "exactMatch": False,
             }
+        return None
 
     def check_fields(need_help, user, redirect=False):
         required_fields = [
@@ -264,13 +277,13 @@ def get_match():
                     }
                 )
 
-        result = check_length(
+        random_match = check_length(
             "No matches found. Try adding more interests.",
             matches,
             received.get("needHelp"),
         )
-        if result:
-            return jsonify({"match": result, "noMatches": True}), 200
+        if random_match:
+            return jsonify({"match": random_match, "noMatches": True}), 200
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
@@ -287,14 +300,14 @@ def get_match():
 
         def check_saved():
             if user.get("savedMatches") is not None:
-                result = check_length(
+                random_match = check_length(
                     "No new matches, all have been saved.",
                     matches,
                     user.get("needHelp"),
                     user.get("_id"),
                 )
-                if result:
-                    return jsonify({"match": result, "noMatches": True}), 200
+                if random_match:
+                    return jsonify({"match": random_match, "noMatches": True}), 200
                 for saved in user["savedMatches"]:
                     if matches[0]["id"] == saved:
                         print(f"{matches[0]['name']} is already saved.")
@@ -304,28 +317,40 @@ def get_match():
         def check_past():
             if user.get("pastMatches") is not None:
                 for past in user.get("pastMatches"):
-                    result = check_length(
+                    random_match = check_length(
                         "No new matches, all have been matched in the past.",
                         matches,
                         user.get("needHelp"),
                         user.get("_id"),
                     )
-                    if result:
-                        return jsonify({"match": result, "noMatches": True}), 200
+                    if random_match:
+                        return (
+                            jsonify(
+                                {
+                                    "match": random_match,
+                                    "noMatches": True,
+                                    "settingsPresent": True,
+                                }
+                            ),
+                            200,
+                        )
 
                     print(f"Past: {past}")
                     print(f"Match: {matches[0]}")
                     if matches[0]["_id"] == past:
                         print(f"{matches[0]['name']} is a past match.")
                         matches.pop(0)
-                        result = check_length(
+                        random_match = check_length(
                             "No new matches, all have been matched in the past.",
                             matches,
                             user.get("needHelp"),
                             user.get("_id"),
                         )
-                        if result:
-                            return jsonify({"match": result, "noMatches": True}), 200
+                        if random_match:
+                            return (
+                                jsonify({"match": random_match, "noMatches": True}),
+                                200,
+                            )
 
         missing_fields = check_fields(user.get("needHelp"), user)
 
@@ -386,14 +411,14 @@ def get_match():
                     }
                 )
 
-        result = check_length(
+        random_match = check_length(
             "No matches found. Try adding more interests.",
             matches,
             user.get("needHelp"),
             user.get("_id"),
         )
-        if result:
-            return jsonify({"match": result, "noMatches": True}), 200
+        if random_match:
+            return jsonify({"match": random_match, "noMatches": True}), 200
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 

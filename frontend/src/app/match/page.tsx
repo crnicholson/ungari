@@ -28,12 +28,12 @@ export default function Home() {
   const [projectLink, setProjectLink] = useState("");
   const [timeFrame, setTimeFrame] = useState(0);
   const [polled, setPolled] = useState(false);
-  const [settingsPresent, setSettingsPresent] = useState(false);
+  const [settingsPresent, setSettingsPresent] = useState(true);
   const [noMatch, setNoMatch] = useState(false);
   const [imageLink, setImageLink] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [errorPresent, setErrorPresent] = useState(false);
+  // const [errorPresent, setErrorPresent] = useState(false);
 
   const { user, isLoading } = useUser();
   const router = useRouter();
@@ -44,15 +44,24 @@ export default function Home() {
     }
   }, [isLoading, user, router]);
 
-  useEffect(() => {
-    if (errorMessage !== "") {
-      const timer = setTimeout(() => {
-        setErrorMessage("");
-      }, 5000);
-
-      return () => clearTimeout(timer);
+  function isValidURL(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      return false;
     }
-  }, [errorMessage]);
+  }
+
+  // useEffect(() => {
+  //   if (errorMessage !== "") {
+  //     const timer = setTimeout(() => {
+  //       setErrorMessage("");
+  //     }, 5000);
+
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [errorMessage]);
 
   const getMatch = useCallback(async () => {
     try {
@@ -66,13 +75,14 @@ export default function Home() {
       if (!response.ok) {
         const error = await response.json();
         setErrorMessage("Server-side error: " + error.error);
-        setErrorPresent(true);
+        // setErrorPresent(true);
       } else {
+        setErrorMessage("");
+
         const data = await response.json();
 
-        console.log(data.settingsPresent);
-
-        if (!data.settingsPresent) {
+        if (!(data.settingsPresent ?? true)) {
+          console.log("Redirecting to settings...");
           router.push("/settings");
           setSettingsPresent(false);
         }
@@ -91,12 +101,17 @@ export default function Home() {
         setProjectLink(data.match.projectLink || "");
         setTimeFrame(data.match.timeFrame || "");
         setNoMatch(data.noMatches || false);
-        setImageLink("");
+
+        if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
+          setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name);
+        } else {
+          setImageLink(data.match.imageLink);
+        }
       }
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);
       setErrorMessage("Client-side error: " + error);
-      setErrorPresent(true);
+      // setErrorPresent(true);
     }
     setPolled(true);
   }, [user, router]);
@@ -121,15 +136,15 @@ export default function Home() {
         </HeaderNav>
       </Header>
 
-      {polled && settingsPresent && (<Error className="mt-24 w-1/2">{errorMessage}</Error>)}
+      {polled && (<Error className="mt-24 sm:w-1/2 w-full">{errorMessage}</Error>)}
 
-      <CardContainer className={`${errorMessage && polled && settingsPresent == "" ? 'mt-24' : 'mt-5'}`}>
+      <CardContainer className={`${errorMessage && polled ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
           <CardContent>
             {isLoading && !user && !polled ? (
               <p>Loading...</p>
-            ) : errorPresent ? (
+            ) : errorMessage !== "" ? (
               <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
             ) : !settingsPresent ? (
               <p>Settings empty or missing fields. Redirecting...</p>
@@ -158,7 +173,7 @@ export default function Home() {
                   }} />
                 </CardBlock>
                 <CardButton onClick={getMatch}>Match!</CardButton>
-                <div className="mt-3 flex flex-row gap-3">
+                <div className="mt-3 flex flex-col md:flex-row gap-3">
                   <CardButton className="w-full" onClick={getMatch}>Save for later</CardButton>
                   <CardButton className="w-full" onClick={getMatch}>Find new match</CardButton>
                 </div>
