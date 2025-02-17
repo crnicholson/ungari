@@ -5,11 +5,13 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import { redirect } from "next/navigation";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import GradientButton from "../../components/button";
-import { Card, CardContainer, CardTitle, CardInput, CardContent, CardImage, CardSubtitle, CardBlock, CardButton } from "../../components/card";
+import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardBlock, CardButton } from "../../components/card";
 import Heading from "../../components/heading";
 import StyledLink from "../../components/styledLink";
 import Error from "../../components/error";
 import { set } from "@auth0/nextjs-auth0/dist/session";
+import Image from 'next/image';
+import Checkbox from "../../components/checkbox";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
@@ -28,12 +30,17 @@ export default function Settings() {
   const [helpDescription, setHelpDescription] = useState("");
   const [projectLink, setProjectLink] = useState("");
   const [timeFrame, setTimeFrame] = useState("");
+  const [imageLink, setImageLink] = useState("");
+  const [tempImageLink, setTempImageLink] = useState("");
+  const [imageChange, setImageChange] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
   const [errorPresent, setErrorPresent] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
   const [skillSearchTerm, setSkillSearchTerm] = useState("");
   const [themeSearchTerm, setThemeSearchTerm] = useState("");
+  const [imageDialog, setImageDialog] = useState(false);
+  const [imageError, setImageError] = useState("");
 
   const { user, isLoading } = useUser();
 
@@ -86,6 +93,16 @@ export default function Settings() {
     )
     .sort((a, b) => a.localeCompare(b));
 
+
+  function isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   useEffect(() => {
     if (!isLoading && user) {
       const fetchSettings = async () => {
@@ -116,6 +133,17 @@ export default function Settings() {
             setHelpDescription(data.helpDescription || "");
             setProjectLink(data.projectLink || "");
             setTimeFrame(data.timeFrame || "");
+
+            if (data.imageLink === "" || user.picture === "") {
+              setImageLink("https://ui-avatars.com/api/?size=256&name=" + data.name.split(" ") + "&background=random");
+              setImageChange(true);
+            } else if (data.imageChange) {
+              setImageLink(data.imageLink || "");
+              setTempImageLink(data.imageLink || "");
+            } else {
+              setImageLink(user.picture || "");
+              setTempImageLink(user.picture || "");
+            }
           }
         } catch (error) {
           console.error("Failed to fetch settings:", error);
@@ -131,25 +159,35 @@ export default function Settings() {
   const saveSettings = async () => {
     const missingFields = [];
 
+    const formatMissingFieldsMessage = (fields) => {
+      if (fields.length === 1) {
+        return fields[0];
+      } else if (fields.length === 2) {
+        return `${fields[0]} and ${fields[1]}`;
+      } else {
+        return `${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]}`;
+      }
+    };
+
     if (bio === "") missingFields.push("bio");
     if (email === "") missingFields.push("email");
     if (name === "") missingFields.push("name");
     if (availability === "") missingFields.push("availability");
     if (skills.length === 0) missingFields.push("skills");
     if (themes.length === 0) missingFields.push("themes");
-    if (linkedIn === "") missingFields.push("linkedIn");
-    if (timeFrame === "") missingFields.push("timeFrame");
+    if (linkedIn === "") missingFields.push("LinkedIn");
+    if (timeFrame === "") missingFields.push("time frame");
 
     if (needHelp) {
-      if (projectName === "") missingFields.push("projectName");
-      if (projectDescription === "") missingFields.push("projectDescription");
-      if (helpDescription === "") missingFields.push("helpDescription");
-      if (projectLink === "") missingFields.push("projectLink");
+      if (projectName === "") missingFields.push("project name");
+      if (projectDescription === "") missingFields.push("project description");
+      if (helpDescription === "") missingFields.push("help description");
+      if (projectLink === "") missingFields.push("project link");
     }
 
     if (missingFields.length > 0) {
       console.log("Some required fields are missing.");
-      setSubmitMessage(`Uh-oh! The following fields are missing: ${missingFields.join(", ")}.`);
+      setSubmitMessage(`Uh-oh! The following fields are missing: ${formatMissingFieldsMessage(missingFields)}.`);
       return;
     } else if (!isValidEmail(email)) {
       console.log("Email address is invalid.");
@@ -157,7 +195,7 @@ export default function Settings() {
       setSubmitMessage("Oh shoot! That email address seems invalid.");
 
       return;
-    } else if (!linkedIn.includes("linkedin.com")) {
+    } else if (!linkedIn.includes("linkedin.com") || !isValidUrl(linkedIn)) {
       console.log("LinkedIn link is invalid.");
 
       setSubmitMessage("Oh snap! That LinkedIn link seems invalid.");
@@ -165,7 +203,6 @@ export default function Settings() {
       return;
     }
 
-    console.log(name);
     try {
       const response = await fetch(SERVER + "/api/set-settings", {
         method: "POST",
@@ -187,6 +224,8 @@ export default function Settings() {
           projectLink: projectLink,
           helpDescription: helpDescription,
           timeFrame: timeFrame,
+          imageLink: imageLink,
+          imageChange: imageChange,
         }),
       });
       if (!response.ok) {
@@ -207,7 +246,7 @@ export default function Settings() {
     <>
       <Header>
         <HeaderLogo href="/">
-          Ungari
+          <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
         </HeaderLogo>
         <HeaderNav>
           <GradientButton className="m-3" href="/api/auth/logout">Logout</GradientButton>
@@ -233,18 +272,75 @@ export default function Settings() {
           ) : (
             <>
               <CardBlock>
+                <button onClick={() => setImageDialog(!imageDialog)}>
+                  {imageLink !== "" ? (
+                    <Image
+                      src={imageLink}
+                      alt={`${name}'s profile`}
+                      className="rounded-full object-cover ring-2 ring-[--border]"
+                      width={96}
+                      height={96}
+                    />
+                  ) : (
+                    <div
+                      className="rounded-full flex items-center justify-center ring-2 ring-[--border]"
+                      style={{
+                        width: 96,
+                        height: 96,
+                        backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+                      }}
+                    >
+                      <span className="text-white text-3xl">{name.charAt(0)}</span>
+                    </div>
+                  )}
+                </button>
+              </CardBlock>
+
+              {imageDialog && (
+                <CardBlock>
+                  <CardSubtitle className="mb-2">Enter a new image link</CardSubtitle>
+                  <CardContainer className="w-full">
+                    <CardInput
+                      value={tempImageLink}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setTempImageLink(e.target.value);
+                      }}
+                      placeholder="Make it blank to use the default image!"
+                      className="w-full"
+                    />
+                    <CardButton
+                      onClick={() => {
+                        if (isValidUrl(tempImageLink) || tempImageLink === "") {
+                          setImageLink(tempImageLink);
+                          setImageChange(true);
+                          setImageError(false);
+                        } else {
+                          setImageError("Invalid URL!");
+                        }
+                      }}
+                    >
+                      Update image
+                    </CardButton>
+                  </CardContainer>
+                  {imageError !== "" && (
+                    <p className="mt-2">{imageError}</p>
+                  )}
+                </CardBlock>
+              )}
+
+              <CardBlock>
                 <CardSubtitle className="mb-2">What{"'"}s your name?</CardSubtitle>
                 <CardInput
-                  inputValue={name}
-                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-                  inputPlaceholder="Enter your full name"
+                  value={name}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+                  placeholder="Enter your full name"
                 />
               </CardBlock>
 
               <CardBlock>
                 <CardSubtitle className="mb-2">Tell us about yourself!</CardSubtitle>
                 <textarea
-                  className="w-full p-3 border border-stone-200 rounded-xl"
+                  className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                   placeholder="Special notes, preferences, favorite color?"
                   rows={3}
                   value={bio}
@@ -255,28 +351,28 @@ export default function Settings() {
               <CardBlock>
                 <CardSubtitle className="mb-2">Email</CardSubtitle>
                 <CardInput
-                  inputValue={email}
-                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                  inputPlaceholder="We'll shoot you an email if we find a match"
+                  value={email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                  placeholder="We'll shoot you an email if we find a match"
                 />
               </CardBlock>
 
               <CardBlock>
                 <CardSubtitle className="mb-2">LinkedIn</CardSubtitle>
                 <CardInput
-                  inputValue={linkedIn}
-                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setLinkedIn(e.target.value)}
-                  inputPlaceholder="To help with credibility"
+                  value={linkedIn}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLinkedIn(e.target.value)}
+                  placeholder="To help with credibility"
                 />
               </CardBlock>
 
               <CardBlock>
                 <CardSubtitle className="mb-2">Availability (hours per week)</CardSubtitle>
                 <CardInput
-                  inputType="number"
-                  inputValue={availability}
-                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setAvailability(e.target.value)}
-                  inputPlaceholder="How many hours per week are you available?"
+                  type="number"
+                  value={availability}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAvailability(e.target.value)}
+                  placeholder="How many hours per week are you available?"
                 />
               </CardBlock>
 
@@ -287,22 +383,19 @@ export default function Settings() {
                   Do you want to help, or do you need help?
                 </CardSubtitle>
                 <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={!needHelp}
-                      onChange={() => setNeedHelp(false)}
-                    />
+                  <Checkbox
+                    onChange={() => setNeedHelp(false)}
+                    checked={!needHelp}
+                  >
                     I want to help
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={needHelp}
-                      onChange={() => setNeedHelp(true)}
-                    />
+                  </Checkbox>
+
+                  <Checkbox
+                    onChange={() => setNeedHelp(true)}
+                    checked={needHelp}
+                  >
                     I need help
-                  </label>
+                  </Checkbox>
                 </div>
               </CardBlock>
 
@@ -311,16 +404,16 @@ export default function Settings() {
                   <CardBlock>
                     <CardSubtitle className="mb-2">What{"'"}s your project called?</CardSubtitle>
                     <CardInput
-                      inputValue={projectName}
-                      inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
-                      inputPlaceholder="Automatic cereal feeder to save the rhinos"
+                      value={projectName}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
+                      placeholder="Automatic cereal feeder to save the rhinos"
                     />
                   </CardBlock>
 
                   <CardBlock>
                     <CardSubtitle className="mb-2">Tell us about your project!</CardSubtitle>
                     <textarea
-                      className="w-full p-3 border border-stone-200 rounded-xl"
+                      className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                       placeholder="What's it do? Why's it cool?"
                       rows={3}
                       value={projectDescription}
@@ -331,7 +424,7 @@ export default function Settings() {
                   <CardBlock>
                     <CardSubtitle className="mb-2">Anything specific you need help on?</CardSubtitle>
                     <textarea
-                      className="w-full p-3 border border-stone-200 rounded-xl"
+                      className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                       placeholder="I need to make sure the electric boogaloo can attract rhinos"
                       rows={3}
                       value={helpDescription}
@@ -342,9 +435,9 @@ export default function Settings() {
                   <CardBlock>
                     <CardSubtitle className="mb-2">Project link</CardSubtitle>
                     <CardInput
-                      inputValue={projectLink}
-                      inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectLink(e.target.value)}
-                      inputPlaceholder="Like github.com/crnicholson/StratoSoar-MK3"
+                      value={projectLink}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectLink(e.target.value)}
+                      placeholder="Like github.com/crnicholson/StratoSoar-MK3"
                     />
                   </CardBlock>
                 </>
@@ -353,10 +446,10 @@ export default function Settings() {
               <CardBlock>
                 <CardSubtitle className="mb-2">How many months do you {needHelp ? "anticipate the project taking" : "want to work for"}?</CardSubtitle>
                 <CardInput
-                  inputType="number"
-                  inputValue={timeFrame}
-                  inputOnChange={(e: React.ChangeEvent<HTMLInputElement>) => setTimeFrame(e.target.value)}
-                  inputPlaceholder="Put 0 for no answer/not neccesary"
+                  type="number"
+                  value={timeFrame}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTimeFrame(e.target.value)}
+                  placeholder="Put 0 for no answer/not neccesary"
                 />
               </CardBlock>
 
@@ -367,13 +460,14 @@ export default function Settings() {
                   <p className="mb-2">Current skills include: {skills.join(", ")}</p>
                 )}
 
-                <input
-                  type="text"
-                  placeholder="Search skills..."
-                  className="w-full p-3 border border-stone-200 rounded-xl mb-3"
-                  value={skillSearchTerm}
-                  onChange={(e) => setSkillSearchTerm(e.target.value)}
-                />
+                <CardBlock>
+                  <CardInput
+                    type="text"
+                    value={skillSearchTerm}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSkillSearchTerm(e.target.value)}
+                    placeholder="Search skills..."
+                  />
+                </CardBlock>
 
                 <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
                   {filteredSkills.length > 0 ? (
@@ -382,14 +476,12 @@ export default function Settings() {
                         key={skill}
                         className="flex justify-between items-center p-2 hover:bg-gray-200 rounded"
                       >
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={skills.includes(skill)}
-                            onChange={() => handleSelectSkill(skill)}
-                          />
-                          <span className="ml-2">{skill}</span>
-                        </label>
+                        <Checkbox
+                          onChange={() => handleSelectSkill(skill)}
+                          checked={skills.includes(skill)}
+                        >
+                          {skill}
+                        </Checkbox>
                       </div>
                     ))
                   ) : (
@@ -399,19 +491,20 @@ export default function Settings() {
               </CardBlock>
 
               <CardBlock>
-                <CardSubtitle className="mb-2">{!needHelp ? "Preffered project themes" : "Themes of your project"}</CardSubtitle>
+                <CardSubtitle className="mb-2">{!needHelp ? "Preferred project themes" : "Themes of your project"}</CardSubtitle>
 
                 {themes.length > 0 && (
                   <p className="mb-2">Current themes include: {themes.join(", ")}</p>
                 )}
 
-                <input
-                  type="text"
-                  placeholder="Search themes..."
-                  className="w-full p-3 border border-stone-200 rounded-xl mb-3"
-                  value={themeSearchTerm}
-                  onChange={(e) => setThemeSearchTerm(e.target.value)}
-                />
+                <CardBlock>
+                  <CardInput
+                    type="text"
+                    value={themeSearchTerm}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setThemeSearchTerm(e.target.value)}
+                    placeholder="Search themes..."
+                  />
+                </CardBlock>
 
                 <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
                   {filteredThemes.length > 0 ? (
@@ -420,14 +513,12 @@ export default function Settings() {
                         key={theme}
                         className="flex justify-between items-center p-2 hover:bg-gray-200 rounded"
                       >
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={themes.includes(theme)}
-                            onChange={() => handleSelectTheme(theme)}
-                          />
-                          <span className="ml-2">{theme}</span>
-                        </label>
+                        <Checkbox
+                          checked={themes.includes(theme)}
+                          onChange={() => handleSelectTheme(theme)}
+                        >
+                          {theme}
+                        </Checkbox>
                       </div>
                     ))
                   ) : (

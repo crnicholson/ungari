@@ -29,18 +29,19 @@ export default function ProfileCard({ match }) {
         projectName,
         projectDescription,
         projectLink,
-        timeFrame
+        timeFrame,
+        imageLink
     } = match;
 
     const firstName = name.split(" ")[0];
 
     return (
-        <Card className="bg-[--bg]">
+        <Card className="bg-[#FBFBF9]">
             <div className="p-3">
                 <div className="flex gap-6">
                     <div className="flex-shrink-0">
                         <Image
-                            src="/api/placeholder/96/96"
+                            src={imageLink}
                             alt={`${name}'s profile`}
                             className="rounded-full object-cover ring-2 ring-[--border]"
                             width={96}
@@ -50,15 +51,7 @@ export default function ProfileCard({ match }) {
 
                     <div className="flex-1">
                         <div className="flex items-start justify-between">
-                            <div>
-                                <h1 className="text-2xl font-[tiempos]">{name}</h1>
-                                <div className="flex items-center gap-2 mt-1 text-gray-600">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    <span className="blur-[3px]">{email}</span>
-                                </div>
-                            </div>
+                            <h1 className="text-2xl font-[family-name:var(--tiempos)]">{name}</h1>
                             <StyledLink
                                 href={linkedIn}
                                 className="text-lg"

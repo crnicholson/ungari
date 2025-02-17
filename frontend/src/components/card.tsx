@@ -8,10 +8,10 @@ interface CardProps {
     className?: string;
     size?: number;
     inputName?: string;
-    inputPlaceholder?: string;
-    inputOnChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    inputValue?: string;
-    inputType?: string;
+    placeholder?: string;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    value?: string;
+    type?: string;
     onClick?: () => void;
 }
 
@@ -46,7 +46,7 @@ export function CardTitle({ size = 1, children, className }: CardProps) {
     };
     const textSize = sizeClasses[size] || "text-lg";
 
-    return <h1 className={`mb-2 font-[tiempos] ${textSize} ${className}`}>{children}</h1>;
+    return <h1 className={`mb-2 font-[family-name:var(--tiempos)] ${textSize} ${className}`}>{children}</h1>;
 }
 
 export function CardContent({ children, className }: CardProps) {
@@ -61,15 +61,15 @@ export function CardContainer({ children, className }: CardProps) {
     );
 }
 
-export function CardInput({ inputPlaceholder, inputValue, inputOnChange, className, inputType }: CardProps) {
+export function CardInput({ placeholder, value, onChange, className, type }: CardProps) {
     return (
         <div className={`${className}`}>
             <input
-                type={inputType === "" ? "text" : inputType}
-                className="w-full p-3 border border-[--border] rounded-xl"
-                placeholder={inputPlaceholder}
-                value={inputValue}
-                onChange={inputOnChange}
+                type={type === "" ? "text" : type}
+                className="w-full p-3 border border-[--border] rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
             />
         </div>
     );
@@ -89,11 +89,14 @@ export function CardSubtitle({ children, className }: CardProps) {
 
 export function CardButton({ children, onClick, className }: CardProps) {
     return (
-        <button
-            className={`font-semibold w-full border border-[--border] shadow-lg bg-none rounded-xl p-3 hover:scale-105 ${className}`}
-            onClick={onClick}
-        >
-            {children}
-        </button>
+        <div className={`${className}`}>
+            <button
+                className={`w-full font-semibold whitespace-nowrap border border-[--border] shadow-lg bg-none rounded-xl p-3 hover:scale-105 ${className}`}
+                onClick={onClick}
+            >
+                {children}
+            </button>
+        </div>
     );
 }
+

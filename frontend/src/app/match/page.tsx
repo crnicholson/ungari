@@ -8,7 +8,7 @@ import GradientButton from "../../components/button";
 import { Card, CardContainer, CardTitle, CardContent, CardSubtitle, CardBlock, CardButton } from "../../components/card"
 import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
-import { set } from "@auth0/nextjs-auth0/dist/session";
+import ProfileCard from "../../components/profileCard";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -29,6 +29,8 @@ export default function Home() {
   const [timeFrame, setTimeFrame] = useState(0);
   const [polled, setPolled] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
+  const [noMatch, setNoMatch] = useState(false);
+  const [imageLink, setImageLink] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [errorPresent, setErrorPresent] = useState(false);
@@ -68,7 +70,9 @@ export default function Home() {
       } else {
         const data = await response.json();
 
-        if (data.match.noSettings) {
+        console.log(data.settingsPresent);
+
+        if (!data.settingsPresent) {
           router.push("/settings");
           setSettingsPresent(false);
         }
@@ -86,6 +90,8 @@ export default function Home() {
         setHelpDescription(data.match.helpDescription || "");
         setProjectLink(data.match.projectLink || "");
         setTimeFrame(data.match.timeFrame || "");
+        setNoMatch(data.noMatches || false);
+        setImageLink("");
       }
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);
@@ -105,7 +111,7 @@ export default function Home() {
     <>
       <Header>
         <HeaderLogo href="/">
-          Ungari
+          <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
         </HeaderLogo>
         <HeaderNav>
           <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
@@ -115,9 +121,9 @@ export default function Home() {
         </HeaderNav>
       </Header>
 
-      <Error className="mt-24 w-1/2">{errorMessage}</Error>
+      {polled && settingsPresent && (<Error className="mt-24 w-1/2">{errorMessage}</Error>)}
 
-      <CardContainer className={`${errorMessage == "" ? 'mt-24' : 'mt-5'}`}>
+      <CardContainer className={`${errorMessage && polled && settingsPresent == "" ? 'mt-24' : 'mt-5'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
           <CardContent>
@@ -129,76 +135,28 @@ export default function Home() {
               <p>Settings empty or missing fields. Redirecting...</p>
             ) : (
               <>
-                <CardBlock>
-                  <CardSubtitle>
-                    <StyledLink href={linkedIn}>{name.split(" ")[0]}</StyledLink>
-                  </CardSubtitle>
-
-                  <p className="italic text-sm">{name.split(" ")[0]} {needHelp ? "is looking for someone with skills in:" : "has skills in:"} {skills.join(", ")} </p>
-
-                  {!needHelp && (
-                    <p>{availability} hours per week</p>
-                  )}
-
-                </CardBlock>
-
-                <CardBlock>
-                  <CardSubtitle>Bio</CardSubtitle>
-                  <p>{bio}</p>
-                </CardBlock>
-
-                {needHelp ? (
-                  <>
-                    <CardTitle size={2}>Project info</CardTitle>
-                    <CardBlock>
-                      <CardSubtitle>
-                        <StyledLink href={projectLink}>{projectName}</StyledLink>
-                      </CardSubtitle>
-                    </CardBlock>
-                    <CardBlock>
-                      <CardSubtitle>Project description</CardSubtitle>
-                      <p>{projectDescription}</p>
-                    </CardBlock>
-                    <CardBlock>
-                      <CardSubtitle> Project themes</CardSubtitle>
-                      <p>{themes.join(", ")}</p>
-                    </CardBlock>
-                    <CardBlock>
-                      <CardSubtitle>Specific help information</CardSubtitle>
-                      <p>{helpDescription}</p>
-                    </CardBlock>
-                    <CardBlock>
-                      <CardSubtitle>Time frame</CardSubtitle>
-                      <p>
-                        {name.split(" ")[0]} estimates the project will take{" "}
-                        {timeFrame === 0
-                          ? "an unknown number of months"
-                          : `${timeFrame} ${timeFrame > 1 ? "months" : "month"}`}.
-                      </p>
-                    </CardBlock>
-                  </>
-                ) : (
-                  <>
-                    <CardBlock>
-                      <CardSubtitle>Availability</CardSubtitle>
-                      <p>{name.split(" ")[0]} is availble {availability} per week.</p>
-                    </CardBlock>
-                    <CardBlock>
-                      <CardSubtitle>Time frame</CardSubtitle>
-                      <p>
-                        {name.split(" ")[0]} wants to work on a projecct for{" "}
-                        {timeFrame === 0
-                          ? "an unknown number of months"
-                          : `${timeFrame} ${timeFrame > 1 ? "months" : "month"}`}.
-                      </p>
-                    </CardBlock>
-                    <CardBlock>
-                      <CardSubtitle>Themes</CardSubtitle>
-                      <p>{name.split(" ")[0]} wants to work on a project with themes: {themes.join(", ")}</p>
-                    </CardBlock>
-                  </>
+                {noMatch && (
+                  <CardBlock>
+                    <p>Psst... there are no exact matches, so have a random one!</p>
+                  </CardBlock>
                 )}
-
+                <CardBlock>
+                  <ProfileCard match={{
+                    name,
+                    email,
+                    linkedIn,
+                    bio,
+                    availability,
+                    skills,
+                    themes,
+                    needHelp,
+                    projectName,
+                    projectDescription,
+                    projectLink,
+                    timeFrame,
+                    imageLink
+                  }} />
+                </CardBlock>
                 <CardButton onClick={getMatch}>Match!</CardButton>
                 <div className="mt-3 flex flex-row gap-3">
                   <CardButton className="w-full" onClick={getMatch}>Save for later</CardButton>

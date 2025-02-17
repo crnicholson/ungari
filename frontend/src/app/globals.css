@@ -37,7 +37,7 @@
   animation: gradient-x 3s ease infinite;
 }
 
-@font-face {
+/* @font-face {
   font-family: tiempos-black;
   font-style: normal;
   font-weight: 200 700;
@@ -59,7 +59,7 @@
   font-weight: 200 700;
   font-display: swap;
   src: url("/TiemposHeadline-Regular.otf") format("opentype");
-}
+} */
 
 :root {
   --accent: #FFA362;

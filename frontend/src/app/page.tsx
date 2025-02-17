@@ -38,7 +38,7 @@ export default function Home() {
 
       <div className="w-full h-fit flex flex-col items-center mt-[120px]">
         <p className="text-[--light] mb-2">GET HELP, GIVE HELP</p>
-        <h1 className="w-1/2 text-5xl text-center font-[tiempos]">
+        <h1 className="w-1/2 text-5xl text-center font-[family-name:var(--tiempos)]">
           <span className="text-[--accent] text-4xl font-bold">⁂</span> Connecting <span className="underline decoration-[--accent]">problems</span> with <span className="underline decoration-[--accent]">thinkers</span>
         </h1>
         <p className="text-xl mt-6">The best way to make real impact.</p>
