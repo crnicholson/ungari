@@ -55,7 +55,7 @@ export function CardContent({ children, className }: CardProps) {
 
 export function CardContainer({ children, className }: CardProps) {
     return (
-        <div className={`flex flex-col sm:flex-row justify-center px-5 space-y-3 sm:space-y-0 sm:space-x-3 w-full sm:w-1/2 ${className}`}>
+        <div className={`flex flex-col sm:flex-row justify-center px-5 gap-5 w-full sm:w-1/2 ${className}`}>
             {children}
         </div>
     );
@@ -63,7 +63,7 @@ export function CardContainer({ children, className }: CardProps) {
 
 export function CardRow({ children, className }: CardProps) {
     return (
-        <div className={`flex flex-row justify-center space-x-3 w-full ${className}`}>
+        <div className={`flex flex-row justify-center gap-3 w-full ${className}`}>
             {children}
         </div>
     );

@@ -138,12 +138,18 @@ export default function Settings() {
               setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name);
               setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name);
               setImageChange(true);
-            } else if (data.imageChange) {
+            }
+            if (data.imageChange && isValidURL(data.imageLink)) {
               setImageLink(data.imageLink || "");
               setTempImageLink(data.imageLink || "");
-            } else {
+            } else if (isValidURL(user.picture)) {
               setImageLink(user.picture || "");
               setTempImageLink(user.picture || "");
+              setImageChange(false);
+            } else {
+              setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name.replace(" ", "+"));
+              setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name.replace(" ", "+"));
+              setImageChange(true);
             }
           }
         } catch (error) {
@@ -155,7 +161,7 @@ export default function Settings() {
 
       fetchSettings();
     }
-  }, [isLoading, user]);
+  }, [isLoading, user, imageLink]);
 
   const saveSettings = async () => {
     const missingFields = [];
@@ -272,35 +278,37 @@ export default function Settings() {
             <p>We{"'"}re down right now, try reloading!</p>
           ) : (
             <>
-              <CardBlock>
-                <button onClick={() => setImageDialog(!imageDialog)}>
-                  {imageLink !== "" ? (
-                    <Image
-                      src={imageLink}
-                      alt={`${name}'s profile`}
-                      className="rounded-full object-cover ring-2 ring-[--border]"
-                      width={96}
-                      height={96}
-                    />
-                  ) : (
-                    <div
-                      className="rounded-full flex items-center justify-center ring-2 ring-[--border]"
-                      style={{
-                        width: 96,
-                        height: 96,
-                        backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-                      }}
-                    >
-                      <span className="text-white text-3xl">{name.charAt(0)}</span>
-                    </div>
-                  )}
-                </button>
-              </CardBlock>
+              {(name !== "" || !imageChange) && (
+                <CardBlock>
+                  <button onClick={() => setImageDialog(!imageDialog)}>
+                    {imageLink !== "" ? (
+                      <Image
+                        src={imageLink}
+                        alt={`${name}'s profile`}
+                        className="rounded-full object-cover ring-2 ring-[--border]"
+                        width={96}
+                        height={96}
+                      />
+                    ) : (
+                      <div
+                        className="rounded-full flex items-center justify-center ring-2 ring-[--border]"
+                        style={{
+                          width: 96,
+                          height: 96,
+                          backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+                        }}
+                      >
+                        <span className="text-white text-3xl">{name.charAt(0)}</span>
+                      </div>
+                    )}
+                  </button>
+                </CardBlock>
+              )}
 
               {imageDialog && (
                 <CardBlock>
                   <CardSubtitle className="mb-2">Enter a new image link</CardSubtitle>
-                  <CardRow>
+                  <CardRow className="flex-col sm:flex-row">
                     <CardInput
                       value={tempImageLink}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTempImageLink(e.target.value)}

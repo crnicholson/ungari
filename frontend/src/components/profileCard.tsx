@@ -136,7 +136,7 @@ function MobileProfileCard({ match }) {
                     <Image
                         src={imageLink}
                         alt={`${name}'s profile`}
-                        className="rounded-full object-cover ring-4 ring-[--bg]"
+                        className="rounded-full object-cover ring-4 ring-[--card-bg]"
                         width={96}
                         height={96}
                     />

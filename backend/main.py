@@ -172,7 +172,7 @@ def get_match():
 
             if check_fields(need_help, random_user, True):
                 print("Check again")
-                return check_length(message, array, need_help, _id)
+                return check_length(message, array, not need_help, _id)
 
             return {
                 "name": random_user.get("name", ""),
@@ -221,6 +221,7 @@ def get_match():
 
     if demo:
         print("\nDemo mode enabled.\n")
+        print(f"Received: {received}")
 
         all_users = users.find({"needHelp": {"$ne": received.get("needHelp")}})
         user_skills = received.get("skills")

@@ -20,7 +20,7 @@ export default function Home() {
   }, [isLoading, user, router]);
 
   return (
-    <div className="min-h-screen">
+    <>
       <Header>
         <HeaderLogo href="/" className="">
           <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
@@ -36,17 +36,17 @@ export default function Home() {
 
       {/* Logo ideas: ⋒ ⊛ ∴ ⋈ ⁂ */}
 
-      <div className="w-full h-fit flex flex-col items-center mt-[120px]">
-        <p className="text-[--light] mb-2">GET HELP, GIVE HELP</p>
-        <h1 className="w-1/2 text-5xl text-center font-[family-name:var(--tiempos)]">
+      <div className="w-full h-fit flex flex-col items-center mt-[120px] px-4 sm:px-0">
+        <p className="text-[--light] mb-2 text-center">GET HELP, GIVE HELP</p>
+        <h1 className="w-full sm:w-1/2 text-3xl sm:text-5xl text-center font-[family-name:var(--tiempos)]">
           <span className="text-[--accent] text-4xl font-bold">⁂</span> Connecting <span className="underline decoration-[--accent]">problems</span> with <span className="underline decoration-[--accent]">thinkers</span>
         </h1>
-        <p className="text-xl mt-6">The best way to make real impact.</p>
+        <p className="text-lg sm:text-xl mt-6 text-center">The best way to make real impact.</p>
         <div className="mt-10">
           {user ? (
-            <Button className="m-3 bg-none text-xl text-[--accent] border-2 border-[--accent]" href="/match">Find new matches</Button>
+            <Button className="m-3 bg-none text-lg sm:text-xl text-[--accent] border-2 border-[--accent]" href="/match">Find new matches</Button>
           ) : (
-            <Button className="m-3 bg-none text-xl text-[--accent] border-2 border-[--accent]" href="/api/auth/login">Get started →</Button>
+            <Button className="m-3 bg-none text-lg sm:text-xl text-[--accent] border-2 border-[--accent]" href="/api/auth/login">Get started →</Button>
           )}
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function Home() {
       <Demo />
 
       <div className="w-full flex justify-center items-center mt-20">
-        <CardContainer>
+        <CardContainer className="flex-col md:flex-row w-full sm:w-5/6 md:w-3/4 xl:w-1/2">
           <Card className="w-1/3">
             <CardTitle className="underline decoration-[--accent]">
               Step 1
@@ -82,11 +82,11 @@ export default function Home() {
         </CardContainer>
       </div>
 
-      <div className="w-full flex flex-col justify-center items-center mt-20">
+      <div className="hidden lg:flex w-full flex-col justify-center items-center mt-20">
         <Heading size={3} className="w-1/2">
           Popular interests
         </Heading>
-        <CardContainer className="w-fit overflow-x-clip">
+        <CardContainer className="sm:w-full overflow-x-clip">
           <Card>
             <CardContent>
               <span className="material-symbols-outlined">bolt</span>
@@ -131,6 +131,6 @@ export default function Home() {
           </Card>
         </CardContainer>
       </div>
-    </div >
+    </>
   );
 }

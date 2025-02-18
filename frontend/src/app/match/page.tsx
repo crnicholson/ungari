@@ -32,6 +32,7 @@ export default function Home() {
   const [noMatch, setNoMatch] = useState(false);
   const [imageLink, setImageLink] = useState("");
 
+  const [redirecting, setRedirecting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   // const [errorPresent, setErrorPresent] = useState(false);
 
@@ -85,6 +86,7 @@ export default function Home() {
           console.log("Redirecting to settings...");
           router.push("/settings");
           setSettingsPresent(false);
+          setRedirecting(true);
         }
 
         setName(data.match.name || "");
@@ -103,7 +105,7 @@ export default function Home() {
         setNoMatch(data.noMatches || false);
 
         if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
-          setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name);
+          setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
         } else {
           setImageLink(data.match.imageLink);
         }
@@ -136,9 +138,9 @@ export default function Home() {
         </HeaderNav>
       </Header>
 
-      {polled && (<Error className="mt-24 sm:w-1/2 w-full">{errorMessage}</Error>)}
+      {polled && !redirecting && (<Error className="mt-24 sm:w-1/2 w-full">{errorMessage}</Error>)}
 
-      <CardContainer className={`${errorMessage && polled ? 'mt-5' : 'mt-24'}`}>
+      <CardContainer className={`${errorMessage && polled && !redirecting ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
           <CardContent>
@@ -146,7 +148,7 @@ export default function Home() {
               <p>Loading...</p>
             ) : errorMessage !== "" ? (
               <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
-            ) : !settingsPresent ? (
+            ) : (!settingsPresent || redirecting) ? (
               <p>Settings empty or missing fields. Redirecting...</p>
             ) : (
               <>

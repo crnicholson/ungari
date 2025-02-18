@@ -3,12 +3,15 @@ import { useState, useCallback } from "react"
 import { useUser } from "@auth0/nextjs-auth0/client";
 import StyledLink from "./styledLink";
 import ProfileCard from "./profileCard";
-import { Card } from "./card";
+import { Card, CardBlock, CardContainer } from "./card";
 
 const SERVER = "http://127.0.0.1:38321"
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
 
 export default function Demo() {
+    const [demoNeedHelp, setDemoNeedHelp] = useState(false);
+    const [demoSkills, setDemoSkills] = useState(["Python"]);
+    const [demoThemes, setDemoThemes,] = useState(["education"]);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [linkedIn, setLinkedIn] = useState("");
@@ -26,7 +29,7 @@ export default function Demo() {
 
     const [errorMessage, setErrorMessage] = useState("");
     const [errorPresent, setErrorPresent] = useState(false);
-    const [noMatches, setNoMatches] = useState(false);
+    const [noMatch, setNoMatch] = useState(false);
     const [polled, setPolled] = useState(false);
 
     const { user, isLoading } = useUser();
@@ -41,18 +44,18 @@ export default function Demo() {
     }
 
     const handleSelectSkill = (skill) => {
-        if (skills.includes(skill)) {
-            setSkills(skills.filter((t) => t !== skill));
+        if (demoSkills.includes(skill)) {
+            setDemoSkills(demoSkills.filter((t) => t !== skill));
         } else {
-            setSkills([...skills, skill]);
+            setDemoSkills([...demoSkills, skill]);
         }
     };
 
     const handleSelectTheme = (theme) => {
-        if (themes.includes(theme)) {
-            setThemes(themes.filter((t) => t !== theme));
+        if (demoThemes.includes(theme)) {
+            setDemoThemes(demoThemes.filter((t) => t !== theme));
         } else {
-            setThemes([...themes, theme]);
+            setDemoThemes([...demoThemes, theme]);
         }
     };
 
@@ -64,13 +67,13 @@ export default function Demo() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ needHelp: needHelp, skills: skills, themes: themes, demo: true }),
+                body: JSON.stringify({ needHelp: demoNeedHelp, skills: demoSkills, themes: demoThemes, demo: true }),
             });
             if (!response.ok) {
                 const error = await response.json();
                 setErrorMessage("Server-side error: " + error.error);
                 setErrorPresent(true);
-                setNoMatches(error.noMatches);
+                setNoMatch(error.noMatches);
             } else {
                 const data = await response.json();
                 setName(data.match.name || "");
@@ -86,14 +89,13 @@ export default function Demo() {
                 setHelpDescription(data.match.helpDescription || "");
                 setProjectLink(data.match.projectLink || "");
                 setTimeFrame(data.match.timeFrame || "");
+                setNoMatch(data.noMatches || false);
 
                 if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
-                    setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name);
+                    setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
                 } else {
                     setImageLink(data.match.imageLink);
                 }
-
-                setNoMatches(false);
 
                 console.log("Match: ", data.match);
             }
@@ -102,50 +104,48 @@ export default function Demo() {
             setErrorMessage(error);
             setErrorPresent(true);
         }
-    }, [needHelp, skills, themes]);
+    }, [demoNeedHelp, demoSkills, demoThemes]);
 
     return (
-        <div className="w-full h-fit flex justify-center items-center mt-20">
+        <CardContainer className="mt-20 items-center md:w-full">
             <Card>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col md:flex-row items-center gap-3">
                     <select
                         defaultValue="false"
-                        className="w-fit border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent] bg-[--bg]"
-                        onChange={(e) => setNeedHelp(e.target.value === "true")}
+                        className="w-full md:w-fit border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent] bg-[--bg]"
+                        onChange={(e) => setDemoNeedHelp(e.target.value === "true")}
                     >
                         <option value="false">I want to help</option>
                         <option value="true">I need help</option>
                     </select>
 
-                    <p>with</p>
+                    <p className="hidden md:block">with</p>
 
                     <select
                         defaultValue="Python"
-                        className="w-fit border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent] bg-[--bg]"
-                        onChange={(e) => handleSelectSkill(e.target.value)}
+                        className="w-full md:w-fit border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent] bg-[--bg]"
+                        onChange={(e) => setDemoSkills([e.target.value])}
                     >
                         <option value="Python">Python programming</option>
-                        {/* <option value="electrical engineering">electrical engineering</option>
-                        <option value="Fusion 360">Autodesk Fusion</option> */}
+                        <option value="Fusion 360">Autodesk Fusion</option>
                         <option value="none" disabled>...and many more!</option>
                     </select>
 
-                    <p>on</p>
+                    <p className="hidden md:block">on</p>
 
                     <select
                         defaultValue="education"
-                        className="w-fit border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent] bg-[--bg]"
-                        onChange={(e) => handleSelectTheme(e.target.value)}
+                        className="w-full md:w-fit border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent] bg-[--bg]"
+                        onChange={(e) => setDemoThemes([e.target.value])}
                     >
                         <option value="education">an education project</option>
-                        {/* <option value="passion project">a passion project</option>
-                        <option value="healthcare">a medical project</option> */}
+                        <option value="healthcare">a medical project</option>
                         <option value="none" disabled>...and many more!</option>
                     </select>
 
                     <Button
                         onClick={getMatch}
-                        className="px-5 py-2 m-0 text-lg text-[--accent] border-[--accent] border-2"
+                        className="w-full md:w-auto px-5 py-2 m-0 text-lg text-[--accent] border-[--accent] border-2"
                         type="button"
                     >
                         Search
@@ -154,35 +154,37 @@ export default function Demo() {
 
                 {polled && (
                     <div className="mt-5 w-full">
-                        {noMatches ? (
-                            <p className="text-center">Oh snap. No matches can be found. Please broaden your horizons.</p>
-                        ) : (
-                            <div className="flex flex-col gap-5">
-                                <ProfileCard match={{
-                                    name,
-                                    email,
-                                    linkedIn,
-                                    bio,
-                                    availability,
-                                    skills,
-                                    themes,
-                                    needHelp,
-                                    projectName,
-                                    projectDescription,
-                                    projectLink,
-                                    timeFrame
-                                }} />
-                                <Button
-                                    className="px-5 py-2 text-lg font-normal text-center"
-                                    href="/api/auth/login"
-                                >
-                                    Find more
-                                </Button>
-                            </div>
+                        {noMatch && (
+                            <CardBlock>
+                                <p>Psst... there are no exact matches, so have a random one!</p>
+                            </CardBlock>
                         )}
+                        <div className="flex flex-col gap-5">
+                            <ProfileCard match={{
+                                name,
+                                email,
+                                linkedIn,
+                                bio,
+                                availability,
+                                skills,
+                                themes,
+                                needHelp,
+                                projectName,
+                                projectDescription,
+                                projectLink,
+                                timeFrame,
+                                imageLink
+                            }} />
+                            <Button
+                                className="px-5 py-2 text-lg font-normal text-center"
+                                href="/api/auth/login"
+                            >
+                                Find more
+                            </Button>
+                        </div>
                     </div>
                 )}
             </Card>
-        </div>
+        </CardContainer>
     )
 }
