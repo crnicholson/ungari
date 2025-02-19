@@ -9,6 +9,7 @@ import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardRow, CardB
 import Heading from "../../components/heading";
 import StyledLink from "../../components/styledLink";
 import Error from "../../components/error";
+import Warning from "../../components/warning";
 import { set } from "@auth0/nextjs-auth0/dist/session";
 import Image from 'next/image';
 import Checkbox from "../../components/checkbox";
@@ -35,12 +36,14 @@ export default function Settings() {
   const [imageChange, setImageChange] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [errorPresent, setErrorPresent] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
+  // const [errorPresent, setErrorPresent] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
   const [skillSearchTerm, setSkillSearchTerm] = useState("");
   const [themeSearchTerm, setThemeSearchTerm] = useState("");
   const [imageDialog, setImageDialog] = useState(false);
   const [imageError, setImageError] = useState("");
+  const [redirectMessage, setRedirectMessage] = useState("");
 
   const { user, isLoading } = useUser();
 
@@ -50,15 +53,15 @@ export default function Settings() {
     }
   }, [isLoading, user]);
 
-  useEffect(() => {
-    if (errorMessage !== "") {
-      const timer = setTimeout(() => {
-        setErrorMessage("");
-      }, 5000);
+  // useEffect(() => {
+  //   if (errorMessage !== "") {
+  //     const timer = setTimeout(() => {
+  //       setErrorMessage("");
+  //     }, 5000);
 
-      return () => clearTimeout(timer);
-    }
-  }, [errorMessage]);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [errorMessage]);
 
   function isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -117,7 +120,7 @@ export default function Settings() {
           if (!response.ok) {
             const error = await response.json();
             setErrorMessage("Server-side error: " + error.error);
-            setErrorPresent(true);
+            // setErrorPresent(true);
           } else {
             const data = await response.json();
             setName(data.name || "");
@@ -151,11 +154,15 @@ export default function Settings() {
               setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name.replace(" ", "+"));
               setImageChange(true);
             }
+
+            if (data.name === "" || data.email === "" || data.linkedIn === "" || data.bio === "" || data.availability === "" || data.skills.length === 0 || data.themes.length === 0 || data.timeFrame === "" || (data.needHelp && (data.projectName === "" || data.projectDescription === "" || data.helpDescription === "" || data.projectLink === ""))) {
+              setWarningMessage("Psst... you may have been redirected here because one or more of your settings were missing. Please fill them out below!");
+            }
           }
         } catch (error) {
           console.error("Failed to fetch settings:", error);
           setErrorMessage("Client-side error: " + error);
-          setErrorPresent(true);
+          // setErrorPresent(true);
         }
       };
 
@@ -238,14 +245,14 @@ export default function Settings() {
       if (!response.ok) {
         const error = await response.json();
         setErrorMessage("Server-side error: " + error.error);
-        setErrorPresent(true);
+        // setErrorPresent(true);
       }
 
       setSubmitMessage("Settings saved successfully!");
     } catch (error) {
       console.error("Failed to set user information: ", error);
       setErrorMessage("Client-side error: " + error);
-      setErrorPresent(true);
+      // setErrorPresent(true);
     }
   };
 
@@ -260,9 +267,15 @@ export default function Settings() {
         </HeaderNav>
       </Header>
 
-      <Error className="mt-24 w-1/2">{errorMessage}</Error>
+      {errorMessage !== "" && (
+        <Error className="sm:w-1/2 w-full mt-24">{errorMessage}</Error>
+      )}
 
-      <CardContainer className={`${errorMessage == "" ? 'mt-24' : 'mt-5'}`}>
+      {warningMessage !== "" && (
+        <Warning className={`sm:w-1/2 w-full ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
+      )}
+
+      <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Basic info</CardTitle>
           <StyledLink
@@ -274,7 +287,7 @@ export default function Settings() {
 
           {isLoading && !user ? (
             <p>Loading...</p>
-          ) : errorPresent ? (
+          ) : errorMessage !== "" ? (
             <p>We{"'"}re down right now, try reloading!</p>
           ) : (
             <>
@@ -459,7 +472,7 @@ export default function Settings() {
                   type="number"
                   value={timeFrame}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTimeFrame(e.target.value)}
-                  placeholder="Put 0 for no answer/not neccesary"
+                  placeholder="Put 0 for no answer/not necessary"
                 />
               </CardBlock>
 

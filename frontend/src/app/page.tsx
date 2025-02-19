@@ -8,6 +8,8 @@ import { Header, HeaderNav, HeaderLogo } from "../components/header";
 import Demo from "../components/demo";
 import Button from "../components/button";
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
   const { user, error, isLoading } = useUser();
@@ -53,7 +55,13 @@ export default function Home() {
 
       <Demo />
 
-      <div className="w-full flex justify-center items-center mt-20">
+      <Link href={`${user ? "/match" : "/api/auth/login"}`}>
+        <Image src="/collaboration.png" alt="Hero" width={700} height={250} className="rounded-xl mt-20 shadow-lg hover:scale-[101%]" />
+      </Link>
+
+      <Button className="mx-3 -mt-20 bg-[--card-bg] text-lg sm:text-xl text-[--accent] border-2 border-[--accent]" href={`${user ? "/match" : "/api/auth/login"}`}>{user ? "Log in" : "Are you a resource-constrained scientist? Budding engineer?"}</Button>
+
+      <div className="w-full flex justify-center items-center mt-28">
         <CardContainer className="flex-col md:flex-row w-full sm:w-5/6 md:w-3/4 xl:w-1/2">
           <Card className="w-1/3">
             <CardTitle className="underline decoration-[--accent]">

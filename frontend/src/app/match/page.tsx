@@ -8,7 +8,9 @@ import GradientButton from "../../components/button";
 import { Card, CardContainer, CardTitle, CardContent, CardSubtitle, CardBlock, CardButton } from "../../components/card"
 import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
+import Warning from "../../components/warning";
 import ProfileCard from "../../components/profileCard";
+import { match } from "assert";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -31,8 +33,10 @@ export default function Home() {
   const [settingsPresent, setSettingsPresent] = useState(true);
   const [noMatch, setNoMatch] = useState(false);
   const [imageLink, setImageLink] = useState("");
+  const [matchID, setMatchID] = useState("");
 
   const [redirecting, setRedirecting] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   // const [errorPresent, setErrorPresent] = useState(false);
 
@@ -63,6 +67,28 @@ export default function Home() {
   //     return () => clearTimeout(timer);
   //   }
   // }, [errorMessage]);
+
+  const saveForLater = useCallback(async () => {
+    try {
+      const response = await fetch(SERVER + "/api/save-match", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: user.sub, matchID: matchID }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        setErrorMessage("Server-side error: " + error.error);
+        // setErrorPresent(true);
+      } 
+    } catch (error) {
+      console.error("Error: Failed to fetch settings: ", error);
+      setErrorMessage("Client-side error: " + error);
+      // setErrorPresent(true);
+    }
+    setPolled(true);
+  }, [user, matchID]);
 
   const getMatch = useCallback(async () => {
     try {
@@ -138,9 +164,15 @@ export default function Home() {
         </HeaderNav>
       </Header>
 
-      {polled && !redirecting && (<Error className="mt-24 sm:w-1/2 w-full">{errorMessage}</Error>)}
+      {polled && !redirecting && errorMessage !== "" && (
+        <Error className="mt-24">{errorMessage}</Error>
+      )}
 
-      <CardContainer className={`${errorMessage && polled && !redirecting ? 'mt-5' : 'mt-24'}`}>
+      {warningMessage !== "" && (
+        <Warning className={`${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
+      )}
+
+      <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") && polled && !redirecting ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
           <CardContent>

@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from pymongo import MongoClient
+from flask import Flask, jsonify, request # type: ignore
+from flask_cors import CORS # type: ignore
+from pymongo import MongoClient # type: ignore
 import json
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 
 load_dotenv(dotenv_path=f"{os.getcwd()}/.env.local")
 
@@ -190,6 +190,7 @@ def get_match():
                 "projectLink": random_user.get("projectLink", ""),
                 "imageLink": random_user.get("imageLink", ""),
                 "exactMatch": False,
+                "matchID": str(random_user.get("_id", "")),
             }
         return None
 
@@ -266,7 +267,7 @@ def get_match():
                         "commonSkills": list(common_skills),
                         "score": counter,
                         "needHelp": potential_match.get("needHelp", False),
-                        "_id": str(potential_match["_id"]),
+                        "matchID": str(potential_match.get("_id", "")),
                         "projectName": potential_match.get("projectName", ""),
                         "projectDescription": potential_match.get(
                             "projectDescription", ""
@@ -274,7 +275,6 @@ def get_match():
                         "helpDescription": potential_match.get("helpDescription", ""),
                         "projectLink": potential_match.get("projectLink", ""),
                         "imageLink": potential_match.get("imageLink", ""),
-                        "exactMatch": True,
                     }
                 )
 
@@ -314,44 +314,6 @@ def get_match():
                         print(f"{matches[0]['name']} is already saved.")
                         matches.pop(0)
                         check_saved()
-
-        def check_past():
-            if user.get("pastMatches") is not None:
-                for past in user.get("pastMatches"):
-                    random_match = check_length(
-                        "No new matches, all have been matched in the past.",
-                        matches,
-                        user.get("needHelp"),
-                        user.get("_id"),
-                    )
-                    if random_match:
-                        return (
-                            jsonify(
-                                {
-                                    "match": random_match,
-                                    "noMatches": True,
-                                    "settingsPresent": True,
-                                }
-                            ),
-                            200,
-                        )
-
-                    print(f"Past: {past}")
-                    print(f"Match: {matches[0]}")
-                    if matches[0]["_id"] == past:
-                        print(f"{matches[0]['name']} is a past match.")
-                        matches.pop(0)
-                        random_match = check_length(
-                            "No new matches, all have been matched in the past.",
-                            matches,
-                            user.get("needHelp"),
-                            user.get("_id"),
-                        )
-                        if random_match:
-                            return (
-                                jsonify({"match": random_match, "noMatches": True}),
-                                200,
-                            )
 
         missing_fields = check_fields(user.get("needHelp"), user)
 
@@ -400,7 +362,7 @@ def get_match():
                         "commonSkills": list(common_skills),
                         "score": counter,
                         "needHelp": potential_match.get("needHelp", False),
-                        "_id": str(potential_match["_id"]),
+                        "matchID": str(potential_match.get("_id", "")),
                         "projectName": potential_match.get("projectName", ""),
                         "projectDescription": potential_match.get(
                             "projectDescription", ""
@@ -422,16 +384,32 @@ def get_match():
             return jsonify({"match": random_match, "noMatches": True}), 200
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
-
-        # result = check_past()
-        # if result:
-        #     return jsonify({result}), 200
+        
+        if user.get("pastMatches") is not None:
+            for past in user.get("pastMatches"):
+                matches = [match for match in matches if match.get("_id", "") != past]
+                random_match = check_length(
+                    "No new matches, all have been matched in the past.",
+                    matches,
+                    user.get("needHelp"),
+                    user.get("_id"),
+                )
+                if random_match:
+                    return (
+                        jsonify(
+                            {
+                                "match": random_match,
+                                "noNewMatches": True,
+                            }
+                        ),
+                        200,
+                    )
 
         # check_saved()
 
-        # user.setdefault("pastMatches", [])
-        # user["pastMatches"].append(matches[0]["_id"])
-        # users.update_one({"_id": user["_id"]}, {"$set": {"pastMatches": user["pastMatches"]}})
+        past_matches = user.get("pastMatches", [])
+        past_matches.append(matches[0].get("_id", ""))
+        users.update_one({"_id": user.get("_id")}, {"$set": {"pastMatches": past_matches}})
 
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
@@ -441,14 +419,21 @@ def get_match():
 @app.route("/api/save-match", methods=["POST"])
 def save_match():
     received = request.get_json()
+    
+    user = users.find_one({"id": received.get("id", "")})
+
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
 
     update_operation = {
         "$push": {
-            "savedMatches": received["matchID"],
+            "savedMatches": received.get("matchID", ""),
         }
     }
 
-    users.update_one({"id": received["id"]}, update_operation)
+    users.update_one({"id": received.get("id")}, update_operation)
+    
+    return jsonify({"": ""}), 200
 
 
 @app.route("/api/delete-saved-match", methods=["POST"])
