@@ -37,7 +37,7 @@ export default function Home() {
                             router.push("/match");
                         }
                         if (data.someSettings ?? false) {
-                            router.push(`/settings?someSettings=true&redirectMessage=${encodeURIComponent(data.redirectMessage)}&missingFields=${encodeURIComponent(data.missingFields)}`);
+                            router.push(`/settings?redirectMessage=${encodeURIComponent(data.redirectMessage)}`);
                         }
                         if (data.noSettings ?? false) {
                             router.push("/onboarding");

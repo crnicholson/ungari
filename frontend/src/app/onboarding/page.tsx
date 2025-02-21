@@ -100,7 +100,7 @@ export default function Onboarding() {
 
                         if (data.someSettings ?? false) {
                             const message = encodeURIComponent("You were redirected here because some fields are not filled out or a new field was added.");
-                            router.push(`/settings?redirectMessage=${message}&missingFields=${encodeURIComponent(data.missingFields)}`);
+                            router.push(`/settings?redirectMessage=${message}`);
                         }
                         if (data.allSettings ?? false) {
                             const message = encodeURIComponent("You were redirected here because you already have done the onboarding process.");

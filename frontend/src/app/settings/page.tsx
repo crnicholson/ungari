@@ -8,8 +8,8 @@ import Error from "../../components/error";
 import Warning from "../../components/warning";
 import Checkbox from "../../components/checkbox";
 
-import { useState, useEffect } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
@@ -75,12 +75,14 @@ export default function Settings() {
 
   const { user, isLoading } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      redirect("/api/auth/login");
+    const message = searchParams.get('redirectMessage');
+    if (message) {
+      setWarningMessage(message);
     }
-  }, [isLoading, user]);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -170,6 +172,13 @@ export default function Settings() {
     }
   }
 
+  const validateURL = useCallback((url) => {
+    if (!url.startsWith("https://")) {
+      url = "https://" + url;
+    }
+    return isValidURL(url) ? url : "";
+  }, []);
+
   function formatList(items: string[], type: string): string {
     if (items.length === 0) return "";
     if (items.length === 1) return `Current ${type} is: ${items[0]}`;
@@ -179,6 +188,13 @@ export default function Settings() {
     const otherItems = items.slice(0, -1);
     return `Current ${type}s are: ${otherItems.join(", ")}, and ${lastItem}`;
   }
+
+  useEffect(() => {
+    if (country) {
+      setCities(countries[country]);
+      setCity("");
+    }
+  }, [country]);
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -221,6 +237,160 @@ export default function Settings() {
 
             setSkills(data.skills || []);
             setThemes(data.themes || []);
+
+            let missingFields = [];
+            let hasErrors = false;
+
+            if (!data.imageLink) {
+              missingFields.push("profile picture");
+              setImageMessage("Profile picture is required");
+              hasErrors = true;
+            } else {
+              setImageMessage("");
+            }
+
+            if (!data.name) {
+              missingFields.push("name");
+              setNameMessage("Name is required");
+              hasErrors = true;
+            } else {
+              setNameMessage("");
+            }
+            if (!data.email) {
+              missingFields.push("email");
+              setEmailMessage("Email is required");
+              hasErrors = true;
+            } else if (!isValidEmail(data.email)) {
+              setEmailMessage("Invalid email");
+              hasErrors = true;
+            } else {
+              setEmailMessage("");
+            }
+            if (!data.linkedIn) {
+              missingFields.push("LinkedIn");
+              setLinkedInMessage("LinkedIn is required");
+              hasErrors = true;
+            } else {
+              if (!validateURL(data.linkedIn)) {
+                setLinkedInMessage("Invalid LinkedIn URL");
+                hasErrors = true;
+              } else {
+                setLinkedInMessage("");
+              }
+            }
+            if (data.x) {
+              if (!validateURL(data.x)) {
+                setXMessage("Invalid X URL");
+                hasErrors = true;
+              } else {
+                setXMessage("");
+              }
+            }
+            if (data.personalWebsite) {
+              if (!validateURL(data.personalWebsite)) {
+                setPersonalWebsiteMessage("Invalid personal website URL");
+                hasErrors = true;
+              } else {
+                setPersonalWebsiteMessage("");
+              }
+            }
+            if (data.gitHub) {
+              if (!validateURL(data.gitHub)) {
+                setGitHubMessage("Invalid GitHub URL");
+                hasErrors = true;
+              } else {
+                setGitHubMessage("");
+              }
+            }
+
+            if (!data.bio) {
+              missingFields.push("bio");
+              setBioMessage("Bio is required");
+              hasErrors = true;
+            } else if (data.bio.length < 10) {
+              setBioMessage(`A ${data.bio.length} character bio?`);
+              hasErrors = true;
+            } else {
+              setBioMessage("");
+            }
+            if (!data.country) {
+              missingFields.push("country");
+              setCountryMessage("Country is required");
+              hasErrors = true;
+            } else {
+              setCountryMessage("");
+            }
+            if (data.country && data.country !== "Prefer not to say" && !data.city) {
+              missingFields.push("city");
+              setCityMessage("City is required");
+              hasErrors = true;
+            } else {
+              setCityMessage("");
+            }
+            if (data.availability === 0) {
+              missingFields.push("availability");
+              setAvailabilityMessage("You're available for 0 hours?");
+              hasErrors = true;
+            } else {
+              setAvailabilityMessage("");
+            }
+
+            if (data.needHelp) {
+              if (!data.projectName) {
+                missingFields.push("project name");
+                setProjectNameMessage("Project name is required");
+                hasErrors = true;
+              } else {
+                setProjectNameMessage("");
+              }
+              if (!data.projectDescription) {
+                missingFields.push("project description");
+                setProjectDescriptionMessage("Project description is required");
+                hasErrors = true;
+              } else {
+                setProjectDescriptionMessage("");
+              }
+              if (!data.helpDescription) {
+                missingFields.push("help description");
+                setHelpDescriptionMessage("Help description is required");
+                hasErrors = true;
+              } else {
+                setHelpDescriptionMessage("");
+              }
+              if (!data.projectLink) {
+                missingFields.push("project link");
+                setProjectLinkMessage("Project link is required");
+                hasErrors = true;
+              } else {
+                if (!validateURL(data.projectLink)) {
+                  setProjectLinkMessage("URL doesn't seem to be working");
+                  hasErrors = true;
+                } else {
+                  setProjectLinkMessage("");
+                }
+              }
+            }
+
+            if (data.skills.length === 0) {
+              missingFields.push("skills");
+              setSkillsMessage("Skills are required");
+              hasErrors = true;
+            } else if (data.skills.length < 3) {
+              setSkillsMessage("You need at least three skills selected");
+              hasErrors = true;
+            } else {
+              setSkillsMessage("");
+            }
+            if (data.themes.length === 0) {
+              missingFields.push("themes");
+              setThemesMessage("Themes are required");
+              hasErrors = true;
+            } else if (data.themes.length < 3) {
+              setThemesMessage("You need at least three themes selected");
+              hasErrors = true;
+            } else {
+              setThemesMessage("");
+            }
           }
         } catch (error) {
           console.error("Failed to fetch settings:", error);
@@ -230,18 +400,11 @@ export default function Settings() {
 
       fetchSettings();
     }
-  }, [isLoading, user, imageLink]);
+  }, [isLoading, user, validateURL]);
 
   const saveSettings = async () => {
     let missingFields = [];
     let hasErrors = false;
-
-    const validateURL = (url) => {
-      if (!url.startsWith("https://")) {
-        url = "https://" + url;
-      }
-      return isValidURL(url) ? url : "";
-    };
 
     if (!imageLink) {
       missingFields.push("profile picture");
@@ -394,39 +557,43 @@ export default function Settings() {
       setThemesMessage("");
     }
 
-    try {
-      const response = await fetch(SERVER + "/api/set-settings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: user.sub,
-          name: name,
-          email: email,
-          needHelp: needHelp,
-          linkedIn: linkedIn,
-          bio: bio,
-          availability: availability,
-          skills: skills,
-          themes: themes,
-          projectName: projectName,
-          projectDescription: projectDescription,
-          projectLink: projectLink,
-          helpDescription: helpDescription,
-          timeFrame: timeFrame,
-          imageLink: imageLink,
-        }),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        setErrorMessage("Server-side error: " + error.error);
-      }
+    if (!missingFields || !hasErrors) {
+      try {
+        const response = await fetch(SERVER + "/api/set-settings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: user.sub,
+            name: name,
+            email: email,
+            needHelp: needHelp,
+            linkedIn: linkedIn,
+            bio: bio,
+            availability: availability,
+            skills: skills,
+            themes: themes,
+            projectName: projectName,
+            projectDescription: projectDescription,
+            projectLink: projectLink,
+            helpDescription: helpDescription,
+            timeFrame: timeFrame,
+            imageLink: imageLink,
+          }),
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          setErrorMessage("Server-side error: " + error.error);
+        }
 
-      setSubmitMessage("Settings saved successfully!");
-    } catch (error) {
-      console.error("Failed to set user information: ", error);
-      setErrorMessage("Client-side error: " + error);
+        setSubmitMessage("Settings saved successfully!");
+      } catch (error) {
+        console.error("Failed to set user information: ", error);
+        setErrorMessage("Client-side error: " + error);
+      }
+    } else {
+      setSubmitMessage("Uh-oh! There seem to be a few issues.");
     }
   };
 
@@ -607,7 +774,10 @@ export default function Settings() {
                 <CardSubtitle className="mb-2">Choose your country *</CardSubtitle>
                 <select
                   value={country}
-                  onChange={(e) => setCountry(e.target.value)}
+                  onChange={(e) => {
+                    setCountry(e.target.value)
+                    setCountryMessage("");
+                  }}
                   className="w-full border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                 >
                   <option value="">Select a country</option>
@@ -624,7 +794,10 @@ export default function Settings() {
                   <CardSubtitle className="mb-2">Choose your city *</CardSubtitle>
                   <select
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e) => {
+                      setCity(e.target.value)
+                      setCityMessage("")
+                    }}
                     className="w-full border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                   >
                     <option value="">Select a city</option>
