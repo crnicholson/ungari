@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request # type: ignore
-from flask_cors import CORS # type: ignore
-from pymongo import MongoClient # type: ignore
+from flask import Flask, jsonify, request  # type: ignore
+from flask_cors import CORS  # type: ignore
+from pymongo import MongoClient  # type: ignore
 import json
 import os
-from dotenv import load_dotenv # type: ignore
+from dotenv import load_dotenv  # type: ignore
 
 load_dotenv(dotenv_path=f"{os.getcwd()}/.env.local")
 
@@ -19,16 +19,61 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/api/get-settings", methods=["POST"])
-def get_settings():
+# EXPAND THIS FUNCTION TO CHECK FOR MORE FIELDS
+def check_fields(need_help, user):
+    required_fields = [
+        "name",
+        "email",
+        "linkedIn",
+        "bio",
+        "availability",
+        "skills",
+        "themes",
+        "timeFrame",
+    ]
+    if need_help:
+        required_fields.extend(
+            [
+                "projectName",
+                "projectDescription",
+                "helpDescription",
+                "projectLink",
+            ]
+        )
+    missing_fields = [field for field in required_fields if field not in user]
+
+    if missing_fields:
+        return missing_fields
+
+
+@app.route("/api/get-status", methods=["POST"])
+def get_status():
     received = request.get_json()
-    id = received["id"]
+    id = received.get("id", "")
 
     user = users.find_one({"id": id})
 
     if user is None:
-        users.insert_one({"id": id})
-        # return jsonify({"": ""}), 404
+        return jsonify({"noSettings": True}), 200
+    else:
+        missing_fields = check_fields(user.get("needHelp", False), user)
+        if missing_fields:
+            print("Missing fields: ", missing_fields)
+            return jsonify({"someSettings": True, "missingFields": missing_fields, "redirectMessage": "Hey there! You were redirected to the settings page to finish filling out your settings."}), 200
+        else:
+            return jsonify({"allSettings": True}), 200
+
+
+@app.route("/api/get-settings", methods=["POST"])
+def get_settings():
+    received = request.get_json()
+    id = received.get("id", "")
+
+    user = users.find_one({"id": id})
+
+    # if user is None:
+    #     users.insert_one({"id": id})
+    #     # return jsonify({"": ""}), 404
 
     return (
         jsonify(
@@ -36,87 +81,220 @@ def get_settings():
                 "name": user.get("name", ""),
                 "email": user.get("email", ""),
                 "linkedIn": user.get("linkedIn", ""),
+                "x": user.get("x", ""),
+                "personalWebsite": user.get("personalWebsite", ""),
+                "gitHub": user.get("gitHub", ""),
+                "imageLink": user.get("imageLink", ""),
+                "bio": user.get("bio", ""),
+                "country": user.get("country", ""),
+                "city": user.get("city", ""),
+                "availability": user.get("availability", 0),
                 "needHelp": user.get("needHelp"),
                 "projectName": user.get("projectName", ""),
                 "projectDescription": user.get("projectDescription", ""),
                 "helpDescription": user.get("helpDescription", ""),
                 "projectLink": user.get("projectLink", ""),
-                "bio": user.get("bio", ""),
-                "availability": user.get("availability", ""),
                 "skills": user.get("skills", []),
                 "themes": user.get("themes", []),
-                "timeFrame": user.get("timeFrame", ""),
-                "imageLink": user.get("imageLink", ""),
-                "imageChange": user.get("imageChange", False),
             }
         ),
         200,
     )
 
 
-@app.route("/api/set-settings", methods=["POST"])
-def set_settings():
+@app.route("/api/set-onboarding-settings", methods=["POST"])
+def set_onboarding_settings():
     received = request.get_json()
+
     id = received.get("id", "")
     name = received.get("name", "")
     email = received.get("email", "")
     linkedIn = received.get("linkedIn", "")
+    x = received.get("x", "")
+    personalWebsite = received.get("personalWebsite", "")
+    gitHub = received.get("gitHub", "")
+
+    imageLink = received.get("imageLink", "")
+
     bio = received.get("bio", "")
-    availability = received.get("availability", "")
+    country = received.get("country", "")
+    city = received.get("city", "")
+    availability = received.get("availability", 0)
+
+    needHelp = received.get("needHelp", False)
+    projectName = received.get("projectName", "")
+    projectDescription = received.get("projectDescription", "")
+    helpDescription = received.get("helpDescription", "")
+    projectLink = received.get("projectLink", "")
+    timeFrame = received.get("timeFrame", 0)
+
     skills = received.get("skills", [])
     themes = received.get("themes", [])
-    timeFrame = received.get("timeFrame", "")
-    needHelp = received.get("needHelp", "")
-    imageLink = received.get("imageLink", "")
-    imageChange = received.get("imageChange", False)
 
     user = users.find_one({"id": id})
 
     if user is None:
         users.insert_one({"id": id})
-        return jsonify({"error": "User not found in database."}), 404
+
+    setting_fields = {
+        "name": name,
+        "email": email,
+        "linkedIn": linkedIn,
+        "x": x,
+        "personalWebsite": personalWebsite,
+        "gitHub": gitHub,
+        "imageLink": imageLink,
+        "bio": bio,
+        "country": country,
+        "city": city,
+        "availability": availability,
+        "needHelp": needHelp,
+        "timeFrame": timeFrame,
+        "skills": skills,
+        "themes": themes,
+        "availability": availability,
+        "skills": skills,
+        "themes": themes,
+    }
+
+    # print(
+    #     "ID: ",
+    #     id,
+    #     " Name: ",
+    #     name,
+    #     " Email: ",
+    #     email,
+    #     " LinkedIn: ",
+    #     linkedIn,
+    #     " Bio: ",
+    #     bio,
+    #     " Need help: ",
+    #     needHelp,
+    #     " Availability (hours per week): ",
+    #     availability,
+    #     " Time frame (months): ",
+    #     timeFrame,
+    #     " Skills: ",
+    #     skills,
+    #     " Themes: ",
+    #     themes,
+    #     " Image Change: ",
+    #     imageChange,
+    #     " Image Link: ",
+    #     imageLink,
+    #     end="",
+    # )
+
+    if needHelp:
+        projectName = received.get("projectName", "")
+        projectDescription = received.get("projectDescription", "")
+        helpDescription = received.get("helpDescription", "")
+        projectLink = received.get("projectLink", "")
+
+        setting_fields.update(
+            {
+                "projectName": projectName,
+                "projectDescription": projectDescription,
+                "helpDescription": helpDescription,
+                "projectLink": projectLink,
+            }
+        )
+
+        # print(
+        #     " Project name: ",
+        #     projectName,
+        #     " Project description: ",
+        #     projectDescription,
+        #     " Help description: ",
+        #     helpDescription,
+        #     " Project link: ",
+        #     projectLink,
+        # )
+
+    else:
+        # print()
+        users.update_one({"id": id}, {"$set": setting_fields})
+
+    return jsonify({"": ""}), 200
+
+
+@app.route("/api/set-settings", methods=["POST"])
+def set_settings():
+    received = request.get_json()
+
+    id = received.get("id", "")
+    name = received.get("name", "")
+    email = received.get("email", "")
+    linkedIn = received.get("linkedIn", "")
+    x = received.get("x", "")
+    personalWebsite = received.get("personalWebsite", "")
+    gitHub = received.get("gitHub", "")
+
+    imageLink = received.get("imageLink", "")
+
+    bio = received.get("bio", "")
+    country = received.get("country", "")
+    city = received.get("city", "")
+    availability = received.get("availability", 0)
+
+    needHelp = received.get("needHelp", False)
+    projectName = received.get("projectName", "")
+    projectDescription = received.get("projectDescription", "")
+    helpDescription = received.get("helpDescription", "")
+    projectLink = received.get("projectLink", "")
+    timeFrame = received.get("timeFrame", 0)
+
+    skills = received.get("skills", [])
+    themes = received.get("themes", [])
 
     update_fields = {
         "name": name,
         "email": email,
         "linkedIn": linkedIn,
-        "needHelp": needHelp,
+        "x": x,
+        "personalWebsite": personalWebsite,
+        "gitHub": gitHub,
+        "imageLink": imageLink,
         "bio": bio,
+        "country": country,
+        "city": city,
+        "availability": availability,
+        "needHelp": needHelp,
+        "timeFrame": timeFrame,
+        "skills": skills,
+        "themes": themes,
         "availability": availability,
         "skills": skills,
         "themes": themes,
-        "timeFrame": timeFrame,
-        "imageLink": imageLink,
-        "imageChange": imageChange,
     }
 
-    print(
-        "ID: ",
-        id,
-        " Name: ",
-        name,
-        " Email: ",
-        email,
-        " LinkedIn: ",
-        linkedIn,
-        " Bio: ",
-        bio,
-        " Need help: ",
-        needHelp,
-        " Availability (hours per week): ",
-        availability,
-        " Time frame (months): ",
-        timeFrame,
-        " Skills: ",
-        skills,
-        " Themes: ",
-        themes,
-        " Image Change: ",
-        imageChange,
-        " Image Link: ",
-        imageLink,
-        end="",
-    )
+    # print(
+    #     "ID: ",
+    #     id,
+    #     " Name: ",
+    #     name,
+    #     " Email: ",
+    #     email,
+    #     " LinkedIn: ",
+    #     linkedIn,
+    #     " Bio: ",
+    #     bio,
+    #     " Need help: ",
+    #     needHelp,
+    #     " Availability (hours per week): ",
+    #     availability,
+    #     " Time frame (months): ",
+    #     timeFrame,
+    #     " Skills: ",
+    #     skills,
+    #     " Themes: ",
+    #     themes,
+    #     " Image Change: ",
+    #     imageChange,
+    #     " Image Link: ",
+    #     imageLink,
+    #     end="",
+    # )
 
     if needHelp:
         projectName = received.get("projectName", "")
@@ -133,19 +311,19 @@ def set_settings():
             }
         )
 
-        print(
-            " Project name: ",
-            projectName,
-            " Project description: ",
-            projectDescription,
-            " Help description: ",
-            helpDescription,
-            " Project link: ",
-            projectLink,
-        )
+        # print(
+        #     " Project name: ",
+        #     projectName,
+        #     " Project description: ",
+        #     projectDescription,
+        #     " Help description: ",
+        #     helpDescription,
+        #     " Project link: ",
+        #     projectLink,
+        # )
 
     else:
-        print()
+        # print()
         users.update_one({"id": id}, {"$set": update_fields})
 
     return jsonify({"": ""}), 200
@@ -170,7 +348,7 @@ def get_match():
 
             print(f"Random user: {random_user}")
 
-            if check_fields(need_help, random_user, True):
+            if check_fields(need_help, random_user):
                 print("Check again")
                 return check_length(message, array, not need_help, _id)
 
@@ -193,32 +371,6 @@ def get_match():
                 "matchID": str(random_user.get("_id", "")),
             }
         return None
-
-    def check_fields(need_help, user, redirect=False):
-        required_fields = [
-            "name",
-            "email",
-            "linkedIn",
-            "bio",
-            "availability",
-            "skills",
-            "themes",
-            "timeFrame",
-        ]
-        if need_help:
-            required_fields.extend(
-                [
-                    "projectName",
-                    "projectDescription",
-                    "helpDescription",
-                    "projectLink",
-                ]
-            )
-        missing_fields = [field for field in required_fields if field not in user]
-
-        if missing_fields:
-            # return jsonify({"match": {"noSettings": True}})
-            return jsonify({"settingsPresent": False})
 
     if demo:
         print("\nDemo mode enabled.\n")
@@ -319,7 +471,7 @@ def get_match():
 
         if missing_fields:
             print("Missing fields. Redirecting to settings page.")
-            return missing_fields
+            return jsonify({"settingsPresent": False})
 
         all_users = users.find({"needHelp": {"$ne": user.get("needHelp")}})
         user_skills = user.get("skills")
@@ -384,7 +536,7 @@ def get_match():
             return jsonify({"match": random_match, "noMatches": True}), 200
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
-        
+
         if user.get("pastMatches") is not None:
             for past in user.get("pastMatches"):
                 matches = [match for match in matches if match.get("_id", "") != past]
@@ -409,7 +561,9 @@ def get_match():
 
         past_matches = user.get("pastMatches", [])
         past_matches.append(matches[0].get("_id", ""))
-        users.update_one({"_id": user.get("_id")}, {"$set": {"pastMatches": past_matches}})
+        users.update_one(
+            {"_id": user.get("_id")}, {"$set": {"pastMatches": past_matches}}
+        )
 
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
@@ -419,7 +573,7 @@ def get_match():
 @app.route("/api/save-match", methods=["POST"])
 def save_match():
     received = request.get_json()
-    
+
     user = users.find_one({"id": received.get("id", "")})
 
     if user is None:
@@ -432,7 +586,7 @@ def save_match():
     }
 
     users.update_one({"id": received.get("id")}, update_operation)
-    
+
     return jsonify({"": ""}), 200
 
 

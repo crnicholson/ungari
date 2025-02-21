@@ -1,23 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser } from "@auth0/nextjs-auth0/client";
-import Heading from "../components/heading";
-import { Card, CardImage, CardTitle, CardContent, CardContainer } from "../components/card";
+import { Card, CardTitle, CardContent, CardContainer } from "../components/card";
 import { Header, HeaderNav, HeaderLogo } from "../components/header";
+import Heading from "../components/heading";
 import Demo from "../components/demo";
 import Button from "../components/button";
+
+import { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUser } from "@auth0/nextjs-auth0/client";
 
 export default function Home() {
-  const { user, error, isLoading } = useUser();
+  const { user, isLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push("/match");
+      router.push("/redirect");
     }
   }, [isLoading, user, router]);
 

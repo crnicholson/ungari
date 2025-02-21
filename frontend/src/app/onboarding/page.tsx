@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser } from "@auth0/nextjs-auth0/client";
-import { redirect } from "next/navigation";
+import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardInputError, CardBlock, CardButton, CardRow } from "../../components/card";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import GradientButton from "../../components/button";
-import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardInputError, CardBlock, CardButton, CardRow } from "../../components/card";
-import Heading from "../../components/heading";
-import StyledLink from "../../components/styledLink";
-import Error from "../../components/error";
-import Warning from "../../components/warning";
-import { set } from "@auth0/nextjs-auth0/dist/session";
-import Image from 'next/image';
 import Checkbox from "../../components/checkbox";
+import Warning from "../../components/warning";
+import Error from "../../components/error";
+
+import { useState, useEffect } from "react";
+import { redirect, useRouter } from "next/navigation";
+import Image from 'next/image';
+import { useUser } from "@auth0/nextjs-auth0/client";
 
 const SERVER = "http://127.0.0.1:38321";
 
@@ -75,6 +73,49 @@ export default function Onboarding() {
     const [submitMessage, setSubmitMessage] = useState("");
 
     const { user, isLoading } = useUser();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            redirect("/api/auth/login");
+        }
+    }, [isLoading, user]);
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            const getStatus = async () => {
+                try {
+                    const response = await fetch(SERVER + "/api/get-status", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ id: user.sub }),
+                    });
+                    if (!response.ok) {
+                        const error = await response.json();
+                        setErrorMessage("Server-side error: " + error.error);
+                    } else {
+                        const data = await response.json();
+
+                        if (data.someSettings ?? false) {
+                            const message = encodeURIComponent("You were redirected here because some fields are not filled out or a new field was added.");
+                            router.push(`/settings?redirectMessage=${message}&missingFields=${encodeURIComponent(data.missingFields)}`);
+                        }
+                        if (data.allSettings ?? false) {
+                            const message = encodeURIComponent("You were redirected here because you already have done the onboarding process.");
+                            router.push(`/settings?redirectMessage=${message}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch settings:", error);
+                    setErrorMessage("Client-side error: " + error);
+                }
+            };
+
+            getStatus();
+        }
+    }, [isLoading, user, router]);
 
     useEffect(() => {
         if (country) {
@@ -82,12 +123,6 @@ export default function Onboarding() {
             setCity("");
         }
     }, [country]);
-
-    // useEffect(() => {
-    //     if (!isLoading && !user) {
-    //         redirect("/api/auth/login");
-    //     }
-    // }, [isLoading, user]);
 
     function isValidEmail(email: string): boolean {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -297,10 +332,6 @@ export default function Onboarding() {
         }
     };
 
-    const saveSettings = async () => {
-        // Validation and save logic here
-    };
-
     const handleSelectSkill = (skill) => {
         if (skills.includes(skill)) {
             setSkills(skills.filter((t) => t !== skill));
@@ -348,6 +379,49 @@ export default function Onboarding() {
             }
         }
     }, [step, user, name]);
+
+    const saveSettings = async () => {
+        try {
+            const response = await fetch(SERVER + "/api/set-onboarding-settings", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: user.sub,
+                    name: name,
+                    email: email,
+                    linkedIn: linkedIn,
+                    x: x,
+                    personalWebsite: personalWebsite,
+                    gitHub: gitHub,
+                    imageLink: imageLink,
+                    bio: bio,
+                    country: country,
+                    city: city,
+                    availability: availability,
+                    needHelp: needHelp,
+                    projectName: projectName,
+                    projectDescription: projectDescription,
+                    projectLink: projectLink,
+                    helpDescription: helpDescription,
+                    timeFrame: timeFrame,
+                    skills: skills,
+                    themes: themes,
+                }),
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                setErrorMessage("Server-side error: " + error.error);
+            }
+            setSubmitMessage("Settings saved successfully! Redirecting to match...");
+
+            redirect("/match");
+        } catch (error) {
+            console.error("Failed to set user information: ", error);
+            setErrorMessage("Client-side error: " + error);
+        }
+    };
 
     const renderStep = () => {
         switch (step) {
@@ -1545,12 +1619,12 @@ const categorizedSkills = {
             "Soldering",
         ],
         "Communication": [
-            "LoRa", 
+            "LoRa",
             "Bluetooth",
             "WiFi",
             "UHF",
             "VHF",
-            "HF", 
+            "HF",
             "MF",
             "SHF",
             "EHF",

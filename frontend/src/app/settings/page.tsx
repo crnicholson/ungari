@@ -1,51 +1,80 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser } from "@auth0/nextjs-auth0/client";
-import { redirect } from "next/navigation";
+import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardRow, CardBlock, CardButton, CardInputError, CardContent } from "../../components/card";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import GradientButton from "../../components/button";
-import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardRow, CardBlock, CardButton } from "../../components/card";
-import Heading from "../../components/heading";
 import StyledLink from "../../components/styledLink";
 import Error from "../../components/error";
 import Warning from "../../components/warning";
-import { set } from "@auth0/nextjs-auth0/dist/session";
-import Image from 'next/image';
 import Checkbox from "../../components/checkbox";
+
+import { useState, useEffect } from "react";
+import { redirect, useRouter } from "next/navigation";
+import Image from "next/image";
+import { useUser } from "@auth0/nextjs-auth0/client";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
 
 export default function Settings() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [linkedIn, setLinkedIn] = useState("");
+  const [name, setName] = useState("Charlie");
+  const [email, setEmail] = useState("example@gmail.com");
+  const [linkedIn, setLinkedIn] = useState("linkedin.com");
+  const [x, setX] = useState("");
+  const [personalWebsite, setPersonalWebsite] = useState("");
+  const [gitHub, setGitHub] = useState("");
+
+  const [nameMessage, setNameMessage] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
+  const [linkedInMessage, setLinkedInMessage] = useState("");
+  const [xMessage, setXMessage] = useState("");
+  const [personalWebsiteMessage, setPersonalWebsiteMessage] = useState("");
+  const [gitHubMessage, setGitHubMessage] = useState("");
+
+  const [imageLink, setImageLink] = useState("");
+
+  const [tempImageLink, setTempImageLink] = useState("");
+  const [imageMessage, setImageMessage] = useState("");
+  const [imageDialog, setImageDialog] = useState(false);
+
+  const [bio, setBio] = useState("I like to run in my free time.");
+  const [country, setCountry] = useState("Prefer not to say");
+  const [city, setCity] = useState("");
+  const [cities, setCities] = useState([]);
+  const [availability, setAvailability] = useState(1);
+
+  const [bioMessage, setBioMessage] = useState("");
+  const [countryMessage, setCountryMessage] = useState("");
+  const [cityMessage, setCityMessage] = useState("");
+  const [availabilityMessage, setAvailabilityMessage] = useState("");
+
   const [needHelp, setNeedHelp] = useState(false);
-  const [bio, setBio] = useState("");
-  const [availability, setAvailability] = useState("");
-  const [skills, setSkills] = useState([]);
-  const [themes, setThemes] = useState([]);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [helpDescription, setHelpDescription] = useState("");
   const [projectLink, setProjectLink] = useState("");
-  const [timeFrame, setTimeFrame] = useState("");
-  const [imageLink, setImageLink] = useState("");
-  const [tempImageLink, setTempImageLink] = useState("");
-  const [imageChange, setImageChange] = useState(false);
+  const [timeFrame, setTimeFrame] = useState(0);
+
+  const [projectNameMessage, setProjectNameMessage] = useState("");
+  const [projectDescriptionMessage, setProjectDescriptionMessage] = useState("");
+  const [helpDescriptionMessage, setHelpDescriptionMessage] = useState("");
+  const [projectLinkMessage, setProjectLinkMessage] = useState("");
+
+  const [skills, setSkills] = useState([]);
+  const [themes, setThemes] = useState([]);
+
+  const [skillsMessage, setSkillsMessage] = useState("");
+  const [themesMessage, setThemesMessage] = useState("");
+
+  const [skillSearchTerm, setSkillSearchTerm] = useState("");
+  const [themeSearchTerm, setThemeSearchTerm] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [warningMessage, setWarningMessage] = useState("");
-  // const [errorPresent, setErrorPresent] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
-  const [skillSearchTerm, setSkillSearchTerm] = useState("");
-  const [themeSearchTerm, setThemeSearchTerm] = useState("");
-  const [imageDialog, setImageDialog] = useState(false);
-  const [imageError, setImageError] = useState("");
-  const [redirectMessage, setRedirectMessage] = useState("");
 
   const { user, isLoading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -53,19 +82,46 @@ export default function Settings() {
     }
   }, [isLoading, user]);
 
-  // useEffect(() => {
-  //   if (errorMessage !== "") {
-  //     const timer = setTimeout(() => {
-  //       setErrorMessage("");
-  //     }, 5000);
+  useEffect(() => {
+    if (!isLoading && user) {
+      const getStatus = async () => {
+        try {
+          const response = await fetch(SERVER + "/api/get-status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: user.sub }),
+          });
+          if (!response.ok) {
+            const error = await response.json();
+            setErrorMessage("Server-side error: " + error.error);
+          } else {
+            const data = await response.json();
 
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [errorMessage]);
+            if (data.noSettings ?? false) {
+              const message = encodeURIComponent("You were redirected because this is your first time using the platform and you need to complete onboarding.");
+              router.push(`/onboarding?redirectMessage=${message}`);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch settings:", error);
+          setErrorMessage("Client-side error: " + error);
+        }
+      };
+
+      getStatus();
+    }
+  }, [isLoading, user, router]);
 
   function isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  }
+
+  function isValidName(name: string): boolean {
+    const nameRegex = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
+    return nameRegex.test(name);
   }
 
   const handleSelectSkill = (skill) => {
@@ -84,11 +140,19 @@ export default function Settings() {
     }
   };
 
-  const filteredSkills = listOfSkills
-    .filter((skill) =>
-      skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
-    )
-    .sort((a, b) => a.localeCompare(b));
+  const filteredSkills = skillSearchTerm
+    ? Object.values(categorizedSkills).flatMap(category => {
+      if (typeof category === 'object' && !Array.isArray(category)) {
+        return Object.values(category)
+          .flat()
+          .filter((skill): skill is string =>
+            typeof skill === 'string' &&
+            skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
+          );
+      }
+      return [];
+    }).sort((a, b) => a.localeCompare(b))
+    : [];
 
   const filteredThemes = listOfThemes
     .filter((theme) =>
@@ -106,6 +170,16 @@ export default function Settings() {
     }
   }
 
+  function formatList(items: string[], type: string): string {
+    if (items.length === 0) return "";
+    if (items.length === 1) return `Current ${type} is: ${items[0]}`;
+    if (items.length === 2) return `Current ${type}s are: ${items[0]} and ${items[1]}`;
+
+    const lastItem = items[items.length - 1];
+    const otherItems = items.slice(0, -1);
+    return `Current ${type}s are: ${otherItems.join(", ")}, and ${lastItem}`;
+  }
+
   useEffect(() => {
     if (!isLoading && user) {
       const fetchSettings = async () => {
@@ -120,49 +194,37 @@ export default function Settings() {
           if (!response.ok) {
             const error = await response.json();
             setErrorMessage("Server-side error: " + error.error);
-            // setErrorPresent(true);
           } else {
             const data = await response.json();
+
             setName(data.name || "");
             setEmail(data.email || "");
-            setNeedHelp(data.needHelp || false);
             setLinkedIn(data.linkedIn || "");
+            setX(data.x || "");
+            setPersonalWebsite(data.personalWebsite || "");
+            setGitHub(data.gitHub || "");
+
+            setImageLink(data.imageLink || "");
+            setTempImageLink(data.imageLink || "");
+
             setBio(data.bio || "");
+            setCountry(data.country || "");
+            setCity(data.city || "");
             setAvailability(data.availability || "");
-            setSkills(data.skills || []);
-            setThemes(data.themes || []);
+
+            setNeedHelp(data.needHelp || false);
             setProjectName(data.projectName || "");
             setProjectDescription(data.projectDescription || "");
             setHelpDescription(data.helpDescription || "");
             setProjectLink(data.projectLink || "");
             setTimeFrame(data.timeFrame || "");
 
-            if (data.imageLink === "" || user.picture === "") {
-              setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name);
-              setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name);
-              setImageChange(true);
-            }
-            if (data.imageChange && isValidURL(data.imageLink)) {
-              setImageLink(data.imageLink || "");
-              setTempImageLink(data.imageLink || "");
-            } else if (isValidURL(user.picture)) {
-              setImageLink(user.picture || "");
-              setTempImageLink(user.picture || "");
-              setImageChange(false);
-            } else {
-              setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name.replace(" ", "+"));
-              setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.name.replace(" ", "+"));
-              setImageChange(true);
-            }
-
-            if (data.name === "" || data.email === "" || data.linkedIn === "" || data.bio === "" || data.availability === "" || data.skills.length === 0 || data.themes.length === 0 || data.timeFrame === "" || (data.needHelp && (data.projectName === "" || data.projectDescription === "" || data.helpDescription === "" || data.projectLink === ""))) {
-              setWarningMessage("Psst... you may have been redirected here because one or more of your settings were missing. Please fill them out below!");
-            }
+            setSkills(data.skills || []);
+            setThemes(data.themes || []);
           }
         } catch (error) {
           console.error("Failed to fetch settings:", error);
           setErrorMessage("Client-side error: " + error);
-          // setErrorPresent(true);
         }
       };
 
@@ -171,50 +233,165 @@ export default function Settings() {
   }, [isLoading, user, imageLink]);
 
   const saveSettings = async () => {
-    const missingFields = [];
+    let missingFields = [];
+    let hasErrors = false;
 
-    const formatMissingFieldsMessage = (fields) => {
-      if (fields.length === 1) {
-        return fields[0];
-      } else if (fields.length === 2) {
-        return `${fields[0]} and ${fields[1]}`;
-      } else {
-        return `${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]}`;
+    const validateURL = (url) => {
+      if (!url.startsWith("https://")) {
+        url = "https://" + url;
       }
+      return isValidURL(url) ? url : "";
     };
 
-    if (bio === "") missingFields.push("bio");
-    if (email === "") missingFields.push("email");
-    if (name === "") missingFields.push("name");
-    if (availability === "") missingFields.push("availability");
-    if (skills.length === 0) missingFields.push("skills");
-    if (themes.length === 0) missingFields.push("themes");
-    if (linkedIn === "") missingFields.push("LinkedIn");
-    if (timeFrame === "") missingFields.push("time frame");
-
-    if (needHelp) {
-      if (projectName === "") missingFields.push("project name");
-      if (projectDescription === "") missingFields.push("project description");
-      if (helpDescription === "") missingFields.push("help description");
-      if (projectLink === "") missingFields.push("project link");
+    if (!imageLink) {
+      missingFields.push("profile picture");
+      setImageMessage("Profile picture is required");
+      hasErrors = true;
+    } else {
+      setImageMessage("");
     }
 
-    if (missingFields.length > 0) {
-      console.log("Some required fields are missing.");
-      setSubmitMessage(`Uh-oh! The following fields are missing: ${formatMissingFieldsMessage(missingFields)}.`);
-      return;
+    if (!name) {
+      missingFields.push("name");
+      setNameMessage("Name is required");
+      hasErrors = true;
+    } else {
+      setNameMessage("");
+    }
+    if (!email) {
+      missingFields.push("email");
+      setEmailMessage("Email is required");
+      hasErrors = true;
     } else if (!isValidEmail(email)) {
-      console.log("Email address is invalid.");
+      setEmailMessage("Invalid email");
+      hasErrors = true;
+    } else {
+      setEmailMessage("");
+    }
+    if (!linkedIn) {
+      missingFields.push("LinkedIn");
+      setLinkedInMessage("LinkedIn is required");
+      hasErrors = true;
+    } else {
+      if (!validateURL(linkedIn)) {
+        setLinkedInMessage("Invalid LinkedIn URL");
+        hasErrors = true;
+      } else {
+        setLinkedInMessage("");
+      }
+    }
+    if (x) {
+      if (!validateURL(x)) {
+        setXMessage("Invalid X URL");
+        hasErrors = true;
+      } else {
+        setXMessage("");
+      }
+    }
+    if (personalWebsite) {
+      if (!validateURL(personalWebsite)) {
+        setPersonalWebsiteMessage("Invalid personal website URL");
+        hasErrors = true;
+      } else {
+        setPersonalWebsiteMessage("");
+      }
+    }
+    if (gitHub) {
+      if (!validateURL(gitHub)) {
+        setGitHubMessage("Invalid GitHub URL");
+        hasErrors = true;
+      } else {
+        setGitHubMessage("");
+      }
+    }
 
-      setSubmitMessage("Oh shoot! That email address seems invalid.");
+    if (!bio) {
+      missingFields.push("bio");
+      setBioMessage("Bio is required");
+      hasErrors = true;
+    } else if (bio.length < 10) {
+      setBioMessage(`A ${bio.length} character bio?`);
+      hasErrors = true;
+    } else {
+      setBioMessage("");
+    }
+    if (!country) {
+      missingFields.push("country");
+      setCountryMessage("Country is required");
+      hasErrors = true;
+    } else {
+      setCountryMessage("");
+    }
+    if (country && country !== "Prefer not to say" && !city) {
+      missingFields.push("city");
+      setCityMessage("City is required");
+      hasErrors = true;
+    } else {
+      setCityMessage("");
+    }
+    if (availability === 0) {
+      missingFields.push("availability");
+      setAvailabilityMessage("You're available for 0 hours?");
+      hasErrors = true;
+    } else {
+      setAvailabilityMessage("");
+    }
 
-      return;
-    } else if (!linkedIn.includes("linkedin.com") || !isValidURL(linkedIn)) {
-      console.log("LinkedIn link is invalid.");
+    if (needHelp) {
+      if (!projectName) {
+        missingFields.push("project name");
+        setProjectNameMessage("Project name is required");
+        hasErrors = true;
+      } else {
+        setProjectNameMessage("");
+      }
+      if (!projectDescription) {
+        missingFields.push("project description");
+        setProjectDescriptionMessage("Project description is required");
+        hasErrors = true;
+      } else {
+        setProjectDescriptionMessage("");
+      }
+      if (!helpDescription) {
+        missingFields.push("help description");
+        setHelpDescriptionMessage("Help description is required");
+        hasErrors = true;
+      } else {
+        setHelpDescriptionMessage("");
+      }
+      if (!projectLink) {
+        missingFields.push("project link");
+        setProjectLinkMessage("Project link is required");
+        hasErrors = true;
+      } else {
+        if (!validateURL(projectLink)) {
+          setProjectLinkMessage("URL doesn't seem to be working");
+          hasErrors = true;
+        } else {
+          setProjectLinkMessage("");
+        }
+      }
+    }
 
-      setSubmitMessage("Oh snap! That LinkedIn link seems invalid. Did you remember that https://? :-P");
-
-      return;
+    if (skills.length === 0) {
+      missingFields.push("skills");
+      setSkillsMessage("Skills are required");
+      hasErrors = true;
+    } else if (skills.length < 3) {
+      setSkillsMessage("You need at least three skills selected");
+      hasErrors = true;
+    } else {
+      setSkillsMessage("");
+    }
+    if (themes.length === 0) {
+      missingFields.push("themes");
+      setThemesMessage("Themes are required");
+      hasErrors = true;
+    } else if (themes.length < 3) {
+      setThemesMessage("You need at least three themes selected");
+      hasErrors = true;
+    } else {
+      setThemesMessage("");
     }
 
     try {
@@ -239,20 +416,17 @@ export default function Settings() {
           helpDescription: helpDescription,
           timeFrame: timeFrame,
           imageLink: imageLink,
-          imageChange: imageChange,
         }),
       });
       if (!response.ok) {
         const error = await response.json();
         setErrorMessage("Server-side error: " + error.error);
-        // setErrorPresent(true);
       }
 
       setSubmitMessage("Settings saved successfully!");
     } catch (error) {
       console.error("Failed to set user information: ", error);
       setErrorMessage("Client-side error: " + error);
-      // setErrorPresent(true);
     }
   };
 
@@ -291,32 +465,17 @@ export default function Settings() {
             <p>We{"'"}re down right now, try reloading!</p>
           ) : (
             <>
-              {(name !== "" || !imageChange) && (
-                <CardBlock>
-                  <button onClick={() => setImageDialog(!imageDialog)}>
-                    {imageLink !== "" ? (
-                      <Image
-                        src={imageLink}
-                        alt={`${name}'s profile`}
-                        className="rounded-full object-cover ring-2 ring-[--border]"
-                        width={96}
-                        height={96}
-                      />
-                    ) : (
-                      <div
-                        className="rounded-full flex items-center justify-center ring-2 ring-[--border]"
-                        style={{
-                          width: 96,
-                          height: 96,
-                          backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-                        }}
-                      >
-                        <span className="text-white text-3xl">{name.charAt(0)}</span>
-                      </div>
-                    )}
-                  </button>
-                </CardBlock>
-              )}
+              <CardBlock>
+                <button onClick={() => setImageDialog(!imageDialog)}>
+                  <Image
+                    src={imageLink}
+                    alt={`${name}'s profile`}
+                    className="rounded-full object-cover ring-2 ring-[--border]"
+                    width={96}
+                    height={96}
+                  />
+                </button>
+              </CardBlock>
 
               {imageDialog && (
                 <CardBlock>
@@ -324,41 +483,115 @@ export default function Settings() {
                   <CardRow className="flex-col sm:flex-row">
                     <CardInput
                       value={tempImageLink}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTempImageLink(e.target.value)}
+                      onChange={(e) => setTempImageLink(e.target.value)}
                       placeholder="Make it blank to use the default image!"
                       className="w-full"
                     />
                     <CardButton
                       onClick={() => {
-                        if (isValidURL(tempImageLink) || tempImageLink !== "") {
-                          setImageLink(tempImageLink);
-                          setImageChange(true);
-                          setImageError("");
+                        if (tempImageLink !== "") {
+                          if (isValidURL(tempImageLink)) {
+                            setImageLink(tempImageLink);
+                            setImageMessage("");
+                          } else {
+                            setImageMessage("Invalid URL!");
+                          }
                         } else {
-                          setImageError("Invalid URL!");
+                          if (user && user.picture === "") {
+                            setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                            setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                            setImageMessage("");
+                          } else if (user && user.picture !== "") {
+                            setImageLink(user.picture);
+                            setTempImageLink(user.picture);
+                            setImageMessage("");
+                          }
                         }
                       }}
                     >
                       Update image
                     </CardButton>
                   </CardRow>
-                  {imageError !== "" && (
-                    <p className="mt-2">{imageError}</p>
-                  )}
+                  <CardInputError>{imageMessage}</CardInputError>
                 </CardBlock>
               )}
 
               <CardBlock>
-                <CardSubtitle className="mb-2">What{"'"}s your name?</CardSubtitle>
+                <CardSubtitle className="mb-2">What{"'"}s your name? *</CardSubtitle>
                 <CardInput
                   value={name}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setNameMessage(e.target.value === "" || isValidName(e.target.value) ? "" : "Please enter a valid name");
+                  }}
                   placeholder="Enter your full name"
                 />
+                <CardInputError>{nameMessage}</CardInputError>
+              </CardBlock>
+              <CardBlock>
+                <CardSubtitle className="mb-2">Email *</CardSubtitle>
+                <CardInput
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    setEmailMessage(e.target.value === "" || isValidEmail(e.target.value) ? "" : "Hmm... that email doesn't seem right");
+                  }}
+                  placeholder="We'll shoot you an email if we find a match"
+                />
+                <CardInputError>{emailMessage}</CardInputError>
+              </CardBlock>
+              <CardBlock>
+                <CardSubtitle className="mb-2">LinkedIn *</CardSubtitle>
+                <CardInput
+                  value={linkedIn}
+                  onChange={(e) => {
+                    setLinkedIn(e.target.value)
+                    setLinkedInMessage(e.target.value === "" || e.target.value.includes("linkedin.co") ? "" : "LinkedIn without linkedin.com? 🤔");
+                  }}
+                  placeholder="To help with credibility"
+                />
+                <CardInputError>{linkedInMessage}</CardInputError>
+              </CardBlock>
+              <CardBlock>
+                <CardSubtitle className="mb-2">X (optional)</CardSubtitle>
+                <CardInput
+                  value={x}
+                  onChange={(e) => {
+                    setX(e.target.value)
+                    setXMessage(e.target.value === "" || e.target.value.includes("x.co") ? "" : "X without x.com? 🤔");
+                  }}
+                  placeholder="For funsies"
+                />
+                <CardInputError>{xMessage}</CardInputError>
+              </CardBlock>
+              <CardBlock>
+                <CardSubtitle className="mb-2">Personal website (optional)</CardSubtitle>
+                <CardInput
+                  value={personalWebsite}
+                  onChange={(e) => {
+                    setPersonalWebsite(e.target.value)
+                    setPersonalWebsiteMessage(personalWebsite.includes("onlyfans.co") ? "I see what you're doing there" : "");
+                  }}
+                  placeholder="Have a portfolio? Share it here"
+                />
+                <CardInputError>{personalWebsiteMessage}</CardInputError>
+              </CardBlock>
+              <CardBlock>
+                <CardSubtitle className="mb-2">GitHub (optional)</CardSubtitle>
+                <CardInput
+                  value={gitHub}
+                  onChange={(e) => {
+                    setGitHub(e.target.value)
+                    setGitHubMessage(e.target.value === "" || e.target.value.includes("github.co") ? "" : "GitHub without github.com? 🤔");
+
+                  }}
+                  placeholder="Git off the Hub"
+                />
+                <CardInputError>{gitHubMessage}</CardInputError>
               </CardBlock>
 
               <CardBlock>
-                <CardSubtitle className="mb-2">Tell us about yourself! (50 chars)</CardSubtitle>
+                <CardSubtitle className="mb-2">Tell us about yourself! ({50 - bio.length} chars) *</CardSubtitle>
                 <textarea
                   className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                   placeholder="Special notes, preferences, favorite color? Max 50 characters."
@@ -367,55 +600,77 @@ export default function Settings() {
                   onChange={(e) => setBio(e.target.value)}
                   maxLength={50}
                 ></textarea>
+                <CardInputError>{bioMessage}</CardInputError>
               </CardBlock>
 
               <CardBlock>
-                <CardSubtitle className="mb-2">Email</CardSubtitle>
-                <CardInput
-                  value={email}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                  placeholder="We'll shoot you an email if we find a match"
-                />
+                <CardSubtitle className="mb-2">Choose your country *</CardSubtitle>
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="w-full border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
+                >
+                  <option value="">Select a country</option>
+                  {Object.keys(countries).map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+                <CardInputError>{countryMessage}</CardInputError>
               </CardBlock>
+              {(country && country != "Prefer not to say") && (
+                <CardBlock>
+                  <CardSubtitle className="mb-2">Choose your city *</CardSubtitle>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
+                  >
+                    <option value="">Select a city</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                  <CardInputError>{cityMessage}</CardInputError>
+                </CardBlock>
+              )}
 
               <CardBlock>
-                <CardSubtitle className="mb-2">LinkedIn</CardSubtitle>
-                <CardInput
-                  value={linkedIn}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLinkedIn(e.target.value)}
-                  placeholder="To help with credibility"
-                />
-              </CardBlock>
-
-              <CardBlock>
-                <CardSubtitle className="mb-2">Availability (hours per week)</CardSubtitle>
+                <CardSubtitle className="mb-2">Availability (hours per week) *</CardSubtitle>
                 <CardInput
                   type="number"
-                  value={availability}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAvailability(e.target.value)}
+                  value={availability.toString()}
+                  onChange={(e) => {
+                    const value = Math.max(0, Math.min(125, Number(e.target.value)));
+                    setAvailability(value);
+                  }}
                   placeholder="How many hours per week are you available?"
                 />
+                <CardInputError>{availabilityMessage}</CardInputError>
               </CardBlock>
 
               <CardTitle size={2} className="mt-5 mb-3">Matching magic</CardTitle>
 
               <CardBlock>
                 <CardSubtitle className="mb-2">
-                  Do you want to help, or do you need help?
+                  Do you want to help, or do you need help? *
                 </CardSubtitle>
                 <div className="flex flex-col gap-2">
                   <Checkbox
                     onChange={() => setNeedHelp(false)}
                     checked={!needHelp}
                   >
-                    I want to help
+                    I want to help, I have no project
                   </Checkbox>
 
                   <Checkbox
                     onChange={() => setNeedHelp(true)}
                     checked={needHelp}
                   >
-                    I need help
+                    I need help, I have a project
                   </Checkbox>
                 </div>
               </CardBlock>
@@ -423,16 +678,16 @@ export default function Settings() {
               {needHelp && (
                 <>
                   <CardBlock>
-                    <CardSubtitle className="mb-2">What{"'"}s your project called?</CardSubtitle>
+                    <CardSubtitle className="mb-2">What{"'"}s your project called? *</CardSubtitle>
                     <CardInput
                       value={projectName}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
+                      onChange={(e) => setProjectName(e.target.value)}
                       placeholder="Automatic cereal feeder to save the rhinos"
                     />
+                    <CardInputError>{projectNameMessage}</CardInputError>
                   </CardBlock>
-
                   <CardBlock>
-                    <CardSubtitle className="mb-2">Tell us about your project! (100 chars)</CardSubtitle>
+                    <CardSubtitle className="mb-2">Tell us about your project! ({100 - projectDescription.length} chars) *</CardSubtitle>
                     <textarea
                       className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                       placeholder="What's it do? Why's it cool? Max 100 characters."
@@ -441,10 +696,10 @@ export default function Settings() {
                       onChange={(e) => setProjectDescription(e.target.value)}
                       maxLength={100}
                     ></textarea>
+                    <CardInputError>{projectDescriptionMessage}</CardInputError>
                   </CardBlock>
-
                   <CardBlock>
-                    <CardSubtitle className="mb-2">Anything specific you need help on? (100 chars)</CardSubtitle>
+                    <CardSubtitle className="mb-2">Anything specific you need help on? We{"'"}ll ask about skills later. ({100 - helpDescription.length} chars) *</CardSubtitle>
                     <textarea
                       className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                       placeholder="I need to make sure the electric boogaloo can attract rhinos. Max 100 characters."
@@ -453,101 +708,131 @@ export default function Settings() {
                       onChange={(e) => setHelpDescription(e.target.value)}
                       maxLength={100}
                     ></textarea>
+                    <CardInputError>{helpDescriptionMessage}</CardInputError>
                   </CardBlock>
-
                   <CardBlock>
-                    <CardSubtitle className="mb-2">Project link</CardSubtitle>
+                    <CardSubtitle className="mb-2">Project link *</CardSubtitle>
                     <CardInput
                       value={projectLink}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectLink(e.target.value)}
+                      onChange={(e) => setProjectLink(e.target.value)}
                       placeholder="Like github.com/crnicholson/StratoSoar-MK3"
                     />
+                    <CardInputError>{projectLinkMessage}</CardInputError>
                   </CardBlock>
                 </>
               )}
-
               <CardBlock>
-                <CardSubtitle className="mb-2">How many months do you {needHelp ? "anticipate the project taking" : "want to work for"}?</CardSubtitle>
+                <CardSubtitle className="mb-2">{!needHelp ? "How many months do you want to work for? 0 for unknown. *" : "How many months do you anticipate the project taking? 0 for unknown. *"}</CardSubtitle>
                 <CardInput
                   type="number"
-                  value={timeFrame}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTimeFrame(e.target.value)}
-                  placeholder="Put 0 for no answer/not necessary"
+                  value={timeFrame.toString()}
+                  onChange={(e) => {
+                    const value = Math.max(0, Math.min(60, Number(e.target.value)));
+                    setTimeFrame(value);
+                  }}
+                  placeholder={`${!needHelp ? "How many months do you want to work for? 0 for unknown." : "How many months do you anticipate the project taking? 0 for unknown"}`}
                 />
               </CardBlock>
 
               <CardBlock>
-                <CardSubtitle className="mb-2">Skills {needHelp ? "I'm looking for" : "I have"}</CardSubtitle>
-
-                {skills.length > 0 && (
-                  <p className="mb-2">Current skills include: {skills.join(", ")}</p>
-                )}
-
-                <CardBlock>
-                  <CardInput
-                    type="text"
-                    value={skillSearchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSkillSearchTerm(e.target.value)}
-                    placeholder="Search skills..."
-                  />
-                </CardBlock>
-
-                <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
-                  {filteredSkills.length > 0 ? (
-                    filteredSkills.map((skill) => (
-                      <div
-                        key={skill}
-                        className="flex justify-between items-center p-2 hover:bg-gray-200 rounded"
-                      >
-                        <Checkbox
-                          onChange={() => handleSelectSkill(skill)}
-                          checked={skills.includes(skill)}
-                        >
-                          {skill}
-                        </Checkbox>
+                <CardSubtitle className="mb-2">Skills {needHelp ? "I'm looking for" : "I have"} *</CardSubtitle>
+                {skills.length > 0 && (<CardContent>{formatList(skills, "skill")}</CardContent>)}
+                <CardInput
+                  type="text"
+                  value={skillSearchTerm}
+                  onChange={(e) => setSkillSearchTerm(e.target.value)}
+                  placeholder="Search across all categories..."
+                />
+              </CardBlock>
+              <CardBlock>
+                <div className="overflow-y-auto border p-3 rounded-xl max-h-[60vh]">
+                  {skillSearchTerm ? (
+                    filteredSkills.length > 0 ? (
+                      filteredSkills.map((skill) => (
+                        <div key={skill} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
+                          <Checkbox
+                            onChange={() => handleSelectSkill(skill)}
+                            checked={skills.includes(skill)}
+                          >
+                            {skill}
+                          </Checkbox>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex items-center justify-center h-32 text-gray-500">
+                        No skills found matching {'"'}{skillSearchTerm}{'"'}
+                      </div>
+                    )
+                  ) : (
+                    Object.entries(categorizedSkills).map(([category, items]) => (
+                      <div key={category} className="mb-4">
+                        <h3 className="font-semibold text-lg mb-2">{category}</h3>
+                        {typeof items === 'object' && !Array.isArray(items) ? (
+                          Object.entries(items).map(([subCategory, subItems]) => (
+                            <div key={subCategory} className="ml-4 mb-3">
+                              <h4 className="font-medium text-sm mb-1 text-gray-600">{subCategory}</h4>
+                              <div className="space-y-1">
+                                {Array.isArray(subItems) ? subItems.map((skill) => (
+                                  <div
+                                    key={skill}
+                                    className="flex justify-between items-center p-2 hover:bg-[--border] rounded"
+                                  >
+                                    <Checkbox
+                                      onChange={() => handleSelectSkill(skill)}
+                                      checked={skills.includes(skill)}
+                                    >
+                                      {skill}
+                                    </Checkbox>
+                                  </div>
+                                )) : null}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="ml-4 space-y-1">
+                            {items.map((skill) => (
+                              <div key={skill} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
+                                <Checkbox
+                                  onChange={() => handleSelectSkill(skill)}
+                                  checked={skills.includes(skill)}
+                                >
+                                  {skill}
+                                </Checkbox>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))
-                  ) : (
-                    <p className="text-gray-500">Oh snap! No skills found.</p>
                   )}
                 </div>
+                <CardInputError>{skillsMessage}</CardInputError>
               </CardBlock>
 
               <CardBlock>
-                <CardSubtitle className="mb-2">{!needHelp ? "Preferred project themes" : "Themes of your project"}</CardSubtitle>
-
-                {themes.length > 0 && (
-                  <p className="mb-2">Current themes include: {themes.join(", ")}</p>
-                )}
-
-                <CardBlock>
-                  <CardInput
-                    type="text"
-                    value={themeSearchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setThemeSearchTerm(e.target.value)}
-                    placeholder="Search themes..."
-                  />
-                </CardBlock>
-
+                <CardSubtitle className="mb-2">{!needHelp ? "Preferred project themes" : "Themes of your project"} *</CardSubtitle>
+                {themes.length > 0 && (<CardContent>{formatList(themes, "theme")}</CardContent>)}
+                <CardInput
+                  type="text"
+                  value={themeSearchTerm}
+                  onChange={(e) => setThemeSearchTerm(e.target.value)}
+                  placeholder="Search themes..."
+                />
+              </CardBlock>
+              <CardBlock>
                 <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
-                  {filteredThemes.length > 0 ? (
-                    filteredThemes.map((theme) => (
-                      <div
-                        key={theme}
-                        className="flex justify-between items-center p-2 hover:bg-gray-200 rounded"
+                  {filteredThemes.map((theme) => (
+                    <div key={theme} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
+                      <Checkbox
+                        checked={themes.includes(theme)}
+                        onChange={() => handleSelectTheme(theme)}
                       >
-                        <Checkbox
-                          checked={themes.includes(theme)}
-                          onChange={() => handleSelectTheme(theme)}
-                        >
-                          {theme}
-                        </Checkbox>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500">Oh snap! No themes found.</p>
-                  )}
+                        {theme}
+                      </Checkbox>
+                    </div>
+                  ))}
                 </div>
+                <CardInputError>{themesMessage}</CardInputError>
               </CardBlock>
 
               <CardButton onClick={saveSettings}>Save settings</CardButton>
@@ -584,402 +869,894 @@ const listOfThemes = [
   "Passion project"
 ];
 
-const listOfSkills = [
-  "Mechanical engineering",
-  "Electrical engineering",
-  "Civil engineering",
-  "Aerospace engineering",
-  "Robotics",
-  "Software engineering",
-  "Mechatronics",
-  "Materials science",
-  "Bioengineering",
-  "Computer engineering",
-  "Bioinformatics",
-  "Chemical engineering",
-  "Nanotechnology",
-  "Frontend development",
-  "Backend development",
-  "Fullstack development",
-  "Mobile development",
-  "Embedded systems",
-  "Machine learning",
-  "Artificial intelligence",
-  "Data science",
-  "Cybersecurity",
-  "Network engineering",
-  "Cloud computing",
-  "Embedded programming",
-  "Game development",
-  "Quantum computing",
-  "Autonomous vehicles",
-  "Space exploration",
-  "Environmental engineering",
-  "Renewable energy",
-  "Sustainable design",
-  "Control systems",
-  "Digital signal processing",
-  "Additive manufacturing",
-  "Augmented reality",
-  "Virtual reality",
-  "Blockchain technology",
-  "Digital twins",
-  "Smart cities",
-  "Human-computer interaction",
-  "Edge computing",
-  "Internet of things",
-  "Computer vision",
-  "Natural language processing",
-  "Microelectronics",
-  "Optoelectronics",
-  "Thermal engineering",
-  "Hydraulic systems",
-  "Structural engineering",
-  "Geotechnical engineering",
-  "Transportation engineering",
-  "Biomechanics",
-  "Pharmaceutical engineering",
-  "Process engineering",
-  "Energy storage systems",
-  "Battery technology",
-  "Fuel cells",
-  "Hydrogen power",
-  "Solar technology",
-  "Wind energy",
-  "Artificial neural networks",
-  "Evolutionary algorithms",
-  "Fuzzy logic systems",
-  "Augmentative robotics",
-  "Soft robotics",
-  "Swarm robotics",
-  "Human-robot interaction",
-  "Autonomous navigation",
-  "Aerodynamics",
-  "Flight dynamics",
-  "Orbital mechanics",
-  "Propulsion systems",
-  "Spacecraft design",
-  "Astrodynamics",
-  "Planetary science",
-  "Satellite technology",
-  "Ground control systems",
-  "Sensor networks",
-  "Wearable technology",
-  "Biometric systems",
-  "Digital forensics",
-  "Ethical hacking",
-  "Penetration testing",
-  "Data privacy",
-  "Data visualization",
-  "Big data analytics",
-  "Predictive modeling",
-  "Reinforcement learning",
-  "Computer graphics",
-  "Procedural generation",
-  "Audio engineering",
-  "Virtual production",
-  "Film technology",
-  "Interactive storytelling",
-  "Educational technology",
-  "Digital art",
-  "Creative coding",
-  "Renewable resources",
-  "Ocean engineering",
-  "Marine robotics",
-  "Aquaculture systems",
-  "Deep learning",
-  "Genetic programming",
-  "Advanced manufacturing",
-  "3D printing",
-  "Rapid prototyping",
-  "Quality assurance",
-  "Automotive systems",
-  "Aviation safety",
-  "Turbomachinery",
-  "Structural dynamics",
-  "Bioinstrumentation",
-  "Clinical engineering",
-  "Medical imaging",
-  "Telemedicine",
-  "Health informatics",
-  "Biorobotics",
-  "Neural engineering",
-  "Synthetic biology",
-  "Agricultural technology",
-  "Precision farming",
-  "Food technology",
-  "Packaging science",
-  "Recycling technology",
-  "Waste management",
-  "Water resources",
-  "Irrigation systems",
-  "Flood management",
-  "Erosion control",
-  "Seismic engineering",
-  "Fire protection engineering",
-  "Acoustics",
-  "Vibration analysis",
-  "Plasma physics",
-  "Photonics",
-  "Quantum mechanics",
-  "Quantum cryptography",
-  "Nanophotonics",
-  "Metamaterials",
-  "Spintronics",
-  "Magnetics",
-  "Thermoelectric materials",
-  "High-performance computing",
-  "Parallel processing",
-  "Distributed systems",
-  "Computer architecture",
-  "Compiler design",
-  "Operating systems",
-  "Virtualization",
-  "Serverless computing",
-  "DevOps",
-  "Site reliability engineering",
-  "Continuous integration",
-  "Continuous deployment",
-  "API design",
-  "Microservices",
-  "Containerization",
-  "Kubernetes",
-  "Cloud-native applications",
-  "Server architecture",
-  "Robust system design",
-  "Real-time systems",
-  "Low-latency systems",
-  "High-availability systems",
-  "Fault-tolerant design",
-  "Chaos engineering",
-  "Scalability",
-  "Performance optimization",
-  "Memory management",
-  "Concurrency",
-  "Parallelism",
-  "Threading",
-  "Asynchronous programming",
-  "Functional programming",
-  "Object-oriented programming",
-  "Procedural programming",
-  "Logic programming",
-  "Game AI",
-  "Physics engines",
-  "Shader programming",
-  "Augmented storytelling",
-  "Creative machine learning",
-  "Generative design",
-  "Music technology",
-  "Speech recognition",
-  "Language translation",
-  "Sentiment analysis",
-  "Social network analysis",
-  "Knowledge graphs",
-  "Graph databases",
-  "Information retrieval",
-  "Search engine optimization",
-  "Web scraping",
-  "Data engineering",
-  "Data pipelines",
-  "ETL processes",
-  "Data governance",
-  "Data lineage",
-  "Master data management",
-  "Business intelligence",
-  "Decision support systems",
-  "Robotic process automation",
-  "Industrial automation",
-  "Supply chain optimization",
-  "Logistics management",
-  "Resource allocation",
-  "Scheduling algorithms",
-  "Inventory control",
-  "Operations research",
-  "Financial engineering",
-  "Risk management",
-  "Portfolio optimization",
-  "Algorithmic trading",
-  "Cryptography",
-  "Steganography",
-  "Digital watermarking",
-  "Privacy-preserving computation",
-  "Federated learning",
-  "Differential privacy",
-  "Secure multiparty computation",
-  "Homomorphic encryption",
-  "Organic chemistry",
-  "Inorganic chemistry",
-  "Physical chemistry",
-  "Analytical chemistry",
-  "Biochemistry",
-  "Molecular biology",
-  "Cell biology",
-  "Genomics",
-  "Proteomics",
-  "Metabolomics",
-  "Synthetic chemistry",
-  "Pharmacology",
-  "Toxicology",
-  "Immunology",
-  "Microbiology",
-  "Virology",
-  "Epidemiology",
-  "Neuroscience",
-  "Stem cell research",
-  "Regenerative medicine",
-  "Biomedical devices",
-  "Drug delivery systems",
-  "Vaccine development",
-  "Cancer research",
-  "Clinical trials",
-  "Diagnostics",
-  "Pathology",
-  "Forensic science",
-  "Human genetics",
-  "Biophysical chemistry",
-  "Enzymology",
-  "Nanomedicine",
-  "Biosensors",
-  "Tissue engineering",
-  "Bioinformatics pipelines",
-  "CRISPR technology",
-  "Gene editing",
-  "Epigenetics",
-  "Metabolic engineering",
-  "Protein folding",
-  "Structural biology",
-  "Quantum biology",
-  "Photobiology",
-  "Ecotoxicology",
-  "Marine biology",
-  "Plant science",
-  "Agrochemistry",
-  "Food chemistry",
-  "Flavor chemistry",
-  "Cosmetic chemistry",
-  "Industrial microbiology",
-  "Biofuels",
-  "Biodegradable materials",
-  "Environmental toxicology",
-  "Water purification",
-  "Air pollution control",
-  "Green chemistry",
-  "Life cycle analysis",
-  "Waste-to-energy conversion",
-  "Carbon capture and storage",
-  "Climate modeling",
-  "Environmental biotechnology",
-  "Java",
-  "Python",
-  "JavaScript",
-  "TypeScript",
-  "C++",
-  "C#",
-  "Ruby",
-  "Swift",
-  "Kotlin",
-  "Rust",
-  "Go",
-  "Dart",
-  "Scala",
-  "Haskell",
-  "Clojure",
-  "Erlang",
-  "R language",
-  "Perl",
-  "PHP",
-  "SQL",
-  "HTML",
-  "CSS",
-  "Tailwind CSS",
-  "Bootstrap",
-  "Material-UI",
-  "React",
-  "Angular",
-  "Vue",
-  "Svelte",
-  "Next.js",
-  "Gatsby",
-  "Nuxt.js",
-  "Node.js",
-  "Express",
-  "Socket.io",
-  "GraphQL",
-  "Prisma",
-  "Hasura",
-  "REST APIs",
-  "JSON APIs",
-  "WebSockets",
-  "Serverless",
-  "AWS Lambda",
-  "Google Cloud Functions",
-  "Azure Functions",
-  "Firebase",
-  "Netlify Functions",
-  "Vercel Functions",
-  "MongoDB",
-  "PostgreSQL",
-  "MySQL",
-  "SQLite",
-  "MariaDB",
-  "Redis",
-  "Memcached",
-  "Elasticsearch",
-  "Solr",
-  "Cassandra",
-  "Couchbase",
-  "DynamoDB",
-  "Firestore",
-  "FaunaDB",
-  "Supabase",
-  "Flask",
-  "Django",
-  "FastAPI",
-  "C language",
-  "Assembly",
-  "Shell scripting",
-  "PowerShell",
-  "Bash",
-  "Zsh",
-  "Arduino",
-  "Raspberry Pi",
-  "ESP32",
-  "ESP8266",
-  "STM32",
-  "PIC",
-  "AVR",
-  "ARM",
-  "MIPS",
-  "x86",
-  "WebAssembly",
-  "OpenGL",
-  "Wolfram Language",
-  "MATLAB",
-  "CAD",
-  "System design",
-  "Software architecture",
-  "VHDL",
-  "Verilog",
-  "FPGA",
-  "ASIC",
-  "SolidWorks",
-  "AutoCAD",
-  "Blender",
-  "Unity",
-  "Fusion 360",
-  "KiCad",
-  "Eagle",
-  "Altium Designer",
-  "OrCAD",
-  "LTspice",
-  "LabVIEW",
-  "Simulink",
-  "Ansys",
-  "PCB design",
-  "Graphic design",
-  "UI/UX design",
-  "Product design",
-  "Industrial design",
-  "Figma",
-  "Adobe Creative Suite",
-];
+const countries = {
+  "Prefer not to say": [],
+  "USA": [
+    "New York",
+    "Los Angeles",
+    "Chicago",
+    "Houston",
+    "Phoenix",
+    "Philadelphia",
+    "San Antonio",
+    "San Diego",
+    "Dallas",
+    "San Jose",
+    "Austin",
+    "Jacksonville",
+    "Fort Worth",
+    "Columbus",
+    "Charlotte",
+    "San Francisco",
+    "Indianapolis",
+    "Seattle",
+    "Denver",
+    "Washington, D.C.",
+    "Boston",
+    "El Paso",
+    "Nashville",
+    "Detroit",
+    "Oklahoma City",
+    "Portland",
+    "Las Vegas",
+    "Memphis",
+    "Louisville",
+    "Baltimore",
+    "Milwaukee",
+    "Albuquerque",
+    "Tucson",
+    "Fresno",
+    "Sacramento",
+    "Kansas City",
+    "Long Beach",
+    "Mesa",
+    "Atlanta",
+    "Colorado Springs",
+    "Virginia Beach",
+    "Raleigh",
+    "Omaha",
+    "Miami",
+    "Oakland",
+    "Minneapolis",
+    "Tulsa",
+    "Wichita",
+    "New Orleans",
+    "Arlington",
+    "Other"
+  ],
+  "Canada": [
+    "Toronto",
+    "Vancouver",
+    "Montreal",
+    "Calgary",
+    "Ottawa",
+    "Edmonton",
+    "Winnipeg",
+    "Quebec City",
+    "Hamilton",
+    "Kitchener",
+    "London",
+    "Victoria",
+    "Halifax",
+    "Oshawa",
+    "Windsor",
+    "Saskatoon",
+    "St. Catharines",
+    "Regina",
+    "St. John's",
+    "Kelowna",
+    "Other"
+  ],
+  "UK": [
+    "London",
+    "Manchester",
+    "Birmingham",
+    "Leeds",
+    "Glasgow",
+    "Liverpool",
+    "Edinburgh",
+    "Bristol",
+    "Sheffield",
+    "Newcastle",
+    "Leicester",
+    "Nottingham",
+    "Southampton",
+    "Portsmouth",
+    "Oxford",
+    "Cambridge",
+    "Cardiff",
+    "Belfast",
+    "Aberdeen",
+    "Dundee",
+    "Other"
+  ],
+  "Australia": [
+    "Sydney",
+    "Melbourne",
+    "Brisbane",
+    "Perth",
+    "Adelaide",
+    "Gold Coast",
+    "Canberra",
+    "Newcastle",
+    "Wollongong",
+    "Hobart",
+    "Geelong",
+    "Townsville",
+    "Cairns",
+    "Toowoomba",
+    "Darwin",
+    "Ballarat",
+    "Bendigo",
+    "Albury",
+    "Launceston",
+    "Mackay",
+    "Other"
+  ],
+  "India": [
+    "Mumbai",
+    "Delhi",
+    "Bangalore",
+    "Hyderabad",
+    "Chennai",
+    "Kolkata",
+    "Pune",
+    "Ahmedabad",
+    "Surat",
+    "Jaipur",
+    "Lucknow",
+    "Kanpur",
+    "Nagpur",
+    "Indore",
+    "Thane",
+    "Bhopal",
+    "Visakhapatnam",
+    "Patna",
+    "Vadodara",
+    "Ghaziabad",
+    "Other"
+  ],
+  "Germany": [
+    "Berlin",
+    "Hamburg",
+    "Munich",
+    "Cologne",
+    "Frankfurt",
+    "Stuttgart",
+    "Düsseldorf",
+    "Dortmund",
+    "Essen",
+    "Leipzig",
+    "Bremen",
+    "Dresden",
+    "Hanover",
+    "Nuremberg",
+    "Duisburg",
+    "Bochum",
+    "Wuppertal",
+    "Bielefeld",
+    "Bonn",
+    "Münster",
+    "Other"
+  ],
+  "France": [
+    "Paris",
+    "Marseille",
+    "Lyon",
+    "Toulouse",
+    "Nice",
+    "Nantes",
+    "Strasbourg",
+    "Montpellier",
+    "Bordeaux",
+    "Lille",
+    "Rennes",
+    "Reims",
+    "Le Havre",
+    "Saint-Étienne",
+    "Toulon",
+    "Grenoble",
+    "Dijon",
+    "Angers",
+    "Nîmes",
+    "Villeurbanne",
+    "Other"
+  ],
+  "Japan": [
+    "Tokyo",
+    "Osaka",
+    "Nagoya",
+    "Sapporo",
+    "Fukuoka",
+    "Kobe",
+    "Kyoto",
+    "Kawasaki",
+    "Saitama",
+    "Hiroshima",
+    "Sendai",
+    "Kitakyushu",
+    "Chiba",
+    "Sakai",
+    "Niigata",
+    "Hamamatsu",
+    "Shizuoka",
+    "Okayama",
+    "Kumamoto",
+    "Sagamihara",
+    "Other"
+  ],
+  "China": [
+    "Beijing",
+    "Shanghai",
+    "Guangzhou",
+    "Shenzhen",
+    "Chengdu",
+    "Tianjin",
+    "Wuhan",
+    "Chongqing",
+    "Hangzhou",
+    "Xi'an",
+    "Nanjing",
+    "Shenyang",
+    "Harbin",
+    "Qingdao",
+    "Dalian",
+    "Zhengzhou",
+    "Jinan",
+    "Changsha",
+    "Kunming",
+    "Fuzhou",
+    "Other"
+  ],
+  "Brazil": [
+    "São Paulo",
+    "Rio de Janeiro",
+    "Brasília",
+    "Salvador",
+    "Fortaleza",
+    "Belo Horizonte",
+    "Manaus",
+    "Curitiba",
+    "Recife",
+    "Porto Alegre",
+    "Belém",
+    "Goiânia",
+    "Guarulhos",
+    "Campinas",
+    "São Luís",
+    "São Gonçalo",
+    "Maceió",
+    "Duque de Caxias",
+    "Natal",
+    "Teresina",
+    "Other"
+  ]
+}
+
+const categorizedSkills = {
+  "Engineering Disciplines": {
+    "Core Engineering": [
+      "Mechanical engineering",
+      "Electrical engineering",
+      "Civil engineering",
+      "Aerospace engineering",
+      "Chemical engineering",
+      "Computer engineering",
+      "Environmental engineering",
+      "Industrial engineering",
+      "Nuclear engineering",
+      "Materials science"
+    ],
+    "Interdisciplinary Engineering": [
+      "Bioengineering",
+      "Mechatronics",
+      "Neural engineering",
+      "Financial engineering",
+      "Systems engineering",
+      "Automotive engineering",
+      "Ocean engineering",
+      "Clinical engineering"
+    ]
+  },
+
+  "Specialized Engineering": {
+    "Emerging Fields": [
+      "Nanoengineering",
+      "Quantum engineering",
+      "Plasma engineering",
+      "Cryogenic engineering"
+    ],
+    "Industry-Specific Engineering": [
+      "Textile engineering",
+      "Agricultural engineering",
+      "Mining engineering",
+      "Petroleum engineering",
+      "Marine engineering",
+      "Railway engineering",
+      "Packaging engineering",
+      "Fire protection engineering",
+      "Geodetic engineering",
+      "Geomatics engineering"
+    ],
+    "Infrastructure & Construction": [
+      "Architectural engineering",
+      "Construction engineering",
+      "Pipeline engineering",
+      "Water resources engineering",
+      "Earthquake engineering",
+      "Building services engineering"
+    ],
+    "Technology-Driven Engineering": [
+      "Control systems engineering",
+      "Optical engineering",
+      "Power systems engineering",
+      "Telecommunications engineering",
+      "Space systems engineering",
+      "Avionics engineering"
+    ]
+  },
+
+  "Software Development": {
+    "Programming Languages": [
+      "Java",
+      "Python",
+      "JavaScript",
+      "TypeScript",
+      "C++",
+      "C#",
+      "Ruby",
+      "Swift",
+      "Kotlin",
+      "Rust",
+      "Go",
+      "Dart",
+      "Scala",
+      "Haskell",
+      "Clojure",
+      "Erlang",
+      "R language",
+      "Perl",
+      "PHP",
+      "SQL",
+      "C language",
+      "Assembly",
+      "WebAssembly",
+      "Wolfram Language",
+      "MATLAB",
+      "Cobol",
+      "Julia",
+      "F#",
+      "Lisp",
+      "Bash scripting",
+      "Ada",
+      "ABAP",
+      "ActionScript",
+      "APL",
+      "Ballerina",
+      "Crystal",
+      "D",
+      "Delphi",
+      "Elixir",
+      "Elm",
+      "Fortran",
+      "Groovy",
+      "Hack",
+      "Io",
+      "J",
+      "Lua",
+      "Mercury",
+      "Nim",
+      "OCaml",
+      "Pascal",
+      "Prolog",
+      "PureScript",
+      "Racket",
+      "Reason",
+      "ReScript",
+      "Scheme",
+      "Smalltalk",
+      "Standard ML",
+      "TCL",
+      "VBA",
+      "Zig"
+    ],
+    "Web Development": {
+      "Frontend": [
+        "HTML",
+        "CSS",
+        "Tailwind CSS",
+        "Bootstrap",
+        "Material-UI",
+        "React",
+        "Angular",
+        "Vue",
+        "Svelte",
+        "Next.js",
+        "Gatsby",
+        "Nuxt.js",
+        "SolidJS",
+        "Alpine.js",
+        "Astro",
+        "Ember.js",
+        "Lit",
+        "Marko",
+        "Mithril",
+        "Polymer",
+        "Preact",
+        "Qwik",
+        "Remix",
+        "Stimulus",
+        "Stencil",
+        "Svelte Kit",
+        "Web Components"
+      ],
+      "Backend": [
+        "Node.js",
+        "Deno",
+        "Express",
+        "Socket.io",
+        "GraphQL",
+        "Prisma",
+        "Hasura",
+        "REST APIs",
+        "JSON APIs",
+        "WebSockets",
+        "Flask",
+        "Django",
+        "FastAPI",
+        "Spring Boot",
+        "Ruby on Rails",
+        "Laravel",
+        "NestJS",
+        "AdonisJS",
+        "ASP.NET Core",
+        "Axum",
+        "Bottle",
+        "CakePHP",
+        "Chi",
+        "Echo",
+        "Falcon",
+        "Fiber",
+        "Gin",
+        "Grails",
+        "Ktor",
+        "Micronaut",
+        "Quarkus",
+        "Rocket",
+        "Sails.js",
+        "Symfony",
+        "Tornado",
+        "Vert.x",
+        "Vapor"
+      ],
+      "Build Tools & Bundlers": [
+        "Babel",
+        "Browserify",
+        "ESBuild",
+        "Grunt",
+        "Gulp",
+        "Parcel",
+        "Rollup",
+        "Snowpack",
+        "SWC",
+        "Turbopack",
+        "Vite",
+        "Webpack"
+      ]
+    },
+    "Databases": {
+      "Relational": [
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "MariaDB"
+      ],
+      "NoSQL": [
+        "MongoDB",
+        "Redis",
+        "Memcached",
+        "Elasticsearch",
+        "Cassandra",
+        "Couchbase",
+        "DynamoDB",
+        "Firestore",
+        "FaunaDB",
+        "Supabase"
+      ],
+      "Specialized": [
+        "Graph databases",
+        "Time-series databases",
+        "Neo4j",
+        "InfluxDB"
+      ]
+    },
+    "DevOps & Cloud": {
+      "Cloud Platforms": [
+        "Amazon Web Services (AWS)",
+        "Google Cloud Platform (GCP)",
+        "Microsoft Azure",
+        "Alibaba Cloud",
+        "DigitalOcean",
+        "Heroku",
+        "IBM Cloud",
+        "Oracle Cloud",
+        "Rackspace",
+        "Red Hat OpenShift",
+        "SAP Cloud Platform",
+        "VMware Cloud"
+      ],
+      "DevOps Tools": [
+        "Docker",
+        "Kubernetes",
+        "Terraform",
+        "Ansible",
+        "Helm",
+        "Jenkins",
+        "Prometheus",
+        "Grafana",
+        "Datadog",
+        "Splunk",
+        "ELK Stack",
+        "New Relic",
+        "OpenTelemetry",
+        "Zipkin"
+      ],
+      "Serverless & Functions": [
+        "AWS Lambda",
+        "Google Cloud Functions",
+        "Azure Functions",
+        "Firebase",
+        "Netlify Functions",
+        "Vercel Functions"
+      ]
+    }
+  },
+
+  "Data Science & Analytics": {
+    "Core Concepts": [
+      "Statistical analysis",
+      "Data mining",
+      "Data cleaning",
+      "Feature engineering",
+      "Dimensionality reduction",
+      "Time series analysis",
+      "Anomaly detection",
+      "Pattern recognition",
+      "Cluster analysis",
+      "Regression analysis",
+      "Classification algorithms",
+      "Ensemble methods",
+      "Cross-validation",
+      "Hyperparameter tuning"
+    ],
+    "Tools & Libraries": [
+      "NumPy",
+      "Pandas",
+      "SciPy",
+      "Scikit-learn",
+      "TensorFlow",
+      "PyTorch",
+      "Keras",
+      "XGBoost",
+      "LightGBM",
+      "CatBoost",
+      "Spark MLlib",
+      "H2O.ai",
+      "RAPIDS",
+      "Dask"
+    ],
+    "Visualization": [
+      "Matplotlib",
+      "Seaborn",
+      "Plotly",
+      "D3.js",
+      "Tableau",
+      "Power BI",
+      "Looker",
+      "Grafana",
+      "Kibana",
+      "Observable"
+    ]
+  },
+
+  "Artificial Intelligence": {
+    "Core AI": [
+      "Machine learning",
+      "Deep learning",
+      "Artificial neural networks",
+      "Reinforcement learning",
+      "Explainable AI",
+      "AI ethics"
+    ],
+    "Applications": [
+      "Natural language processing",
+      "Computer vision",
+      "Predictive modeling",
+      "Big data analytics",
+      "Business intelligence",
+      "Data engineering"
+    ]
+  },
+
+  "Game Development": {
+    "Engines & Frameworks": [
+      "Unity",
+      "Unreal Engine",
+      "Godot",
+      "LÖVE",
+      "Phaser",
+      "Cocos2d",
+      "MonoGame",
+      "PlayCanvas",
+      "Babylon.js",
+      "Three.js"
+    ],
+    "Graphics Programming": [
+      "DirectX",
+      "Vulkan",
+      "Metal",
+      "WebGL",
+      "OpenGL",
+      "GLSL",
+      "HLSL",
+      "Ray tracing",
+      "Shader programming",
+      "Particle systems"
+    ],
+    "Game Design": [
+      "Level design",
+      "Game mechanics",
+      "Game balance",
+      "Game economy",
+      "Character design",
+      "Sound design",
+      "UI/UX for games",
+      "Game analytics",
+      "Multiplayer networking",
+      "Physics simulation"
+    ]
+  },
+
+  "Digital Content Creation": {
+    "2D Graphics": [
+      "Adobe Photoshop",
+      "Adobe Illustrator",
+      "Affinity Designer",
+      "Affinity Photo",
+      "Krita",
+      "GIMP",
+      "Inkscape",
+      "Sketch",
+      "CorelDRAW",
+      "Vector graphics"
+    ],
+    "3D Graphics": [
+      "Maya",
+      "3ds Max",
+      "Cinema 4D",
+      "ZBrush",
+      "Houdini",
+      "Substance Painter",
+      "Substance Designer",
+      "Marvelous Designer",
+      "SketchUp",
+      "Rhinoceros 3D"
+    ],
+    "Video & Motion": [
+      "Adobe Premiere Pro",
+      "Adobe After Effects",
+      "DaVinci Resolve",
+      "Final Cut Pro",
+      "Motion",
+      "Nuke",
+      "Fusion",
+      "Mocha Pro",
+      "Avid Media Composer",
+      "Animation"
+    ]
+  },
+
+  "Hardware & Electronics": {
+    "Embedded Systems": [
+      "Arduino",
+      "Raspberry Pi",
+      "ESP32",
+      "ESP8266",
+      "STM32",
+      "PIC",
+      "AVR",
+      "ARM",
+      "MIPS",
+      "x86",
+      "FPGA",
+      "ASIC",
+      "PCB design",
+      "Microelectronics",
+      "Embedded programming",
+      "Verilog",
+      "VHDL",
+      "Embedded C",
+      "Embedded Rust"
+    ],
+    "IoT & Wearables": [
+      "IoT hardware",
+      "Wearable electronics",
+      "Flexible electronics"
+    ],
+    "Electronics": [
+      "Analog design",
+      "Power systems",
+      "Radiation shielding",
+      "Digital logic",
+      "Soldering",
+    ],
+    "Communication": [
+      "LoRa",
+      "Bluetooth",
+      "WiFi",
+      "UHF",
+      "VHF",
+      "HF",
+      "MF",
+      "SHF",
+      "EHF",
+      "RF design",
+      "Radio engineering",
+      "Ham radio",
+      "Zigbee"
+    ]
+  },
+
+  "Quantum Technologies": {
+    "Quantum Computing": [
+      "Quantum algorithms",
+      "Quantum error correction",
+      "Quantum machine learning",
+      "Quantum simulation",
+      "Quantum optimization",
+      "Quantum chemistry",
+      "Quantum communication",
+      "Quantum networking",
+      "Quantum software development"
+    ],
+    "Hardware & Tools": [
+      "Qiskit",
+      "Cirq",
+      "Q#",
+      "Forest",
+      "ProjectQ",
+      "OpenQASM",
+      "Quantum hardware control",
+      "Quantum circuit design",
+      "Quantum error mitigation",
+      "Quantum validation"
+    ]
+  },
+
+  "Security": {
+    "Cybersecurity": [
+      "Cybersecurity",
+      "Digital forensics",
+      "Ethical hacking",
+      "Penetration testing",
+      "Data privacy",
+      "Cryptography",
+      "Quantum cryptography",
+      "Steganography",
+      "Digital watermarking",
+      "Malware analysis",
+      "Reverse engineering"
+    ]
+  },
+
+  "Biotechnology & Life Sciences": {
+    "Core Fields": [
+      "Bioinformatics",
+      "Synthetic biology",
+      "Molecular biology",
+      "Cell biology",
+      "Genomics",
+      "Proteomics",
+      "CRISPR technology",
+      "Gene editing",
+      "Biomedical devices",
+      "Tissue engineering",
+      "Stem cell research",
+      "Biophotonics",
+      "Biomechanics"
+    ]
+  },
+
+  "Chemistry & Materials": {
+    "Core Chemistry": [
+      "Organic chemistry",
+      "Inorganic chemistry",
+      "Physical chemistry",
+      "Analytical chemistry",
+      "Biochemistry",
+      "Green chemistry"
+    ],
+    "Materials Science": [
+      "Nanotechnology",
+      "Metamaterials",
+      "Biodegradable materials",
+      "Polymers",
+      "Ceramics",
+      "Superconductors"
+    ]
+  },
+
+  "Environmental & Energy": {
+    "Renewable Energy": [
+      "Solar technology",
+      "Wind energy",
+      "Hydrogen power",
+      "Biofuels",
+      "Carbon capture and storage",
+      "Nuclear fusion"
+    ],
+    "Environmental Science": [
+      "Climate modeling",
+      "Environmental biotechnology",
+      "Water purification",
+      "Air pollution control",
+      "Sustainable design"
+    ]
+  },
+
+  "Robotics & Automation": {
+    "Core Robotics": [
+      "Robotics",
+      "Soft robotics",
+      "Swarm robotics",
+      "Biorobotics",
+      "Industrial automation",
+      "Robotic process automation",
+      "Human-robot interaction",
+      "Autonomous navigation",
+      "Autonomous vehicles",
+      "Drone technology",
+      "Exoskeletons",
+      "Biomimicry"
+    ]
+  },
+
+  "System Architecture": {
+    "Core Concepts": [
+      "System design",
+      "Software architecture",
+      "Computer architecture",
+      "Server architecture",
+      "Microservices",
+      "Distributed systems",
+      "High-performance computing",
+      "Real-time systems",
+      "Edge computing",
+      "Parallel computing"
+    ]
+  },
+
+  "Mathematics & Theoretical Computing": {
+    "Core Mathematics": [
+      "Linear algebra",
+      "Calculus",
+      "Probability & statistics",
+      "Differential equations",
+      "Fourier analysis",
+      "Graph theory",
+      "Combinatorics",
+      "Game theory",
+      "Information theory",
+      "Mathematical optimization",
+      "Numerical methods",
+      "Chaos theory"
+    ],
+    "Theoretical Computing": [
+      "Quantum computing",
+      "Computational complexity",
+      "Algorithm design",
+      "Turing machines",
+      "Formal methods"
+    ]
+  }
+};

@@ -50,7 +50,7 @@ export function CardTitle({ size = 1, children, className }: CardProps) {
 }
 
 export function CardContent({ children, className }: CardProps) {
-    return <div className={`${className}`}>{children}</div>;
+    return <div className={`mb-3 ${className}`}>{children}</div>;
 }
 
 export function CardContainer({ children, className }: CardProps) {
