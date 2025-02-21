@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useUser } from "@auth0/nextjs-auth0/client";
-import { useRouter } from 'next/navigation';
+import { Card, CardContainer, CardTitle, CardContent, CardBlock, CardButton } from "../../components/card"
 import { Header, HeaderLogo, HeaderNav } from "../../components/header"
 import GradientButton from "../../components/button";
-import { Card, CardContainer, CardTitle, CardContent, CardSubtitle, CardBlock, CardButton } from "../../components/card"
 import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
 import Warning from "../../components/warning";
 import ProfileCard from "../../components/profileCard";
-import { match } from "assert";
+
+import { useState, useEffect, useCallback } from "react";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { useRouter } from 'next/navigation';
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -38,16 +38,9 @@ export default function Home() {
   const [redirecting, setRedirecting] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  // const [errorPresent, setErrorPresent] = useState(false);
 
   const { user, isLoading } = useUser();
   const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/api/auth/login");
-    }
-  }, [isLoading, user, router]);
 
   function isValidURL(url: string): boolean {
     try {
@@ -58,15 +51,47 @@ export default function Home() {
     }
   }
 
-  // useEffect(() => {
-  //   if (errorMessage !== "") {
-  //     const timer = setTimeout(() => {
-  //       setErrorMessage("");
-  //     }, 5000);
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/api/auth/login");
+    }
+  }, [isLoading, user, router]);
 
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [errorMessage]);
+  useEffect(() => {
+    if (!isLoading && user) {
+      const getStatus = async () => {
+        try {
+          const response = await fetch(SERVER + "/api/get-status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: user.sub }),
+          });
+          if (!response.ok) {
+            const error = await response.json();
+            setErrorMessage("Server-side error: " + error.error);
+          } else {
+            const data = await response.json();
+
+            if (data.someSettings ?? false) {
+              const message = encodeURIComponent("You were redirected here because some fields are not filled out or a new field was added.");
+              router.push(`/settings?redirectMessage=${message}`);
+            }
+            if (data.noSettings ?? false) {
+              const message = encodeURIComponent("You were redirected because this is your first time using the platform and you need to complete onboarding.");
+              router.push(`/onboarding?redirectMessage=${message}`);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch settings:", error);
+          setErrorMessage("Client-side error: " + error);
+        }
+      };
+
+      getStatus();
+    }
+  }, [isLoading, user, router]);
 
   const saveForLater = useCallback(async () => {
     try {
@@ -80,12 +105,10 @@ export default function Home() {
       if (!response.ok) {
         const error = await response.json();
         setErrorMessage("Server-side error: " + error.error);
-        // setErrorPresent(true);
-      } 
+      }
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);
       setErrorMessage("Client-side error: " + error);
-      // setErrorPresent(true);
     }
     setPolled(true);
   }, [user, matchID]);
@@ -165,11 +188,11 @@ export default function Home() {
       </Header>
 
       {polled && !redirecting && errorMessage !== "" && (
-        <Error className="mt-24">{errorMessage}</Error>
+        <Error className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
       )}
 
       {warningMessage !== "" && (
-        <Warning className={`${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
+        <Warning className={`w-full sm:w-1/2 ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
       )}
 
       <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") && polled && !redirecting ? 'mt-5' : 'mt-24'}`}>
