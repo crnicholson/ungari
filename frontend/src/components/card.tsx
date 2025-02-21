@@ -108,3 +108,17 @@ export function CardButton({ children, onClick, className }: CardProps) {
     );
 }
 
+export function CardInputError({ children, className }: CardProps) {
+    return (
+        <>
+            {children && (
+                <div className={`text-red-400 mt-2 flex flex-row items-center gap-1 ${className}`}>
+                    <span className="material-symbols-outlined">
+                        error
+                    </span>
+                    {children}
+                </div>
+            )}
+        </>
+    );
+}
