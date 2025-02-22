@@ -188,11 +188,11 @@ export default function Home() {
       </Header>
 
       {polled && !redirecting && errorMessage !== "" && (
-        <Error className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
+        <Error onClick={() => setErrorMessage("")} className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
       )}
 
       {warningMessage !== "" && (
-        <Warning className={`w-full sm:w-1/2 ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
+        <Warning onClick={() => setWarningMessage("")} className={`w-full sm:w-1/2 ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
       )}
 
       <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") && polled && !redirecting ? 'mt-5' : 'mt-24'}`}>

@@ -609,11 +609,11 @@ export default function Settings() {
       </Header>
 
       {errorMessage !== "" && (
-        <Error className="sm:w-1/2 w-full mt-24">{errorMessage}</Error>
+        <Error onClick={() => setErrorMessage("")} className="sm:w-1/2 w-full mt-24">{errorMessage}</Error>
       )}
 
       {warningMessage !== "" && (
-        <Warning className={`sm:w-1/2 w-full ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
+        <Warning onClick={() => setWarningMessage("")} className={`sm:w-1/2 w-full ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
       )}
 
       <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>

@@ -61,7 +61,7 @@ export default function Home() {
                 </HeaderLogo>
             </Header>
 
-            {errorMessage !== "" && <Error>{errorMessage}</Error>}
+            {errorMessage !== "" && <Error onClick={() => setErrorMessage("")}>{errorMessage}</Error>}
 
             <CardContainer className={`${errorMessage !== "" ? "mt-5" : "mt-0"}`}>
                 <Card className="w-full">
