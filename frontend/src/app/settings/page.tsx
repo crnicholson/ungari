@@ -61,6 +61,7 @@ export default function Settings() {
   const [projectLinkMessage, setProjectLinkMessage] = useState("");
 
   const [skills, setSkills] = useState([]);
+  const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
   const [themes, setThemes] = useState([]);
 
   const [skillsMessage, setSkillsMessage] = useState("");
@@ -68,7 +69,6 @@ export default function Settings() {
 
   const [skillSearchTerm, setSkillSearchTerm] = useState("");
   const [themeSearchTerm, setThemeSearchTerm] = useState("");
-  const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
   const [expandedCategories, setExpandedCategories] = useState({});
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -84,7 +84,6 @@ export default function Settings() {
       [skill]: level
     }));
   };
-
 
   const getSkillLevelLabel = (level: number) => {
     const labels = [
@@ -154,11 +153,19 @@ export default function Settings() {
     return nameRegex.test(name);
   }
 
-  const handleSelectSkill = (skill) => {
+  const handleSelectSkill = (skill: string) => {
     if (skills.includes(skill)) {
-      setSkills(skills.filter((t) => t !== skill));
+      setSkills(skills.filter((s) => s !== skill));
+      setSkillLevels(prev => {
+        const { [skill]: _, ...rest } = prev;
+        return rest;
+      });
     } else {
       setSkills([...skills, skill]);
+      setSkillLevels(prev => ({
+        ...prev,
+        [skill]: 1
+      }));
     }
   };
 
@@ -434,6 +441,9 @@ export default function Settings() {
     let missingFields = [];
     let hasErrors = false;
 
+    console.log(skillLevels);
+    console.log(skills);
+
     if (!imageLink) {
       missingFields.push("profile picture");
       setImageMessage("Profile picture is required");
@@ -625,7 +635,6 @@ export default function Settings() {
     }
   };
 
-  // Render skills with nested structure
   const renderSkills = (items, path = "") => {
     if (Array.isArray(items)) {
       return items.map((skill) => (
@@ -642,14 +651,14 @@ export default function Settings() {
             </Checkbox>
           </div>
           {skills.includes(skill) && (
-            <div className="flex items-center gap-5 w-full lg:w-1/2">
+            <div className="flex items-center gap-3 w-full lg:w-1/2">
               <input
                 type="range"
                 min="1"
                 max="5"
                 value={skillLevels[skill] || 1}
                 onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
-                className="w-full lg:w-1/2 h-2 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
               />
               <span className="text-sm min-w-fit">
                 {getSkillLevelLabel(skillLevels[skill] || 1)}
@@ -665,11 +674,11 @@ export default function Settings() {
         return (
           <div key={key} className="mb-4">
             <div
-              className="flex items-center cursor-pointer"
+              className="flex items-center cursor-pointer h-fit mb-2"
               onClick={() => toggleDropdown(newPath)}
             >
-              <h3 className="font-semibold text-lg mb-2">{key}</h3>
-              <span className="ml-2">{isExpanded ? "▼" : "▶"}</span>
+              <h3 className="font-semibold h-full">{key}</h3>
+              <span className="h-full ml-2">{isExpanded ? "▼" : "▶"}</span>
             </div>
             {isExpanded && (
               <div className="ml-4">{renderSkills(value, newPath)}</div>
@@ -1003,7 +1012,6 @@ export default function Settings() {
                 />
               </CardBlock>
 
-              {/* Skills selection starts here! */}
               <CardBlock>
                 <div className="overflow-y-auto border p-3 rounded-xl max-h-[60vh]">
                   {skillSearchTerm ? (
@@ -1019,14 +1027,14 @@ export default function Settings() {
                             </Checkbox>
                           </div>
                           {skills.includes(skill) && (
-                            <div className="flex items-center gap-5 w-full lg:w-1/2">
+                            <div className="flex flex-row justify-left items-center gap-3 w-full lg:w-1/2">
                               <input
                                 type="range"
                                 min="1"
                                 max="5"
                                 value={skillLevels[skill] || 1}
                                 onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
-                                className="w-full lg:w-1/2 h-2 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                                className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
                               />
                               <span className="text-sm min-w-fit">
                                 {getSkillLevelLabel(skillLevels[skill] || 1)}
