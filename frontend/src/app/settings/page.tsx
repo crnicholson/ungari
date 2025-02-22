@@ -78,9 +78,12 @@ export default function Settings() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    if (!searchParams) return;
     const message = searchParams.get('redirectMessage');
     if (message) {
       setWarningMessage(message);
+    } else {
+      setWarningMessage('');
     }
   }, [searchParams]);
 
