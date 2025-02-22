@@ -8,7 +8,7 @@ import Error from "../../components/error";
 import Warning from "../../components/warning";
 import Checkbox from "../../components/checkbox";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "@auth0/nextjs-auth0/client";
@@ -75,17 +75,14 @@ export default function Settings() {
 
   const { user, isLoading } = useUser();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!searchParams) return;
-    const message = searchParams.get('redirectMessage');
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get('redirectMessage');
     if (message) {
       setWarningMessage(message);
-    } else {
-      setWarningMessage('');
     }
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     if (!isLoading && user) {
