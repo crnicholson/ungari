@@ -2,7 +2,7 @@
 
 import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardInputError, CardBlock, CardButton, CardRow } from "../../components/card";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
-import GradientButton from "../../components/button";
+import Button from "../../components/button";
 import Checkbox from "../../components/checkbox";
 import Warning from "../../components/warning";
 import Error from "../../components/error";
@@ -827,7 +827,7 @@ export default function Onboarding() {
                     <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
                 </HeaderLogo>
                 <HeaderNav>
-                    <GradientButton className="m-3" href="/api/auth/logout">Logout</GradientButton>
+                    <Button href="/api/auth/logout">Logout</Button>
                 </HeaderNav>
             </Header>
 

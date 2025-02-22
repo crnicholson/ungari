@@ -2,7 +2,7 @@
 
 import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardRow, CardBlock, CardButton, CardInputError, CardContent } from "../../components/card";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
-import GradientButton from "../../components/button";
+import Button from "../../components/button";
 import StyledLink from "../../components/styledLink";
 import Error from "../../components/error";
 import Warning from "../../components/warning";
@@ -75,6 +75,38 @@ export default function Settings() {
 
   const { user, isLoading } = useUser();
   const router = useRouter();
+
+  const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
+
+  // Add these helper functions
+  const handleSkillLevelChange = (skill: string, level: number) => {
+    setSkillLevels(prev => ({
+      ...prev,
+      [skill]: level
+    }));
+  };
+
+  const getSkillLevelColor = (level: number) => {
+    const colors = [
+      'bg-red-200',    // Beginner
+      'bg-orange-200', // Advanced Beginner
+      'bg-yellow-200', // Intermediate
+      'bg-green-200',  // Advanced
+      'bg-blue-200'    // Expert
+    ];
+    return colors[level - 1] || colors[0];
+  };
+
+  const getSkillLevelLabel = (level: number) => {
+    const labels = [
+      'Beginner',
+      'Advanced Beginner',
+      'Intermediate',
+      'Advanced',
+      'Expert'
+    ];
+    return labels[level - 1] || labels[0];
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -604,7 +636,7 @@ export default function Settings() {
           <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
         </HeaderLogo>
         <HeaderNav>
-          <GradientButton className="m-3" href="/api/auth/logout">Logout</GradientButton>
+          <Button href="/api/auth/logout">Logout</Button>
         </HeaderNav>
       </Header>
 
@@ -616,7 +648,7 @@ export default function Settings() {
         <Warning onClick={() => setWarningMessage("")} className={`sm:w-1/2 w-full ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
       )}
 
-      <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
+      <CardContainer className={`sm:w-3/4 lg:w-2/3 xl:w-1/2 w-full ${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Basic info</CardTitle>
           <StyledLink
@@ -922,13 +954,30 @@ export default function Settings() {
                   {skillSearchTerm ? (
                     filteredSkills.length > 0 ? (
                       filteredSkills.map((skill) => (
-                        <div key={skill} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
-                          <Checkbox
-                            onChange={() => handleSelectSkill(skill)}
-                            checked={skills.includes(skill)}
-                          >
-                            {skill}
-                          </Checkbox>
+                        <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
+                          <div className="w-full lg:w-auto">
+                            <Checkbox
+                              onChange={() => handleSelectSkill(skill)}
+                              checked={skills.includes(skill)}
+                            >
+                              {skill}
+                            </Checkbox>
+                          </div>
+                          {skills.includes(skill) && (
+                            <div className="flex items-center gap-5 w-full lg:w-1/2">
+                              <input
+                                type="range"
+                                min="1"
+                                max="5"
+                                value={skillLevels[skill] || 1}
+                                onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                                className="w-full lg:w-1/2 h-2 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                              />
+                              <span className="text-sm min-w-fit">
+                                {getSkillLevelLabel(skillLevels[skill] || 1)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       ))
                     ) : (
@@ -943,34 +992,65 @@ export default function Settings() {
                         {typeof items === 'object' && !Array.isArray(items) ? (
                           Object.entries(items).map(([subCategory, subItems]) => (
                             <div key={subCategory} className="ml-4 mb-3">
-                              <h4 className="font-medium text-sm mb-1 text-gray-600">{subCategory}</h4>
-                              <div className="space-y-1">
+                              <h4 className="font-medium text-sm mb-1">{subCategory}</h4>
+                              <div className="space-y-2">
                                 {Array.isArray(subItems) ? subItems.map((skill) => (
-                                  <div
-                                    key={skill}
-                                    className="flex justify-between items-center p-2 hover:bg-[--border] rounded"
-                                  >
-                                    <Checkbox
-                                      onChange={() => handleSelectSkill(skill)}
-                                      checked={skills.includes(skill)}
-                                    >
-                                      {skill}
-                                    </Checkbox>
+                                  <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
+                                    <div className="w-full lg:w-auto">
+                                      <Checkbox
+                                        onChange={() => handleSelectSkill(skill)}
+                                        checked={skills.includes(skill)}
+                                      >
+                                        {skill}
+                                      </Checkbox>
+                                    </div>
+                                    {skills.includes(skill) && (
+                                      <div className="flex items-center gap-5 w-full lg:w-1/2">
+                                        <input
+                                          type="range"
+                                          min="1"
+                                          max="5"
+                                          value={skillLevels[skill] || 1}
+                                          onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                                          className="w-full lg:w-1/2 h-2 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                                        />
+                                        <span className="text-sm min-w-fit">
+                                          {getSkillLevelLabel(skillLevels[skill] || 1)}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
                                 )) : null}
                               </div>
                             </div>
                           ))
                         ) : (
-                          <div className="ml-4 space-y-1">
+                          <div className="ml-4 space-y-2">
                             {items.map((skill) => (
-                              <div key={skill} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
-                                <Checkbox
-                                  onChange={() => handleSelectSkill(skill)}
-                                  checked={skills.includes(skill)}
-                                >
-                                  {skill}
-                                </Checkbox>
+                              <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
+                                <div className="w-full lg:w-auto">
+                                  <Checkbox
+                                    onChange={() => handleSelectSkill(skill)}
+                                    checked={skills.includes(skill)}
+                                  >
+                                    {skill}
+                                  </Checkbox>
+                                </div>
+                                {skills.includes(skill) && (
+                                  <div className="flex items-center gap-5 w-full lg:w-1/2">
+                                    <input
+                                      type="range"
+                                      min="1"
+                                      max="5"
+                                      value={skillLevels[skill] || 1}
+                                      onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                                      className="w-full lg:w-1/2 h-2 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                                    />
+                                    <span className="text-sm min-w-fit">
+                                      {getSkillLevelLabel(skillLevels[skill] || 1)}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>

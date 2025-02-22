@@ -107,8 +107,8 @@ export default function Demo() {
     }, [demoNeedHelp, demoSkills, demoThemes]);
 
     return (
-        <CardContainer className="mt-20 items-center md:w-full">
-            <Card>
+        <CardContainer className="mt-16 sm:mt-20 items-center w-full">
+            <Card className="w-full sm:w-fit">
                 <div className="flex flex-col md:flex-row items-center gap-3">
                     <select
                         defaultValue="false"

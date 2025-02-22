@@ -2,7 +2,7 @@
 
 import { Card, CardContainer, CardTitle, CardContent, CardBlock, CardButton } from "../../components/card"
 import { Header, HeaderLogo, HeaderNav } from "../../components/header"
-import GradientButton from "../../components/button";
+import Button from "../../components/button";
 import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
 import Warning from "../../components/warning";
@@ -183,7 +183,7 @@ export default function Home() {
           <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
             <span className="material-symbols-outlined">settings</span>
           </StyledLink>
-          <GradientButton className="m-3" href="/api/auth/logout">Logout</GradientButton>
+          <Button href="/api/auth/logout">Logout</Button>
         </HeaderNav>
       </Header>
 

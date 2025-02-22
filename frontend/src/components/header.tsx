@@ -43,7 +43,7 @@ export function HeaderLogo(HeaderProps) {
 
 export function HeaderNav(HeaderProps) {
     return (
-        <div className="flex flex-row items-center justifiy-center w-fit h-max">{HeaderProps.children}</div>
+        <div className="flex flex-row gap-3 items-center justify-center w-fit h-full">{HeaderProps.children}</div>
     );
 }
 
