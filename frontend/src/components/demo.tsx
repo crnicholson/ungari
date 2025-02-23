@@ -1,5 +1,5 @@
 import Button from "./button"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useUser } from "@auth0/nextjs-auth0/client";
 import StyledLink from "./styledLink";
 import ProfileCard from "./profileCard";
@@ -105,6 +105,10 @@ export default function Demo() {
             setErrorPresent(true);
         }
     }, [demoNeedHelp, demoSkills, demoThemes]);
+
+    useEffect(() => {
+        getMatch();
+    }, []);
 
     return (
         <CardContainer className="mt-16 sm:mt-20 items-center w-full">

@@ -100,6 +100,13 @@ export default function Home() {
         </CardContainer>
       </div>
 
+      <CardContainer className="mt-5">
+        <Card>
+          <CardTitle>Still confused?</CardTitle>
+          Don{"'"}t worry, here{"'"}s an example situation. Let{"'"}s say you an ecology researcher working on categorizing species of moths in a remote area. You need a device to capture photos of moths, but you don{"'"}t have the technical expertise to build it. You can submit this problem to Ungari, and someone with the technical expertise can help you build the device. Then, another person can help build the AI model to classify the images.
+        </Card>
+      </CardContainer>
+
       <div className="hidden lg:flex w-full flex-col justify-center items-center mt-20">
         <Heading size={3} className="w-1/2">
           Popular interests

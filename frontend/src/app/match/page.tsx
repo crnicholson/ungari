@@ -198,45 +198,43 @@ export default function Home() {
       <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") && polled && !redirecting ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
-          <CardContent>
-            {isLoading && !user && !polled ? (
-              <p>Loading...</p>
-            ) : errorMessage !== "" ? (
-              <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
-            ) : (!settingsPresent || redirecting) ? (
-              <p>Settings empty or missing fields. Redirecting...</p>
-            ) : (
-              <>
-                {noMatch && (
-                  <CardBlock>
-                    <p>Psst... there are no exact matches, so have a random one!</p>
-                  </CardBlock>
-                )}
+          {isLoading && !user && !polled ? (
+            <p>Loading...</p>
+          ) : errorMessage !== "" ? (
+            <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
+          ) : (!settingsPresent || redirecting) ? (
+            <p>Settings empty or missing fields. Redirecting...</p>
+          ) : (
+            <>
+              {noMatch && (
                 <CardBlock>
-                  <ProfileCard match={{
-                    name,
-                    email,
-                    linkedIn,
-                    bio,
-                    availability,
-                    skills,
-                    themes,
-                    needHelp,
-                    projectName,
-                    projectDescription,
-                    projectLink,
-                    timeFrame,
-                    imageLink
-                  }} />
+                  <p>Psst... there are no exact matches, so have a random one!</p>
                 </CardBlock>
-                <CardButton onClick={getMatch}>Match!</CardButton>
-                <div className="mt-3 flex flex-col md:flex-row gap-3">
-                  <CardButton className="w-full" onClick={getMatch}>Save for later</CardButton>
-                  <CardButton className="w-full" onClick={getMatch}>Find new match</CardButton>
-                </div>
-              </>
-            )}
-          </CardContent>
+              )}
+              <CardBlock>
+                <ProfileCard match={{
+                  name,
+                  email,
+                  linkedIn,
+                  bio,
+                  availability,
+                  skills,
+                  themes,
+                  needHelp,
+                  projectName,
+                  projectDescription,
+                  projectLink,
+                  timeFrame,
+                  imageLink
+                }} />
+              </CardBlock>
+              <CardButton onClick={getMatch}>Match!</CardButton>
+              <div className="mt-3 flex flex-col md:flex-row gap-3">
+                <CardButton className="w-full" onClick={getMatch}>Save for later</CardButton>
+                <CardButton className="w-full" onClick={getMatch}>Find new match</CardButton>
+              </div>
+            </>
+          )}
         </Card >
       </CardContainer >
     </>
