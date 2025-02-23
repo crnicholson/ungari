@@ -8,7 +8,7 @@ import Warning from "../../components/warning";
 import Error from "../../components/error";
 
 import { useState, useEffect } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from 'next/image';
 import { useUser } from "@auth0/nextjs-auth0/client";
 
@@ -17,9 +17,9 @@ const SERVER = "http://127.0.0.1:38321";
 export default function Onboarding() {
     const [step, setStep] = useState(1);
 
-    const [name, setName] = useState("Charlie");
-    const [email, setEmail] = useState("example@gmail.com");
-    const [linkedIn, setLinkedIn] = useState("linkedin.com");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [linkedIn, setLinkedIn] = useState("");
     const [x, setX] = useState("");
     const [personalWebsite, setPersonalWebsite] = useState("");
     const [gitHub, setGitHub] = useState("");
@@ -36,8 +36,8 @@ export default function Onboarding() {
     const [tempImageLink, setTempImageLink] = useState("");
     const [imageMessage, setImageMessage] = useState("");
 
-    const [bio, setBio] = useState("I like to run in my free time.");
-    const [country, setCountry] = useState("Prefer not to say");
+    const [bio, setBio] = useState("");
+    const [country, setCountry] = useState("");
     const [city, setCity] = useState("");
     const [cities, setCities] = useState([]);
     const [availability, setAvailability] = useState(1);
@@ -60,12 +60,14 @@ export default function Onboarding() {
     const [projectLinkMessage, setProjectLinkMessage] = useState("");
 
     const [skills, setSkills] = useState([]);
+    const [skillLevels, setSkillLevels] = useState({});
     const [themes, setThemes] = useState([]);
 
     const [skillsMessage, setSkillsMessage] = useState("");
     const [themesMessage, setThemesMessage] = useState("");
 
     const [skillSearchTerm, setSkillSearchTerm] = useState("");
+    const [expandedCategories, setExpandedCategories] = useState({});
     const [themeSearchTerm, setThemeSearchTerm] = useState("");
 
     const [errorMessage, setErrorMessage] = useState("");
@@ -75,11 +77,12 @@ export default function Onboarding() {
     const { user, isLoading } = useUser();
     const router = useRouter();
 
+    // Basic auth
     useEffect(() => {
         if (!isLoading && !user) {
-            redirect("/api/auth/login");
+            router.push("/api/auth/login");
         }
-    }, [isLoading, user]);
+    }, [isLoading, router, user]);
 
     useEffect(() => {
         if (!isLoading && user) {
@@ -117,13 +120,7 @@ export default function Onboarding() {
         }
     }, [isLoading, user, router]);
 
-    useEffect(() => {
-        if (country) {
-            setCities(countries[country]);
-            setCity("");
-        }
-    }, [country]);
-
+    // Verification 
     function isValidEmail(email: string): boolean {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
@@ -142,6 +139,152 @@ export default function Onboarding() {
             return false;
         }
     }
+
+    // Loading image link 
+    useEffect(() => {
+        if (step === 2) {
+            if (user && user.picture === "") {
+                setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+            } else if (user && user.picture) {
+                setImageLink(user.picture);
+                setTempImageLink(user.picture);
+            }
+        }
+    }, [step, user, name]);
+
+    // Country selection 
+    useEffect(() => {
+        if (country) {
+            setCities(countries[country]);
+            setCity("");
+        }
+    }, [country]);
+
+    // Skills
+    const handleSkillLevelChange = (skill: string, level: number) => {
+        setSkillLevels(prev => ({
+            ...prev,
+            [skill]: level
+        }));
+    };
+
+    const getSkillLevelLabel = (level: number) => {
+        const labels = [
+            'Beginner',
+            'Advanced Beginner',
+            'Intermediate',
+            'Advanced',
+            'Expert'
+        ];
+        return labels[level - 1] || labels[0];
+    };
+
+    const handleSelectSkill = (skill) => {
+        if (skills.includes(skill)) {
+            setSkills(skills.filter((t) => t !== skill));
+        } else {
+            setSkills([...skills, skill]);
+        }
+    };
+
+    const filteredSkills = skillSearchTerm
+        ? Object.values(categorizedSkills).flatMap(category => {
+            if (typeof category === 'object' && !Array.isArray(category)) {
+                return Object.values(category)
+                    .flat()
+                    .filter((skill): skill is string =>
+                        typeof skill === 'string' &&
+                        skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
+                    );
+            }
+            return [];
+        }).sort((a, b) => a.localeCompare(b))
+        : [];
+
+    const toggleDropdown = (path) => {
+        setExpandedCategories((prev) => ({
+            ...prev,
+            [path]: !prev[path],
+        }));
+    };
+
+    const renderSkills = (items, path = "") => {
+        if (Array.isArray(items)) {
+            return items.map((skill) => (
+                <div
+                    key={skill}
+                    className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl"
+                >
+                    <div className="w-full lg:w-auto">
+                        <Checkbox
+                            onChange={() => handleSelectSkill(skill)}
+                            checked={skills.includes(skill)}
+                        >
+                            {skill}
+                        </Checkbox>
+                    </div>
+                    {skills.includes(skill) && (
+                        <div className="flex items-center gap-3 w-full lg:w-1/2">
+                            <input
+                                type="range"
+                                min="1"
+                                max="5"
+                                value={skillLevels[skill] || 1}
+                                onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                                className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                            />
+                            <span className="text-sm min-w-fit text-[--light]">
+                                {getSkillLevelLabel(skillLevels[skill] || 1)}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            ));
+        } else if (typeof items === "object") {
+            return Object.entries(items).map(([key, value]) => {
+                const newPath = path ? `${path}.${key}` : key;
+                const isExpanded = expandedCategories[newPath];
+                return (
+                    <div key={key} className="mb-4">
+                        <div
+                            className="flex items-center cursor-pointer h-fit mb-2"
+                            onClick={() => toggleDropdown(newPath)}
+                        >
+                            <h3 className="font-semibold h-full">{key}</h3>
+                            <span className="h-full ml-2">{isExpanded ? "▼" : "▶"}</span>
+                        </div>
+                        {isExpanded && (
+                            <div className="ml-4">{renderSkills(value, newPath)}</div>
+                        )}
+                    </div>
+                );
+            });
+        }
+        return null;
+    };
+
+    // Themes
+    const handleSelectTheme = (theme) => {
+        if (themes.includes(theme)) {
+            setThemes(themes.filter((t) => t !== theme));
+        } else {
+            setThemes([...themes, theme]);
+        }
+    };
+
+    const filteredThemes = listOfThemes
+        .filter((theme) =>
+            theme.toLowerCase().includes(themeSearchTerm.toLowerCase())
+        )
+        .sort((a, b) => a.localeCompare(b));
+
+    // Step processing
+    const handlePreviousStep = () => {
+        if (step > 1) {
+            setStep(step - 1);
+        }
+    };
 
     const handleNextStep = () => {
         let missingFields = [];
@@ -326,60 +469,6 @@ export default function Onboarding() {
         }
     };
 
-    const handlePreviousStep = () => {
-        if (step > 1) {
-            setStep(step - 1);
-        }
-    };
-
-    const handleSelectSkill = (skill) => {
-        if (skills.includes(skill)) {
-            setSkills(skills.filter((t) => t !== skill));
-        } else {
-            setSkills([...skills, skill]);
-        }
-    };
-
-    const handleSelectTheme = (theme) => {
-        if (themes.includes(theme)) {
-            setThemes(themes.filter((t) => t !== theme));
-        } else {
-            setThemes([...themes, theme]);
-        }
-    };
-
-    const filteredSkills = skillSearchTerm
-        ? Object.values(categorizedSkills).flatMap(category => {
-            if (typeof category === 'object' && !Array.isArray(category)) {
-                return Object.values(category)
-                    .flat()
-                    .filter((skill): skill is string =>
-                        typeof skill === 'string' &&
-                        skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
-                    );
-            }
-            return [];
-        }).sort((a, b) => a.localeCompare(b))
-        : [];
-
-    const filteredThemes = listOfThemes
-        .filter((theme) =>
-            theme.toLowerCase().includes(themeSearchTerm.toLowerCase())
-        )
-        .sort((a, b) => a.localeCompare(b));
-
-    useEffect(() => {
-        if (step === 2) {
-            if (user && user.picture === "") {
-                setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
-                setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
-            } else if (user && user.picture) {
-                setImageLink(user.picture);
-                setTempImageLink(user.picture);
-            }
-        }
-    }, [step, user, name]);
-
     const saveSettings = async () => {
         try {
             const response = await fetch(SERVER + "/api/set-onboarding-settings", {
@@ -407,6 +496,7 @@ export default function Onboarding() {
                     helpDescription: helpDescription,
                     timeFrame: timeFrame,
                     skills: skills,
+                    skillLevels: skillLevels,
                     themes: themes,
                 }),
             });
@@ -416,13 +506,14 @@ export default function Onboarding() {
             }
             setSubmitMessage("Settings saved successfully! Redirecting to match...");
 
-            redirect("/match");
+            router.push("/match");
         } catch (error) {
             console.error("Failed to set user information: ", error);
             setErrorMessage("Client-side error: " + error);
         }
     };
 
+    // Displaying each section of the form, final function
     const renderStep = () => {
         switch (step) {
             case 1:
@@ -722,13 +813,30 @@ export default function Onboarding() {
                                 {skillSearchTerm ? (
                                     filteredSkills.length > 0 ? (
                                         filteredSkills.map((skill) => (
-                                            <div key={skill} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
-                                                <Checkbox
-                                                    onChange={() => handleSelectSkill(skill)}
-                                                    checked={skills.includes(skill)}
-                                                >
-                                                    {skill}
-                                                </Checkbox>
+                                            <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
+                                                <div className="w-full lg:w-auto">
+                                                    <Checkbox
+                                                        onChange={() => handleSelectSkill(skill)}
+                                                        checked={skills.includes(skill)}
+                                                    >
+                                                        {skill}
+                                                    </Checkbox>
+                                                </div>
+                                                {skills.includes(skill) && (
+                                                    <div className="flex flex-row justify-left items-center gap-3 w-full lg:w-1/2">
+                                                        <input
+                                                            type="range"
+                                                            min="1"
+                                                            max="5"
+                                                            value={skillLevels[skill] || 1}
+                                                            onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                                                            className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                                                        />
+                                                        <span className="text-sm min-w-fit text-[--light]">
+                                                            {getSkillLevelLabel(skillLevels[skill] || 1)}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))
                                     ) : (
@@ -737,46 +845,7 @@ export default function Onboarding() {
                                         </div>
                                     )
                                 ) : (
-                                    Object.entries(categorizedSkills).map(([category, items]) => (
-                                        <div key={category} className="mb-4">
-                                            <h3 className="font-semibold text-lg mb-2">{category}</h3>
-                                            {typeof items === 'object' && !Array.isArray(items) ? (
-                                                Object.entries(items).map(([subCategory, subItems]) => (
-                                                    <div key={subCategory} className="ml-4 mb-3">
-                                                        <h4 className="font-medium text-sm mb-1 text-gray-600">{subCategory}</h4>
-                                                        <div className="space-y-1">
-                                                            {Array.isArray(subItems) ? subItems.map((skill) => (
-                                                                <div
-                                                                    key={skill}
-                                                                    className="flex justify-between items-center p-2 hover:bg-[--border] rounded"
-                                                                >
-                                                                    <Checkbox
-                                                                        onChange={() => handleSelectSkill(skill)}
-                                                                        checked={skills.includes(skill)}
-                                                                    >
-                                                                        {skill}
-                                                                    </Checkbox>
-                                                                </div>
-                                                            )) : null}
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="ml-4 space-y-1">
-                                                    {items.map((skill) => (
-                                                        <div key={skill} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
-                                                            <Checkbox
-                                                                onChange={() => handleSelectSkill(skill)}
-                                                                checked={skills.includes(skill)}
-                                                            >
-                                                                {skill}
-                                                            </Checkbox>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))
+                                    renderSkills(categorizedSkills)
                                 )}
                             </div>
                             <CardInputError>{skillsMessage}</CardInputError>
@@ -791,10 +860,11 @@ export default function Onboarding() {
                                 placeholder="Search themes..."
                             />
                         </CardBlock>
+
                         <CardBlock>
                             <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
                                 {filteredThemes.map((theme) => (
-                                    <div key={theme} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
+                                    <div key={theme} className="flex justify-between items-center p-2 border border-transparent hover:border-[--border] rounded-xl">
                                         <Checkbox
                                             checked={themes.includes(theme)}
                                             onChange={() => handleSelectTheme(theme)}

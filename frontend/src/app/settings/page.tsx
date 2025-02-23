@@ -277,6 +277,7 @@ export default function Settings() {
             setTimeFrame(data.timeFrame || "");
 
             setSkills(data.skills || []);
+            setSkillLevels(data.skillLevels || {});
             setThemes(data.themes || []);
 
             let missingFields = [];
@@ -586,20 +587,26 @@ export default function Settings() {
           },
           body: JSON.stringify({
             id: user.sub,
+            imageLink: imageLink,
             name: name,
             email: email,
-            needHelp: needHelp,
             linkedIn: linkedIn,
+            x: x,
+            personalWebsite: personalWebsite,
+            gitHub: gitHub,
             bio: bio,
+            country: country,
+            city: city,
             availability: availability,
-            skills: skills,
-            themes: themes,
             projectName: projectName,
             projectDescription: projectDescription,
             projectLink: projectLink,
             helpDescription: helpDescription,
             timeFrame: timeFrame,
-            imageLink: imageLink,
+            needHelp: needHelp,
+            skills: skills,
+            skillLevels: skillLevels,
+            themes: themes,
           }),
         });
         if (!response.ok) {
@@ -642,7 +649,7 @@ export default function Settings() {
                 onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
                 className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
               />
-              <span className="text-sm min-w-fit">
+              <span className="text-sm min-w-fit text-[--light]">
                 {getSkillLevelLabel(skillLevels[skill] || 1)}
               </span>
             </div>
@@ -671,7 +678,6 @@ export default function Settings() {
     }
     return null;
   };
-
 
   return (
     <>
@@ -1018,7 +1024,7 @@ export default function Settings() {
                                 onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
                                 className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
                               />
-                              <span className="text-sm min-w-fit">
+                              <span className="text-sm min-w-fit text-[--light]">
                                 {getSkillLevelLabel(skillLevels[skill] || 1)}
                               </span>
                             </div>
@@ -1050,7 +1056,7 @@ export default function Settings() {
               <CardBlock>
                 <div className="overflow-y-auto border p-3 rounded-xl max-h-60">
                   {filteredThemes.map((theme) => (
-                    <div key={theme} className="flex justify-between items-center p-2 hover:bg-[--border] rounded">
+                    <div key={theme} className="flex justify-between items-center p-2 border border-transparent hover:border-[--border] rounded-xl">
                       <Checkbox
                         checked={themes.includes(theme)}
                         onChange={() => handleSelectTheme(theme)}

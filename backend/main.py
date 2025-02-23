@@ -59,7 +59,16 @@ def get_status():
         missing_fields = check_fields(user.get("needHelp", False), user)
         if missing_fields:
             print("Missing fields: ", missing_fields)
-            return jsonify({"someSettings": True, "missingFields": missing_fields, "redirectMessage": "Hey there! You were redirected to the settings page to finish filling out your settings."}), 200
+            return (
+                jsonify(
+                    {
+                        "someSettings": True,
+                        "missingFields": missing_fields,
+                        "redirectMessage": "Hey there! You were redirected to the settings page to finish filling out your settings.",
+                    }
+                ),
+                200,
+            )
         else:
             return jsonify({"allSettings": True}), 200
 
@@ -78,13 +87,13 @@ def get_settings():
     return (
         jsonify(
             {
+                "imageLink": user.get("imageLink", ""),
                 "name": user.get("name", ""),
                 "email": user.get("email", ""),
                 "linkedIn": user.get("linkedIn", ""),
                 "x": user.get("x", ""),
                 "personalWebsite": user.get("personalWebsite", ""),
                 "gitHub": user.get("gitHub", ""),
-                "imageLink": user.get("imageLink", ""),
                 "bio": user.get("bio", ""),
                 "country": user.get("country", ""),
                 "city": user.get("city", ""),
@@ -94,7 +103,9 @@ def get_settings():
                 "projectDescription": user.get("projectDescription", ""),
                 "helpDescription": user.get("helpDescription", ""),
                 "projectLink": user.get("projectLink", ""),
+                "timeFrame": user.get("timeFrame", 0),
                 "skills": user.get("skills", []),
+                "skillLevels": user.get("skillLevels", {}),
                 "themes": user.get("themes", []),
             }
         ),
@@ -129,6 +140,7 @@ def set_onboarding_settings():
     timeFrame = received.get("timeFrame", 0)
 
     skills = received.get("skills", [])
+    skillLevels = received.get("skillLevels", {})
     themes = received.get("themes", [])
 
     user = users.find_one({"id": id})
@@ -151,39 +163,9 @@ def set_onboarding_settings():
         "needHelp": needHelp,
         "timeFrame": timeFrame,
         "skills": skills,
-        "themes": themes,
-        "availability": availability,
-        "skills": skills,
+        "skillLevels": skillLevels,
         "themes": themes,
     }
-
-    # print(
-    #     "ID: ",
-    #     id,
-    #     " Name: ",
-    #     name,
-    #     " Email: ",
-    #     email,
-    #     " LinkedIn: ",
-    #     linkedIn,
-    #     " Bio: ",
-    #     bio,
-    #     " Need help: ",
-    #     needHelp,
-    #     " Availability (hours per week): ",
-    #     availability,
-    #     " Time frame (months): ",
-    #     timeFrame,
-    #     " Skills: ",
-    #     skills,
-    #     " Themes: ",
-    #     themes,
-    #     " Image Change: ",
-    #     imageChange,
-    #     " Image Link: ",
-    #     imageLink,
-    #     end="",
-    # )
 
     if needHelp:
         projectName = received.get("projectName", "")
@@ -200,19 +182,7 @@ def set_onboarding_settings():
             }
         )
 
-        # print(
-        #     " Project name: ",
-        #     projectName,
-        #     " Project description: ",
-        #     projectDescription,
-        #     " Help description: ",
-        #     helpDescription,
-        #     " Project link: ",
-        #     projectLink,
-        # )
-
     else:
-        # print()
         users.update_one({"id": id}, {"$set": setting_fields})
 
     return jsonify({"": ""}), 200
@@ -223,14 +193,14 @@ def set_settings():
     received = request.get_json()
 
     id = received.get("id", "")
+
+    imageLink = received.get("imageLink", "")
     name = received.get("name", "")
     email = received.get("email", "")
     linkedIn = received.get("linkedIn", "")
     x = received.get("x", "")
     personalWebsite = received.get("personalWebsite", "")
     gitHub = received.get("gitHub", "")
-
-    imageLink = received.get("imageLink", "")
 
     bio = received.get("bio", "")
     country = received.get("country", "")
@@ -245,16 +215,17 @@ def set_settings():
     timeFrame = received.get("timeFrame", 0)
 
     skills = received.get("skills", [])
+    skillLevels = received.get("skillLevels", {})
     themes = received.get("themes", [])
 
     update_fields = {
+        "imageLink": imageLink,
         "name": name,
         "email": email,
         "linkedIn": linkedIn,
         "x": x,
         "personalWebsite": personalWebsite,
         "gitHub": gitHub,
-        "imageLink": imageLink,
         "bio": bio,
         "country": country,
         "city": city,
@@ -262,39 +233,9 @@ def set_settings():
         "needHelp": needHelp,
         "timeFrame": timeFrame,
         "skills": skills,
-        "themes": themes,
-        "availability": availability,
-        "skills": skills,
+        "skillLevels": skillLevels,
         "themes": themes,
     }
-
-    # print(
-    #     "ID: ",
-    #     id,
-    #     " Name: ",
-    #     name,
-    #     " Email: ",
-    #     email,
-    #     " LinkedIn: ",
-    #     linkedIn,
-    #     " Bio: ",
-    #     bio,
-    #     " Need help: ",
-    #     needHelp,
-    #     " Availability (hours per week): ",
-    #     availability,
-    #     " Time frame (months): ",
-    #     timeFrame,
-    #     " Skills: ",
-    #     skills,
-    #     " Themes: ",
-    #     themes,
-    #     " Image Change: ",
-    #     imageChange,
-    #     " Image Link: ",
-    #     imageLink,
-    #     end="",
-    # )
 
     if needHelp:
         projectName = received.get("projectName", "")
@@ -311,19 +252,7 @@ def set_settings():
             }
         )
 
-        # print(
-        #     " Project name: ",
-        #     projectName,
-        #     " Project description: ",
-        #     projectDescription,
-        #     " Help description: ",
-        #     helpDescription,
-        #     " Project link: ",
-        #     projectLink,
-        # )
-
     else:
-        # print()
         users.update_one({"id": id}, {"$set": update_fields})
 
     return jsonify({"": ""}), 200
