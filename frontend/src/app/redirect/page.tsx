@@ -10,7 +10,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 
 const SERVER = "http://127.0.0.1:38321";
 
-export default function Home() {
+export default function Redirect() {
     const { user, isLoading } = useUser();
     const router = useRouter();
 
