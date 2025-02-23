@@ -68,8 +68,8 @@ export default function Settings() {
   const [themesMessage, setThemesMessage] = useState("");
 
   const [skillSearchTerm, setSkillSearchTerm] = useState("");
-  const [themeSearchTerm, setThemeSearchTerm] = useState("");
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [themeSearchTerm, setThemeSearchTerm] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [warningMessage, setWarningMessage] = useState("");
@@ -78,37 +78,12 @@ export default function Settings() {
   const { user, isLoading } = useUser();
   const router = useRouter();
 
+  // Basic auth
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/api/auth/login");
     }
   }, [isLoading, user, router]);
-
-  const handleSkillLevelChange = (skill: string, level: number) => {
-    setSkillLevels(prev => ({
-      ...prev,
-      [skill]: level
-    }));
-  };
-
-  const getSkillLevelLabel = (level: number) => {
-    const labels = [
-      'Beginner',
-      'Advanced Beginner',
-      'Intermediate',
-      'Advanced',
-      'Expert'
-    ];
-    return labels[level - 1] || labels[0];
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const message = params.get('redirectMessage');
-    if (message) {
-      setWarningMessage(message);
-    }
-  }, []);
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -142,13 +117,16 @@ export default function Settings() {
     }
   }, [isLoading, user, router]);
 
-  const toggleDropdown = (path) => {
-    setExpandedCategories((prev) => ({
-      ...prev,
-      [path]: !prev[path],
-    }));
-  };
+  // Get redirect message 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get('redirectMessage');
+    if (message) {
+      setWarningMessage(message);
+    }
+  }, []);
 
+  // Verification 
   function isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -158,51 +136,6 @@ export default function Settings() {
     const nameRegex = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
     return nameRegex.test(name);
   }
-
-  const handleSelectSkill = (skill: string) => {
-    if (skills.includes(skill)) {
-      setSkills(skills.filter((s) => s !== skill));
-      setSkillLevels(prev => {
-        const { [skill]: _, ...rest } = prev;
-        return rest;
-      });
-    } else {
-      setSkills([...skills, skill]);
-      setSkillLevels(prev => ({
-        ...prev,
-        [skill]: 1
-      }));
-    }
-  };
-
-  const handleSelectTheme = (theme) => {
-    if (themes.includes(theme)) {
-      setThemes(themes.filter((t) => t !== theme));
-    } else {
-      setThemes([...themes, theme]);
-    }
-  };
-
-  const filteredSkills = skillSearchTerm
-    ? Object.values(categorizedSkills).flatMap(category => {
-      if (typeof category === 'object' && !Array.isArray(category)) {
-        return Object.values(category)
-          .flat()
-          .filter((skill): skill is string =>
-            typeof skill === 'string' &&
-            skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
-          );
-      }
-      return [];
-    }).sort((a, b) => a.localeCompare(b))
-    : [];
-
-  const filteredThemes = listOfThemes
-    .filter((theme) =>
-      theme.toLowerCase().includes(themeSearchTerm.toLowerCase())
-    )
-    .sort((a, b) => a.localeCompare(b));
-
 
   function isValidURL(url: string): boolean {
     try {
@@ -220,6 +153,141 @@ export default function Settings() {
     return isValidURL(url) ? url : "";
   }, []);
 
+  // Country selection  
+  useEffect(() => {
+    if (country) {
+      setCities(countries[country]);
+      setCity("");
+    }
+  }, [country]);
+
+  // Skills 
+  const handleSkillLevelChange = (skill: string, level: number) => {
+    setSkillLevels(prev => ({
+      ...prev,
+      [skill]: level
+    }));
+  };
+
+  const getSkillLevelLabel = (level: number) => {
+    const labels = [
+      'Beginner',
+      'Advanced Beginner',
+      'Intermediate',
+      'Advanced',
+      'Expert'
+    ];
+    return labels[level - 1] || labels[0];
+  };
+
+  const filteredSkills = skillSearchTerm
+    ? Object.values(categorizedSkills).flatMap(category => {
+      if (typeof category === 'object' && !Array.isArray(category)) {
+        return Object.values(category)
+          .flat()
+          .filter((skill): skill is string =>
+            typeof skill === 'string' &&
+            skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
+          );
+      }
+      return [];
+    }).sort((a, b) => a.localeCompare(b))
+    : [];
+
+  const handleSelectSkill = (skill: string) => {
+    if (skills.includes(skill)) {
+      setSkills(skills.filter((s) => s !== skill));
+      setSkillLevels(prev => {
+        const { [skill]: _, ...rest } = prev;
+        return rest;
+      });
+    } else {
+      setSkills([...skills, skill]);
+      setSkillLevels(prev => ({
+        ...prev,
+        [skill]: 1
+      }));
+    }
+  };
+
+  const toggleDropdown = (path) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [path]: !prev[path],
+    }));
+  };
+
+  const renderSkills = (items, path = "") => {
+    if (Array.isArray(items)) {
+      return items.map((skill) => (
+        <div
+          key={skill}
+          className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl"
+        >
+          <div className="w-full lg:w-auto">
+            <Checkbox
+              onChange={() => handleSelectSkill(skill)}
+              checked={skills.includes(skill)}
+            >
+              {skill}
+            </Checkbox>
+          </div>
+          {skills.includes(skill) && (
+            <div className="flex items-center gap-3 w-full lg:w-1/2">
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={skillLevels[skill] || 1}
+                onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+              />
+              <span className="text-sm min-w-fit text-[--light]">
+                {getSkillLevelLabel(skillLevels[skill] || 1)}
+              </span>
+            </div>
+          )}
+        </div>
+      ));
+    } else if (typeof items === "object") {
+      return Object.entries(items).map(([key, value]) => {
+        const newPath = path ? `${path}.${key}` : key;
+        const isExpanded = expandedCategories[newPath];
+        return (
+          <div key={key} className="mb-4">
+            <div
+              className="flex items-center cursor-pointer h-fit mb-2"
+              onClick={() => toggleDropdown(newPath)}
+            >
+              <h3 className="font-semibold h-full">{key}</h3>
+              <span className="h-full ml-2">{isExpanded ? "▼" : "▶"}</span>
+            </div>
+            {isExpanded && (
+              <div className="ml-4">{renderSkills(value, newPath)}</div>
+            )}
+          </div>
+        );
+      });
+    }
+    return null;
+  };
+
+  // Themes
+  const handleSelectTheme = (theme) => {
+    if (themes.includes(theme)) {
+      setThemes(themes.filter((t) => t !== theme));
+    } else {
+      setThemes([...themes, theme]);
+    }
+  };
+
+  const filteredThemes = listOfThemes
+    .filter((theme) =>
+      theme.toLowerCase().includes(themeSearchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.localeCompare(b));
+
+  // Themes + skills
   function formatList(items: string[], type: string): string {
     if (items.length === 0) return "";
     if (items.length === 1) return `Current ${type} is: ${items[0]}`;
@@ -230,13 +298,7 @@ export default function Settings() {
     return `Current ${type}s are: ${otherItems.join(", ")}, and ${lastItem}`;
   }
 
-  useEffect(() => {
-    if (country) {
-      setCities(countries[country]);
-      setCity("");
-    }
-  }, [country]);
-
+  // Syncing with backend
   useEffect(() => {
     if (!isLoading && user) {
       const fetchSettings = async () => {
@@ -622,61 +684,6 @@ export default function Settings() {
     } else {
       setSubmitMessage("Uh-oh! There seem to be a few issues.");
     }
-  };
-
-  const renderSkills = (items, path = "") => {
-    if (Array.isArray(items)) {
-      return items.map((skill) => (
-        <div
-          key={skill}
-          className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl"
-        >
-          <div className="w-full lg:w-auto">
-            <Checkbox
-              onChange={() => handleSelectSkill(skill)}
-              checked={skills.includes(skill)}
-            >
-              {skill}
-            </Checkbox>
-          </div>
-          {skills.includes(skill) && (
-            <div className="flex items-center gap-3 w-full lg:w-1/2">
-              <input
-                type="range"
-                min="1"
-                max="5"
-                value={skillLevels[skill] || 1}
-                onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
-                className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
-              />
-              <span className="text-sm min-w-fit text-[--light]">
-                {getSkillLevelLabel(skillLevels[skill] || 1)}
-              </span>
-            </div>
-          )}
-        </div>
-      ));
-    } else if (typeof items === "object") {
-      return Object.entries(items).map(([key, value]) => {
-        const newPath = path ? `${path}.${key}` : key;
-        const isExpanded = expandedCategories[newPath];
-        return (
-          <div key={key} className="mb-4">
-            <div
-              className="flex items-center cursor-pointer h-fit mb-2"
-              onClick={() => toggleDropdown(newPath)}
-            >
-              <h3 className="font-semibold h-full">{key}</h3>
-              <span className="h-full ml-2">{isExpanded ? "▼" : "▶"}</span>
-            </div>
-            {isExpanded && (
-              <div className="ml-4">{renderSkills(value, newPath)}</div>
-            )}
-          </div>
-        );
-      });
-    }
-    return null;
   };
 
   return (

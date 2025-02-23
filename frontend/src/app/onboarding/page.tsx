@@ -60,7 +60,7 @@ export default function Onboarding() {
     const [projectLinkMessage, setProjectLinkMessage] = useState("");
 
     const [skills, setSkills] = useState([]);
-    const [skillLevels, setSkillLevels] = useState({});
+    const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
     const [themes, setThemes] = useState([]);
 
     const [skillsMessage, setSkillsMessage] = useState("");
@@ -180,14 +180,6 @@ export default function Onboarding() {
         return labels[level - 1] || labels[0];
     };
 
-    const handleSelectSkill = (skill) => {
-        if (skills.includes(skill)) {
-            setSkills(skills.filter((t) => t !== skill));
-        } else {
-            setSkills([...skills, skill]);
-        }
-    };
-
     const filteredSkills = skillSearchTerm
         ? Object.values(categorizedSkills).flatMap(category => {
             if (typeof category === 'object' && !Array.isArray(category)) {
@@ -201,6 +193,22 @@ export default function Onboarding() {
             return [];
         }).sort((a, b) => a.localeCompare(b))
         : [];
+    
+    const handleSelectSkill = (skill: string) => {
+        if (skills.includes(skill)) {
+            setSkills(skills.filter((s) => s !== skill));
+            setSkillLevels(prev => {
+                const { [skill]: _, ...rest } = prev;
+                return rest;
+            });
+        } else {
+            setSkills([...skills, skill]);
+            setSkillLevels(prev => ({
+                ...prev,
+                [skill]: 1
+            }));
+        }
+    };
 
     const toggleDropdown = (path) => {
         setExpandedCategories((prev) => ({
@@ -469,6 +477,7 @@ export default function Onboarding() {
         }
     };
 
+    // Syncing with backend 
     const saveSettings = async () => {
         try {
             const response = await fetch(SERVER + "/api/set-onboarding-settings", {
