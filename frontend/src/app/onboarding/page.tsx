@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { useUser } from "@auth0/nextjs-auth0/client";
 
 const SERVER = "http://127.0.0.1:38321";
+// const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
 
 export default function Onboarding() {
     const [step, setStep] = useState(1);

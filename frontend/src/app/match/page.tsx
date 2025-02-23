@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContainer, CardTitle, CardContent, CardBlock, CardButton } from "../../components/card"
+import { Card, CardContainer, CardTitle, CardBlock, CardButton } from "../../components/card"
 import { Header, HeaderLogo, HeaderNav } from "../../components/header"
 import Button from "../../components/button";
 import StyledLink from "../../components/styledLink"
@@ -11,46 +11,48 @@ import ProfileCard from "../../components/profileCard";
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from 'next/navigation';
+import { set } from "@auth0/nextjs-auth0/dist/session";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
 
 export default function Home() {
+  const [matchID, setMatchID] = useState("");
+
+  const [imageLink, setImageLink] = useState("");
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [linkedIn, setLinkedIn] = useState("");
-  const [needHelp, setNeedHelp] = useState(false);
+  const [x, setX] = useState("");
+  const [gitHub, setGitHub] = useState("");
+  const [personalWebsite, setPersonalWebsite] = useState("");
+
   const [bio, setBio] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
   const [availability, setAvailability] = useState("");
-  const [skills, setSkills] = useState([]);
-  const [themes, setThemes] = useState([]);
+
+  const [needHelp, setNeedHelp] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [helpDescription, setHelpDescription] = useState("");
   const [projectLink, setProjectLink] = useState("");
   const [timeFrame, setTimeFrame] = useState(0);
-  const [polled, setPolled] = useState(false);
-  const [settingsPresent, setSettingsPresent] = useState(true);
-  const [noMatch, setNoMatch] = useState(false);
-  const [imageLink, setImageLink] = useState("");
-  const [matchID, setMatchID] = useState("");
 
-  const [redirecting, setRedirecting] = useState(false);
+  const [skills, setSkills] = useState([]);
+  const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
+  const [themes, setThemes] = useState([]);
+
+  const [noMatch, setNoMatch] = useState(false);
+
   const [warningMessage, setWarningMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const { user, isLoading } = useUser();
   const router = useRouter();
 
-  function isValidURL(url: string): boolean {
-    try {
-      new URL(url);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
+  // Basic auth
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/api/auth/login");
@@ -93,6 +95,17 @@ export default function Home() {
     }
   }, [isLoading, user, router]);
 
+  // Verification 
+  function isValidURL(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Syncing with backend
   const saveForLater = useCallback(async () => {
     try {
       const response = await fetch(SERVER + "/api/save-match", {
@@ -110,7 +123,6 @@ export default function Home() {
       console.error("Error: Failed to fetch settings: ", error);
       setErrorMessage("Client-side error: " + error);
     }
-    setPolled(true);
   }, [user, matchID]);
 
   const getMatch = useCallback(async () => {
@@ -125,32 +137,34 @@ export default function Home() {
       if (!response.ok) {
         const error = await response.json();
         setErrorMessage("Server-side error: " + error.error);
-        // setErrorPresent(true);
       } else {
         setErrorMessage("");
 
         const data = await response.json();
 
-        if (!(data.settingsPresent ?? true)) {
-          console.log("Redirecting to settings...");
-          router.push("/settings");
-          setSettingsPresent(false);
-          setRedirecting(true);
-        }
-
         setName(data.match.name || "");
         setEmail(data.match.email || "");
         setLinkedIn(data.match.linkedIn || "");
+        setX(data.match.x || "");
+        setGitHub(data.match.gitHub || "");
+        setPersonalWebsite(data.match.personalWebsite || "");
+        
         setBio(data.match.bio || "");
+        setCountry(data.match.country || "");
+        setCity(data.match.city || "");
         setAvailability(data.match.availability || "");
-        setSkills(data.match.skills || []);
-        setThemes(data.match.themes || []);
+
         setNeedHelp(data.match.needHelp || false);
         setProjectName(data.match.projectName || "");
         setProjectDescription(data.match.projectDescription || "");
         setHelpDescription(data.match.helpDescription || "");
         setProjectLink(data.match.projectLink || "");
         setTimeFrame(data.match.timeFrame || "");
+
+        setSkills(data.match.skills || []);
+        setSkillLevels(data.match.skillLevels || {});
+        setThemes(data.match.themes || []);
+
         setNoMatch(data.noMatches || false);
 
         if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
@@ -162,11 +176,10 @@ export default function Home() {
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);
       setErrorMessage("Client-side error: " + error);
-      // setErrorPresent(true);
     }
-    setPolled(true);
-  }, [user, router]);
+  }, [user]);
 
+  // Get match on page load 
   useEffect(() => {
     if (!isLoading && user) {
       getMatch();
@@ -187,7 +200,7 @@ export default function Home() {
         </HeaderNav>
       </Header>
 
-      {polled && !redirecting && errorMessage !== "" && (
+      {errorMessage !== "" && (
         <Error onClick={() => setErrorMessage("")} className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
       )}
 
@@ -195,15 +208,13 @@ export default function Home() {
         <Warning onClick={() => setWarningMessage("")} className={`w-full sm:w-1/2 ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
       )}
 
-      <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") && polled && !redirecting ? 'mt-5' : 'mt-24'}`}>
+      <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
-          {isLoading && !user && !polled ? (
+          {isLoading && !user ? (
             <p>Loading...</p>
           ) : errorMessage !== "" ? (
-            <p>Looks like you{"'"}re not getting your match... try reloading or filling out <a className="underline" href="/settings">settings</a>.</p>
-          ) : (!settingsPresent || redirecting) ? (
-            <p>Settings empty or missing fields. Redirecting...</p>
+            <p>Looks like you{"'"}re not getting your match... our backend seems to be down. Try reloading or coming back later.</p>
           ) : (
             <>
               {noMatch && (
@@ -216,16 +227,23 @@ export default function Home() {
                   name,
                   email,
                   linkedIn,
+                  x,
+                  gitHub,
+                  personalWebsite,
+                  imageLink,
                   bio,
+                  country,
+                  city,
                   availability,
-                  skills,
-                  themes,
                   needHelp,
                   projectName,
                   projectDescription,
+                  helpDescription,
                   projectLink,
                   timeFrame,
-                  imageLink
+                  skills,
+                  skillLevels,
+                  themes,
                 }} />
               </CardBlock>
               <CardButton onClick={getMatch}>Match!</CardButton>

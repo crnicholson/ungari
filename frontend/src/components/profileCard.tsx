@@ -19,17 +19,25 @@ function Badge({ children, variant = 'default' }) {
 function DesktopProfileCard({ match }) {
     const {
         name,
+        email,
         linkedIn,
+        x,
+        gitHub,
+        personalWebsite,
+        imageLink,
         bio,
+        country,
+        city,
         availability,
-        skills,
-        themes,
         needHelp,
         projectName,
         projectDescription,
+        helpDescription,
         projectLink,
         timeFrame,
-        imageLink
+        skills,
+        skillLevels,
+        themes,
     } = match;
 
     return (
@@ -116,17 +124,25 @@ function DesktopProfileCard({ match }) {
 function MobileProfileCard({ match }) {
     const {
         name,
+        email,
         linkedIn,
+        x,
+        gitHub,
+        personalWebsite,
+        imageLink,
         bio,
+        country,
+        city,
         availability,
-        skills,
-        themes,
         needHelp,
         projectName,
         projectDescription,
+        helpDescription,
         projectLink,
         timeFrame,
-        imageLink
+        skills,
+        skillLevels,
+        themes,
     } = match;
 
     return (

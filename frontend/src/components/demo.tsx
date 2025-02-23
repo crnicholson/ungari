@@ -108,7 +108,7 @@ export default function Demo() {
 
     useEffect(() => {
         getMatch();
-    }, []);
+    }, [getMatch]);
 
     return (
         <CardContainer className="mt-16 sm:mt-20 items-center w-full">
