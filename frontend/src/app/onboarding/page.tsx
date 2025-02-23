@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
 import { useUser } from "@auth0/nextjs-auth0/client";
+import { set } from "@auth0/nextjs-auth0/dist/session";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -194,7 +195,7 @@ export default function Onboarding() {
             return [];
         }).sort((a, b) => a.localeCompare(b))
         : [];
-    
+
     const handleSelectSkill = (skill: string) => {
         if (skills.includes(skill)) {
             setSkills(skills.filter((s) => s !== skill));
@@ -330,36 +331,44 @@ export default function Onboarding() {
                     setLinkedInMessage("LinkedIn is required");
                     hasErrors = true;
                 } else {
-                    if (!validateURL(linkedIn)) {
+                    const url = validateURL(linkedIn);
+                    if (!url) {
                         setLinkedInMessage("Invalid LinkedIn URL");
                         hasErrors = true;
                     } else {
                         setLinkedInMessage("");
                     }
+                    setLinkedIn(url);
                 }
                 if (x) {
-                    if (!validateURL(x)) {
+                    const url = validateURL(x);
+                    if (!x) {
                         setXMessage("Invalid X URL");
                         hasErrors = true;
                     } else {
                         setXMessage("");
                     }
+                    setX(url);
                 }
                 if (personalWebsite) {
-                    if (!validateURL(personalWebsite)) {
+                    const url = validateURL(personalWebsite);
+                    if (!url) {
                         setPersonalWebsiteMessage("Invalid personal website URL");
                         hasErrors = true;
                     } else {
                         setPersonalWebsiteMessage("");
                     }
+                    setPersonalWebsite(url);
                 }
                 if (gitHub) {
-                    if (!validateURL(gitHub)) {
+                    const url = validateURL(gitHub);
+                    if (!url) {
                         setGitHubMessage("Invalid GitHub URL");
                         hasErrors = true;
                     } else {
                         setGitHubMessage("");
                     }
+                    setGitHub(url);
                 }
                 break;
             case 2:
@@ -432,12 +441,14 @@ export default function Onboarding() {
                         setProjectLinkMessage("Project link is required");
                         hasErrors = true;
                     } else {
+                        const url = validateURL(projectLink);
                         if (!validateURL(projectLink)) {
                             setProjectLinkMessage("URL doesn't seem to be working");
                             hasErrors = true;
                         } else {
                             setProjectLinkMessage("");
                         }
+                        setProjectLink(url);
                     }
                 }
                 break;
@@ -919,7 +930,7 @@ export default function Onboarding() {
                 <Warning onClick={() => setWarningMessage("")} className={`sm:w-1/2 w-full ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
             )}
 
-            <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
+            <CardContainer className={`sm:w-3/4 lg:w-2/3 xl:w-1/2 w-full ${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
                 <Card className="w-full">
                     <CardTitle size={2}>Onboarding</CardTitle>
 

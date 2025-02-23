@@ -157,7 +157,6 @@ export default function Settings() {
   useEffect(() => {
     if (country) {
       setCities(countries[country]);
-      setCity("");
     }
   }, [country]);
 
@@ -519,36 +518,44 @@ export default function Settings() {
       setLinkedInMessage("LinkedIn is required");
       hasErrors = true;
     } else {
-      if (!validateURL(linkedIn)) {
+      const url = validateURL(linkedIn);
+      if (!url) {
         setLinkedInMessage("Invalid LinkedIn URL");
         hasErrors = true;
       } else {
         setLinkedInMessage("");
       }
+      setLinkedIn(url);
     }
     if (x) {
-      if (!validateURL(x)) {
+      const url = validateURL(x);
+      if (!x) {
         setXMessage("Invalid X URL");
         hasErrors = true;
       } else {
         setXMessage("");
       }
+      setX(url);
     }
     if (personalWebsite) {
-      if (!validateURL(personalWebsite)) {
+      const url = validateURL(personalWebsite);
+      if (!url) {
         setPersonalWebsiteMessage("Invalid personal website URL");
         hasErrors = true;
       } else {
         setPersonalWebsiteMessage("");
       }
+      setPersonalWebsite(url);
     }
     if (gitHub) {
-      if (!validateURL(gitHub)) {
+      const url = validateURL(gitHub);
+      if (!url) {
         setGitHubMessage("Invalid GitHub URL");
         hasErrors = true;
       } else {
         setGitHubMessage("");
       }
+      setGitHub(url);
     }
 
     if (!bio) {
@@ -610,12 +617,14 @@ export default function Settings() {
         setProjectLinkMessage("Project link is required");
         hasErrors = true;
       } else {
+        const url = validateURL(projectLink);
         if (!validateURL(projectLink)) {
           setProjectLinkMessage("URL doesn't seem to be working");
           hasErrors = true;
         } else {
           setProjectLinkMessage("");
         }
+        setProjectLink(url);
       }
     }
 
@@ -802,7 +811,7 @@ export default function Settings() {
                   value={linkedIn}
                   onChange={(e) => {
                     setLinkedIn(e.target.value)
-                    setLinkedInMessage(e.target.value === "" || e.target.value.includes("linkedin.co") ? "" : "LinkedIn without linkedin.com? 🤔");
+                    setLinkedInMessage(e.target.value === "" || e.target.value.includes("linkedin.com/in/") ? "" : "LinkedIn without linkedin.com/in/? 🤔");
                   }}
                   placeholder="To help with credibility"
                 />
@@ -864,12 +873,17 @@ export default function Settings() {
                 <select
                   value={country}
                   onChange={(e) => {
-                    setCountry(e.target.value)
-                    setCountryMessage("");
+                    if (e.target.value !== "") {
+                      setCountry(e.target.value);
+                      setCountryMessage("");
+                      if (e.target.value !== country) {
+                        setCities(countries[e.target.value] || []);
+                      }
+                    }
                   }}
                   className="w-full border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                 >
-                  <option value="">Select a country</option>
+                  <option disabled value="">Select a country</option>
                   {Object.keys(countries).map((country) => (
                     <option key={country} value={country}>
                       {country}
@@ -878,18 +892,19 @@ export default function Settings() {
                 </select>
                 <CardInputError>{countryMessage}</CardInputError>
               </CardBlock>
+
               {(country && country != "Prefer not to say") && (
                 <CardBlock>
                   <CardSubtitle className="mb-2">Choose your city *</CardSubtitle>
                   <select
                     value={city}
                     onChange={(e) => {
-                      setCity(e.target.value)
-                      setCityMessage("")
+                      setCity(e.target.value);
+                      setCityMessage("");
                     }}
                     className="w-full border border-[--border] p-3 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
                   >
-                    <option value="">Select a city</option>
+                    <option disabled value="">Select a city</option>
                     {cities.map((city) => (
                       <option key={city} value={city}>
                         {city}
@@ -1169,6 +1184,7 @@ const countries = {
     "Toronto",
     "Vancouver",
     "Montreal",
+    "Waterloo",
     "Calgary",
     "Ottawa",
     "Edmonton",

@@ -282,22 +282,27 @@ def get_match():
                 return check_length(message, array, not need_help, _id)
 
             return {
+                "_id": str(random_user.get("_id", "")),
+                "imageLink": random_user.get("imageLink", ""),
                 "name": random_user.get("name", ""),
                 "email": random_user.get("email", ""),
                 "linkedIn": random_user.get("linkedIn", ""),
+                "x": random_user.get("x", ""),
+                "personalWebsite": random_user.get("personalWebsite", ""),
+                "gitHub": random_user.get("gitHub", ""),
                 "bio": random_user.get("bio", ""),
+                "country": random_user.get("country", ""),
+                "city": random_user.get("city", ""),
                 "availability": random_user.get("availability", ""),
-                "skills": random_user.get("skills", []),
-                "themes": random_user.get("themes", []),
-                "timeFrame": random_user.get("timeFrame", ""),
                 "needHelp": random_user.get("needHelp", False),
                 "projectName": random_user.get("projectName", ""),
                 "projectDescription": random_user.get("projectDescription", ""),
                 "helpDescription": random_user.get("helpDescription", ""),
                 "projectLink": random_user.get("projectLink", ""),
-                "imageLink": random_user.get("imageLink", ""),
-                "exactMatch": False,
-                "matchID": str(random_user.get("_id", "")),
+                "timeFrame": random_user.get("timeFrame", ""),
+                "skills": random_user.get("skills", []),
+                "skillLevels": random_user.get("skillLevels", {}),
+                "themes": random_user.get("themes", []),
             }
         return None
 
@@ -337,25 +342,31 @@ def get_match():
             if counter > 0:
                 matches.append(
                     {
+                        "_id": str(potential_match.get("_id", "")),
+                        "imageLink": potential_match.get("imageLink", ""),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
                         "linkedIn": potential_match.get("linkedIn", ""),
+                        "x": potential_match.get("x", ""),
+                        "personalWebsite": potential_match.get("personalWebsite", ""),
+                        "gitHub": potential_match.get("gitHub", ""),
                         "bio": potential_match.get("bio", ""),
+                        "country": potential_match.get("country", ""),
+                        "city": potential_match.get("city", ""),
                         "availability": potential_match.get("availability", ""),
-                        "skills": potential_match.get("skills", []),
-                        "themes": potential_match.get("themes", []),
-                        "timeFrame": potential_match.get("timeFrame", ""),
-                        "commonSkills": list(common_skills),
-                        "score": counter,
                         "needHelp": potential_match.get("needHelp", False),
-                        "matchID": str(potential_match.get("_id", "")),
                         "projectName": potential_match.get("projectName", ""),
                         "projectDescription": potential_match.get(
                             "projectDescription", ""
                         ),
                         "helpDescription": potential_match.get("helpDescription", ""),
                         "projectLink": potential_match.get("projectLink", ""),
-                        "imageLink": potential_match.get("imageLink", ""),
+                        "timeFrame": potential_match.get("timeFrame", ""),
+                        "skills": potential_match.get("skills", []),
+                        "skillLevels": potential_match.get("skillLevels", {}),
+                        "themes": potential_match.get("themes", []),
+                        "commonSkills": list(common_skills),
+                        "score": counter,
                     }
                 )
 
@@ -378,28 +389,6 @@ def get_match():
 
         if user is None:
             print("Redirecting to settings page.")
-            return jsonify({"settingsPresent": False})
-
-        def check_saved():
-            if user.get("savedMatches") is not None:
-                random_match = check_length(
-                    "No new matches, all have been saved.",
-                    matches,
-                    user.get("needHelp"),
-                    user.get("_id"),
-                )
-                if random_match:
-                    return jsonify({"match": random_match, "noMatches": True}), 200
-                for saved in user["savedMatches"]:
-                    if matches[0]["id"] == saved:
-                        print(f"{matches[0]['name']} is already saved.")
-                        matches.pop(0)
-                        check_saved()
-
-        missing_fields = check_fields(user.get("needHelp"), user)
-
-        if missing_fields:
-            print("Missing fields. Redirecting to settings page.")
             return jsonify({"settingsPresent": False})
 
         all_users = users.find({"needHelp": {"$ne": user.get("needHelp")}})
@@ -432,26 +421,31 @@ def get_match():
             if counter > 0:
                 matches.append(
                     {
+                        "_id": str(potential_match.get("_id", "")),
+                        "imageLink": potential_match.get("imageLink", ""),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
                         "linkedIn": potential_match.get("linkedIn", ""),
+                        "x": potential_match.get("x", ""),
+                        "personalWebsite": potential_match.get("personalWebsite", ""),
+                        "gitHub": potential_match.get("gitHub", ""),
                         "bio": potential_match.get("bio", ""),
+                        "country": potential_match.get("country", ""),
+                        "city": potential_match.get("city", ""),
                         "availability": potential_match.get("availability", ""),
-                        "skills": potential_match.get("skills", []),
-                        "themes": potential_match.get("themes", []),
-                        "timeFrame": potential_match.get("timeFrame", ""),
-                        "commonSkills": list(common_skills),
-                        "score": counter,
                         "needHelp": potential_match.get("needHelp", False),
-                        "matchID": str(potential_match.get("_id", "")),
                         "projectName": potential_match.get("projectName", ""),
                         "projectDescription": potential_match.get(
                             "projectDescription", ""
                         ),
                         "helpDescription": potential_match.get("helpDescription", ""),
                         "projectLink": potential_match.get("projectLink", ""),
-                        "exactMatch": True,
-                        "imageLink": potential_match.get("imageLink", ""),
+                        "timeFrame": potential_match.get("timeFrame", ""),
+                        "skills": potential_match.get("skills", []),
+                        "skillLevels": potential_match.get("skillLevels", {}),
+                        "themes": potential_match.get("themes", []),
+                        "commonSkills": list(common_skills),
+                        "score": counter,
                     }
                 )
 
@@ -466,9 +460,14 @@ def get_match():
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
-        if user.get("pastMatches") is not None:
-            for past in user.get("pastMatches"):
-                matches = [match for match in matches if match.get("_id", "") != past]
+        if user.get("pastMatches"):
+            matches = [
+                match
+                for match in matches
+                if match.get("_id") not in user.get("pastMatches")
+            ]
+
+            if not matches:
                 random_match = check_length(
                     "No new matches, all have been matched in the past.",
                     matches,
@@ -476,17 +475,7 @@ def get_match():
                     user.get("_id"),
                 )
                 if random_match:
-                    return (
-                        jsonify(
-                            {
-                                "match": random_match,
-                                "noNewMatches": True,
-                            }
-                        ),
-                        200,
-                    )
-
-        # check_saved()
+                    return jsonify({"match": random_match, "noNewMatches": True}), 200
 
         past_matches = user.get("pastMatches", [])
         past_matches.append(matches[0].get("_id", ""))
@@ -510,7 +499,7 @@ def save_match():
 
     update_operation = {
         "$push": {
-            "savedMatches": received.get("matchID", ""),
+            "savedMatches": received.get("_id", ""),
         }
     }
 

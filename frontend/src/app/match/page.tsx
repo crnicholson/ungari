@@ -16,8 +16,10 @@ import { set } from "@auth0/nextjs-auth0/dist/session";
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
 
+// INTEGRATE noNewMatches 
+
 export default function Home() {
-  const [matchID, setMatchID] = useState("");
+  const [_id, setID] = useState("");
 
   const [imageLink, setImageLink] = useState("");
 
@@ -44,7 +46,8 @@ export default function Home() {
   const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
   const [themes, setThemes] = useState([]);
 
-  const [noMatch, setNoMatch] = useState(false);
+  const [noMatches, setNoMatches] = useState(false);
+  const [noNewMatches, setNoNewMatches] = useState(false);
 
   const [warningMessage, setWarningMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -113,7 +116,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: user.sub, matchID: matchID }),
+        body: JSON.stringify({ id: user.sub, _id: _id }),
       });
       if (!response.ok) {
         const error = await response.json();
@@ -123,7 +126,7 @@ export default function Home() {
       console.error("Error: Failed to fetch settings: ", error);
       setErrorMessage("Client-side error: " + error);
     }
-  }, [user, matchID]);
+  }, [user, _id]);
 
   const getMatch = useCallback(async () => {
     try {
@@ -142,13 +145,15 @@ export default function Home() {
 
         const data = await response.json();
 
+        console.log(data);
+
         setName(data.match.name || "");
         setEmail(data.match.email || "");
         setLinkedIn(data.match.linkedIn || "");
         setX(data.match.x || "");
         setGitHub(data.match.gitHub || "");
         setPersonalWebsite(data.match.personalWebsite || "");
-        
+
         setBio(data.match.bio || "");
         setCountry(data.match.country || "");
         setCity(data.match.city || "");
@@ -165,7 +170,8 @@ export default function Home() {
         setSkillLevels(data.match.skillLevels || {});
         setThemes(data.match.themes || []);
 
-        setNoMatch(data.noMatches || false);
+        setNoMatches(data.noMatches || false);
+        setNoNewMatches(data.noNewMatches || false);
 
         if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
           setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
@@ -208,7 +214,7 @@ export default function Home() {
         <Warning onClick={() => setWarningMessage("")} className={`w-full sm:w-1/2 ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
       )}
 
-      <CardContainer className={`${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
+      <CardContainer className={`sm:w-3/4 lg:w-2/3 xl:w-1/2 w-full ${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
           {isLoading && !user ? (
@@ -217,9 +223,9 @@ export default function Home() {
             <p>Looks like you{"'"}re not getting your match... our backend seems to be down. Try reloading or coming back later.</p>
           ) : (
             <>
-              {noMatch && (
+              {(noMatches || noNewMatches) && (
                 <CardBlock>
-                  <p>Psst... there are no exact matches, so have a random one!</p>
+                  <p>Psst... there are no {noNewMatches ? "new" : "exact"} matches, so have a random one!</p>
                 </CardBlock>
               )}
               <CardBlock>

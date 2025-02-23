@@ -11,7 +11,7 @@ interface StyledLinkProps {
 export default function StyledLink({ href, className, onClick, children, background }: StyledLinkProps) {
     const commonClasses = background === "dark"
         ? "underline hover:text-stone-500"
-        : "underline decoration-[--accent] text-[--light] hover:text-[--lighter]";
+        : "underline decoration-[--accent] text-[--light] hover:text-[--link-hover]";
 
     if (href) {
         return (
