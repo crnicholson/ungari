@@ -949,7 +949,7 @@ export default function Onboarding() {
             </Header>
 
             {errorMessage !== "" && (
-                <Error onClick={() => setErrorMessage("")} className="sm:w-1/2 w-full mt-24">{errorMessage}</Error>
+                <Error className="sm:w-1/2 w-full mt-24">{errorMessage}</Error>
             )}
 
             {warningMessage !== "" && (

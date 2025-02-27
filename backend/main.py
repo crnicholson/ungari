@@ -318,6 +318,7 @@ def get_match():
     ):
         score = 0
         common_skills = []
+        skill_score_details = {}
 
         for skill in user_skills:
             if skill in match_skills:
@@ -325,15 +326,35 @@ def get_match():
                 user_level = user_skill_levels.get(skill, 1)
                 match_level = match_skill_levels.get(skill, 1)
 
-                if match_level >= user_level:
-                    score += 1
-                    if match_level > user_level:
-                        score += 0.5 
+                skill_score = 1.0
+
+                level_diff = match_level - user_level
+                if level_diff > 0:
+                    skill_score += min(level_diff * 0.75, 2.0)
+                elif level_diff == 0:
+                    skill_score += 0.5
+                else:
+                    skill_score *= max(0.5, (match_level / user_level))
+
+                score += skill_score
+                skill_score_details[skill] = skill_score
 
         common_themes = set(themes).intersection(set(match_themes))
-        score += len(common_themes) * 0.5
+        theme_score = sum(1 / (i + 1) for i in range(len(common_themes)))
+        score += theme_score * 2
 
-        return score, list(common_skills), list(common_themes)
+        if user_skills:
+            coverage_ratio = len(common_skills) / len(user_skills)
+            score *= (1 + coverage_ratio) / 2
+
+        normalized_score = round(min(10, score), 2)
+
+        return (
+            normalized_score,
+            list(common_skills),
+            list(common_themes),
+            skill_score_details,
+        )
 
     if demo:
         print("\nDemo mode enabled.\n")
@@ -358,7 +379,7 @@ def get_match():
             potential_match_skill_levels = potential_match.get("skillLevels", {})
             potential_match_themes = potential_match.get("themes", [])
 
-            score, common_skills, common_themes = calculate_score(
+            score, common_skills, common_themes, skill_score_details = calculate_score(
                 user_skills,
                 user_skill_levels,
                 potential_match_skills,
@@ -413,7 +434,6 @@ def get_match():
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
-        print(f"Matches: {json.dumps(matches, indent=4)}")
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
         return jsonify({"match": matches[0]})
@@ -444,7 +464,7 @@ def get_match():
             potential_match_skill_levels = potential_match.get("skillLevels", {})
             potential_match_themes = potential_match.get("themes", [])
 
-            score, common_skills, common_themes = calculate_score(
+            score, common_skills, common_themes, skill_score_details = calculate_score(
                 user_skills,
                 user_skill_levels,
                 potential_match_skills,
@@ -480,9 +500,9 @@ def get_match():
                             .replace("months", "")
                             .strip()
                         ),
-                        "skills": potential_match.get("skills", []),
-                        "skillLevels": potential_match.get("skillLevels", {}),
-                        "themes": potential_match.get("themes", []),
+                        "skills": potential_match_skills,
+                        "skillLevels": potential_match_skill_levels,
+                        "themes": potential_match_themes,
                         "commonSkills": common_skills,
                         "commonThemes": common_themes,
                         "score": score,
@@ -500,30 +520,29 @@ def get_match():
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
-        # if user.get("pastMatches"):
-        #     matches = [
-        #         match
-        #         for match in matches
-        #         if match.get("_id") not in user.get("pastMatches")
-        #     ]
+        if user.get("pastMatches"):
+            matches = [
+                match
+                for match in matches
+                if match.get("_id") not in user.get("pastMatches")
+            ]
 
-        #     if not matches:
-        #         random_match = check_length(
-        #             "No new matches, all have been matched in the past.",
-        #             matches,
-        #             user.get("needHelp"),
-        #             user.get("_id"),
-        #         )
-        #         if random_match:
-        #             return jsonify({"match": random_match, "noNewMatches": True}), 200
+            if not matches:
+                random_match = check_length(
+                    "No new matches, all have been matched in the past.",
+                    matches,
+                    user.get("needHelp"),
+                    user.get("_id"),
+                )
+                if random_match:
+                    return jsonify({"match": random_match, "noNewMatches": True}), 200
 
-        # past_matches = user.get("pastMatches", [])
-        # past_matches.append(matches[0].get("_id", ""))
-        # users.update_one(
-        #     {"_id": user.get("_id")}, {"$set": {"pastMatches": past_matches}}
-        # )
+        past_matches = user.get("pastMatches", [])
+        past_matches.append(matches[0].get("_id", ""))
+        users.update_one(
+            {"_id": user.get("_id")}, {"$set": {"pastMatches": past_matches}}
+        )
 
-        print(f"Matches: {json.dumps(matches, indent=4)}")
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
         return jsonify({"match": matches[0]}), 200
