@@ -13,6 +13,7 @@ interface CardProps {
     value?: string;
     type?: string;
     onClick?: () => void;
+    max?: number;
 }
 
 export function Card({ children, className }: CardProps) {
@@ -69,7 +70,7 @@ export function CardRow({ children, className }: CardProps) {
     );
 }
 
-export function CardInput({ placeholder, value, onChange, className, type }: CardProps) {
+export function CardInput({ placeholder, value, onChange, className, type, max=100000 }: CardProps) {
     return (
         <div className={`${className}`}>
             <input
@@ -78,6 +79,7 @@ export function CardInput({ placeholder, value, onChange, className, type }: Car
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
+                maxLength={max}
             />
         </div>
     );
@@ -99,7 +101,7 @@ export function CardButton({ children, onClick, className }: CardProps) {
     return (
         <div className={`${className}`}>
             <button
-                className={`w-full font-semibold whitespace-nowrap border border-[--border] shadow-lg bg-none rounded-xl p-3 hover:scale-105 ${className}`}
+                className={`w-full font-semibold whitespace-nowrap border border-[--border] shadow-lg bg-none rounded-xl p-3 hover:scale-105 transition-transform duration-200 ${className}`}
                 onClick={onClick}
             >
                 {children}

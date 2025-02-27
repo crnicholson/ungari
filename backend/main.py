@@ -299,7 +299,7 @@ def get_match():
                 "projectDescription": random_user.get("projectDescription", ""),
                 "helpDescription": random_user.get("helpDescription", ""),
                 "projectLink": random_user.get("projectLink", ""),
-                "timeFrame": random_user.get("timeFrame", ""),
+                "timeFrame": int(random_user.get("timeFrame", "").replace("months", "").strip()),
                 "skills": random_user.get("skills", []),
                 "skillLevels": random_user.get("skillLevels", {}),
                 "themes": random_user.get("themes", []),
@@ -356,12 +356,10 @@ def get_match():
                         "availability": potential_match.get("availability", ""),
                         "needHelp": potential_match.get("needHelp", False),
                         "projectName": potential_match.get("projectName", ""),
-                        "projectDescription": potential_match.get(
-                            "projectDescription", ""
-                        ),
+                        "projectDescription": potential_match.get("projectDescription", ""),
                         "helpDescription": potential_match.get("helpDescription", ""),
                         "projectLink": potential_match.get("projectLink", ""),
-                        "timeFrame": potential_match.get("timeFrame", ""),
+                        "timeFrame": int(potential_match.get("timeFrame", "").replace("months", "").strip()),
                         "skills": potential_match.get("skills", []),
                         "skillLevels": potential_match.get("skillLevels", {}),
                         "themes": potential_match.get("themes", []),
@@ -435,12 +433,10 @@ def get_match():
                         "availability": potential_match.get("availability", ""),
                         "needHelp": potential_match.get("needHelp", False),
                         "projectName": potential_match.get("projectName", ""),
-                        "projectDescription": potential_match.get(
-                            "projectDescription", ""
-                        ),
+                        "projectDescription": potential_match.get("projectDescription", ""),
                         "helpDescription": potential_match.get("helpDescription", ""),
                         "projectLink": potential_match.get("projectLink", ""),
-                        "timeFrame": potential_match.get("timeFrame", ""),
+                        "timeFrame": int(potential_match.get("timeFrame", "").replace("months", "").strip()),
                         "skills": potential_match.get("skills", []),
                         "skillLevels": potential_match.get("skillLevels", {}),
                         "themes": potential_match.get("themes", []),

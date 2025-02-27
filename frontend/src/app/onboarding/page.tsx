@@ -549,6 +549,7 @@ export default function Onboarding() {
                                     setNameMessage(e.target.value === "" || isValidName(e.target.value) ? "" : "Please enter a valid name");
                                 }}
                                 placeholder="Enter your full name"
+                                max={50}
                             />
                             <CardInputError>{nameMessage}</CardInputError>
                         </CardBlock>
@@ -561,6 +562,7 @@ export default function Onboarding() {
                                     setEmailMessage(e.target.value === "" || isValidEmail(e.target.value) ? "" : "Hmm... that email doesn't seem right");
                                 }}
                                 placeholder="We'll shoot you an email if we find a match"
+                                max={100}
                             />
                             <CardInputError>{emailMessage}</CardInputError>
                         </CardBlock>
@@ -573,6 +575,7 @@ export default function Onboarding() {
                                     setLinkedInMessage(e.target.value === "" || e.target.value.includes("linkedin.co") ? "" : "LinkedIn without linkedin.com? 🤔");
                                 }}
                                 placeholder="To help with credibility"
+                                max={200}
                             />
                             <CardInputError>{linkedInMessage}</CardInputError>
                         </CardBlock>
@@ -597,6 +600,7 @@ export default function Onboarding() {
                                     setPersonalWebsiteMessage(personalWebsite.includes("onlyfans.co") ? "I see what you're doing there" : "");
                                 }}
                                 placeholder="Have a portfolio? Share it here"
+                                max={200}
                             />
                             <CardInputError>{personalWebsiteMessage}</CardInputError>
                         </CardBlock>
@@ -610,6 +614,7 @@ export default function Onboarding() {
 
                                 }}
                                 placeholder="Git off the Hub"
+                                max={200}
                             />
                             <CardInputError>{gitHubMessage}</CardInputError>
                         </CardBlock>
@@ -637,6 +642,7 @@ export default function Onboarding() {
                                     onChange={(e) => setTempImageLink(e.target.value)}
                                     placeholder="Make it blank to use the default image!"
                                     className="w-full"
+                                    max={600}
                                 />
                                 <CardButton
                                     onClick={() => {
@@ -671,14 +677,14 @@ export default function Onboarding() {
                 return (
                     <>
                         <CardBlock>
-                            <CardSubtitle className="mb-2">Tell us about yourself! ({50 - bio.length} chars) *</CardSubtitle>
+                            <CardSubtitle className="mb-2">Tell us about yourself! ({250 - bio.length} chars) *</CardSubtitle>
                             <textarea
                                 className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
-                                placeholder="Special notes, preferences, favorite color? Max 50 characters."
+                                placeholder="Special notes, preferences, favorite color? Max 250 characters."
                                 rows={3}
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
-                                maxLength={50}
+                                maxLength={250}
                             ></textarea>
                             <CardInputError>{bioMessage}</CardInputError>
                         </CardBlock>
@@ -765,30 +771,31 @@ export default function Onboarding() {
                                         value={projectName}
                                         onChange={(e) => setProjectName(e.target.value)}
                                         placeholder="Automatic cereal feeder to save the rhinos"
+                                        max={200}
                                     />
                                     <CardInputError>{projectNameMessage}</CardInputError>
                                 </CardBlock>
                                 <CardBlock>
-                                    <CardSubtitle className="mb-2">Tell us about your project! ({100 - projectDescription.length} chars) *</CardSubtitle>
+                                    <CardSubtitle className="mb-2">Tell us about your project! ({500 - projectDescription.length} chars) *</CardSubtitle>
                                     <textarea
                                         className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
-                                        placeholder="What's it do? Why's it cool? Max 100 characters."
+                                        placeholder="What's it do? Why's it cool? Max 500 characters."
                                         rows={3}
                                         value={projectDescription}
                                         onChange={(e) => setProjectDescription(e.target.value)}
-                                        maxLength={100}
+                                        maxLength={500}
                                     ></textarea>
                                     <CardInputError>{projectDescriptionMessage}</CardInputError>
                                 </CardBlock>
                                 <CardBlock>
-                                    <CardSubtitle className="mb-2">Anything specific you need help on? We{"'"}ll ask about skills later. ({100 - helpDescription.length} chars) *</CardSubtitle>
+                                    <CardSubtitle className="mb-2">Anything specific you need help on? We{"'"}ll ask about skills later. ({500 - helpDescription.length} chars) *</CardSubtitle>
                                     <textarea
                                         className="w-full p-3 border border-stone-200 rounded-xl hover:ring-2 hover:ring-[--accent] hover:outline-none focus:outline-none focus:ring-2 focus:ring-[--accent]"
-                                        placeholder="I need to make sure the electric boogaloo can attract rhinos. Max 100 characters."
+                                        placeholder="I need to make sure the electric boogaloo can attract rhinos. Max 500 characters."
                                         rows={3}
                                         value={helpDescription}
                                         onChange={(e) => setHelpDescription(e.target.value)}
-                                        maxLength={100}
+                                        maxLength={500}
                                     ></textarea>
                                     <CardInputError>{helpDescriptionMessage}</CardInputError>
                                 </CardBlock>
@@ -798,6 +805,7 @@ export default function Onboarding() {
                                         value={projectLink}
                                         onChange={(e) => setProjectLink(e.target.value)}
                                         placeholder="Like github.com/crnicholson/StratoSoar-MK3"
+                                        max={300}
                                     />
                                     <CardInputError>{projectLinkMessage}</CardInputError>
                                 </CardBlock>

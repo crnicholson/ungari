@@ -4,6 +4,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import StyledLink from "./styledLink";
 import ProfileCard from "./profileCard";
 import { Card, CardBlock, CardContainer } from "./card";
+import { error } from "console";
 
 const SERVER = "http://127.0.0.1:38321"
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app"
@@ -12,27 +13,39 @@ export default function Demo() {
     const [demoNeedHelp, setDemoNeedHelp] = useState(false);
     const [demoSkills, setDemoSkills] = useState(["Python"]);
     const [demoThemes, setDemoThemes,] = useState(["education"]);
+
+    const [_id, setID] = useState("");
+
+    const [imageLink, setImageLink] = useState("");
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [linkedIn, setLinkedIn] = useState("");
-    const [needHelp, setNeedHelp] = useState(false);
+    const [x, setX] = useState("");
+    const [gitHub, setGitHub] = useState("");
+    const [personalWebsite, setPersonalWebsite] = useState("");
+
     const [bio, setBio] = useState("");
+    const [country, setCountry] = useState("");
+    const [city, setCity] = useState("");
     const [availability, setAvailability] = useState("");
-    const [skills, setSkills] = useState(["Python"]);
-    const [themes, setThemes] = useState([]);
+
+    const [needHelp, setNeedHelp] = useState(false);
     const [projectName, setProjectName] = useState("");
     const [projectDescription, setProjectDescription] = useState("");
     const [helpDescription, setHelpDescription] = useState("");
     const [projectLink, setProjectLink] = useState("");
     const [timeFrame, setTimeFrame] = useState(0);
-    const [imageLink, setImageLink] = useState("");
 
-    const [errorMessage, setErrorMessage] = useState("");
-    const [errorPresent, setErrorPresent] = useState(false);
-    const [noMatch, setNoMatch] = useState(false);
+    const [skills, setSkills] = useState([]);
+    const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
+    const [themes, setThemes] = useState([]);
+
+    const [noMatches, setNoMatches] = useState(false);
     const [polled, setPolled] = useState(false);
 
-    const { user, isLoading } = useUser();
+    const [warningMessage, setWarningMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     function isValidURL(url: string): boolean {
         try {
@@ -43,25 +56,8 @@ export default function Demo() {
         }
     }
 
-    const handleSelectSkill = (skill) => {
-        if (demoSkills.includes(skill)) {
-            setDemoSkills(demoSkills.filter((t) => t !== skill));
-        } else {
-            setDemoSkills([...demoSkills, skill]);
-        }
-    };
-
-    const handleSelectTheme = (theme) => {
-        if (demoThemes.includes(theme)) {
-            setDemoThemes(demoThemes.filter((t) => t !== theme));
-        } else {
-            setDemoThemes([...demoThemes, theme]);
-        }
-    };
-
     const getMatch = useCallback(async () => {
         try {
-            setPolled(true);
             const response = await fetch(SERVER + "/api/get-match", {
                 method: "POST",
                 headers: {
@@ -72,37 +68,47 @@ export default function Demo() {
             if (!response.ok) {
                 const error = await response.json();
                 setErrorMessage("Server-side error: " + error.error);
-                setErrorPresent(true);
-                setNoMatch(error.noMatches);
+                setPolled(false);
             } else {
+                setPolled(true);
+
                 const data = await response.json();
+
                 setName(data.match.name || "");
                 setEmail(data.match.email || "");
                 setLinkedIn(data.match.linkedIn || "");
+                setX(data.match.x || "");
+                setGitHub(data.match.gitHub || "");
+                setPersonalWebsite(data.match.personalWebsite || "");
+
                 setBio(data.match.bio || "");
+                setCountry(data.match.country || "");
+                setCity(data.match.city || "");
                 setAvailability(data.match.availability || "");
-                setSkills(data.match.skills || []);
-                setThemes(data.match.themes || []);
+
                 setNeedHelp(data.match.needHelp || false);
                 setProjectName(data.match.projectName || "");
                 setProjectDescription(data.match.projectDescription || "");
                 setHelpDescription(data.match.helpDescription || "");
                 setProjectLink(data.match.projectLink || "");
                 setTimeFrame(data.match.timeFrame || "");
-                setNoMatch(data.noMatches || false);
+
+                setSkills(data.match.skills || []);
+                setSkillLevels(data.match.skillLevels || {});
+                setThemes(data.match.themes || []);
+
+                setNoMatches(data.noMatches || false);
 
                 if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
                     setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
                 } else {
                     setImageLink(data.match.imageLink);
                 }
-
-                console.log("Match: ", data.match);
             }
         } catch (error) {
             console.error("Error: Failed to fetch settings: ", error);
             setErrorMessage(error);
-            setErrorPresent(true);
+            setPolled(false);
         }
     }, [demoNeedHelp, demoSkills, demoThemes]);
 
@@ -158,7 +164,7 @@ export default function Demo() {
 
                 {polled && (
                     <div className="mt-5 w-full">
-                        {noMatch && (
+                        {noMatches && (
                             <CardBlock>
                                 <p>Psst... there are no exact matches, so have a random one!</p>
                             </CardBlock>
@@ -168,16 +174,23 @@ export default function Demo() {
                                 name,
                                 email,
                                 linkedIn,
+                                x,
+                                gitHub,
+                                personalWebsite,
+                                imageLink,
                                 bio,
+                                country,
+                                city,
                                 availability,
-                                skills,
-                                themes,
                                 needHelp,
                                 projectName,
                                 projectDescription,
+                                helpDescription,
                                 projectLink,
                                 timeFrame,
-                                imageLink
+                                skills,
+                                skillLevels,
+                                themes,
                             }} />
                             <Button
                                 className="px-5 py-2 text-lg font-normal text-center"
@@ -187,6 +200,11 @@ export default function Demo() {
                             </Button>
                         </div>
                     </div>
+                )}
+                {errorMessage && (
+                    <CardBlock>
+                        {errorMessage}
+                    </CardBlock>
                 )}
             </Card>
         </CardContainer>

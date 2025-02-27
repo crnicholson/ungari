@@ -48,6 +48,7 @@ export default function Home() {
 
   const [noMatches, setNoMatches] = useState(false);
   const [noNewMatches, setNoNewMatches] = useState(false);
+  const [polled, setPolled] = useState(false);
 
   const [warningMessage, setWarningMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -140,8 +141,10 @@ export default function Home() {
       if (!response.ok) {
         const error = await response.json();
         setErrorMessage("Server-side error: " + error.error);
+        setPolled(false);
       } else {
         setErrorMessage("");
+        setPolled(true);
 
         const data = await response.json();
 
@@ -182,6 +185,7 @@ export default function Home() {
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);
       setErrorMessage("Client-side error: " + error);
+      setPolled(false);
     }
   }, [user]);
 
@@ -217,7 +221,7 @@ export default function Home() {
       <CardContainer className={`sm:w-3/4 lg:w-2/3 xl:w-1/2 w-full ${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
           <CardTitle size={2}>Your match</CardTitle>
-          {isLoading && !user ? (
+          {isLoading && !user && !polled ? (
             <p>Loading...</p>
           ) : errorMessage !== "" ? (
             <p>Looks like you{"'"}re not getting your match... our backend seems to be down. Try reloading or coming back later.</p>
