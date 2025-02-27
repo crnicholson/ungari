@@ -162,61 +162,65 @@ export default function Settings() {
 
   // Skills 
   const handleSkillLevelChange = (skill: string, level: number) => {
-    setSkillLevels(prev => ({
+    setSkillLevels((prev) => ({
       ...prev,
-      [skill]: level
+      [skill]: level,
     }));
   };
 
   const getSkillLevelLabel = (level: number) => {
     const labels = [
-      'Beginner',
-      'Advanced Beginner',
-      'Intermediate',
-      'Advanced',
-      'Expert'
+      "Beginner",
+      "Advanced Beginner",
+      "Intermediate",
+      "Advanced",
+      "Expert",
     ];
     return labels[level - 1] || labels[0];
   };
 
+  const flattenSkills = (items: any): string[] => {
+    if (Array.isArray(items)) {
+      return items;
+    } else if (typeof items === "object") {
+      return Object.values(items).flatMap((value) => flattenSkills(value));
+    }
+    return [];
+  };
+
   const filteredSkills = skillSearchTerm
-    ? Object.values(categorizedSkills).flatMap(category => {
-      if (typeof category === 'object' && !Array.isArray(category)) {
-        return Object.values(category)
-          .flat()
-          .filter((skill): skill is string =>
-            typeof skill === 'string' &&
-            skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
-          );
-      }
-      return [];
-    }).sort((a, b) => a.localeCompare(b))
+    ? flattenSkills(categorizedSkills)
+      .filter((skill): skill is string =>
+        typeof skill === "string" &&
+        skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
+      )
+      .sort((a, b) => a.localeCompare(b))
     : [];
 
   const handleSelectSkill = (skill: string) => {
     if (skills.includes(skill)) {
       setSkills(skills.filter((s) => s !== skill));
-      setSkillLevels(prev => {
+      setSkillLevels((prev) => {
         const { [skill]: _, ...rest } = prev;
         return rest;
       });
     } else {
       setSkills([...skills, skill]);
-      setSkillLevels(prev => ({
+      setSkillLevels((prev) => ({
         ...prev,
-        [skill]: 1
+        [skill]: 1,
       }));
     }
   };
 
-  const toggleDropdown = (path) => {
+  const toggleDropdown = (path: string) => {
     setExpandedCategories((prev) => ({
       ...prev,
       [path]: !prev[path],
     }));
   };
 
-  const renderSkills = (items, path = "") => {
+  const renderSkills = (items: any, path = "") => {
     if (Array.isArray(items)) {
       return items.map((skill) => (
         <div
@@ -1032,43 +1036,43 @@ export default function Settings() {
 
               <CardBlock>
                 <div className="overflow-y-auto border p-3 rounded-xl max-h-[60vh]">
-                  {skillSearchTerm ? (
-                    filteredSkills.length > 0 ? (
-                      filteredSkills.map((skill) => (
-                        <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
-                          <div className="w-full lg:w-auto">
-                            <Checkbox
-                              onChange={() => handleSelectSkill(skill)}
-                              checked={skills.includes(skill)}
-                            >
-                              {skill}
-                            </Checkbox>
-                          </div>
-                          {skills.includes(skill) && (
-                            <div className="flex flex-row justify-left items-center gap-3 w-full lg:w-1/2">
-                              <input
-                                type="range"
-                                min="1"
-                                max="5"
-                                value={skillLevels[skill] || 1}
-                                onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
-                                className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
-                              />
-                              <span className="text-sm min-w-fit text-[--light]">
-                                {getSkillLevelLabel(skillLevels[skill] || 1)}
-                              </span>
+                      {skillSearchTerm ? (
+                        filteredSkills.length > 0 ? (
+                          filteredSkills.map((skill) => (
+                            <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
+                              <div className="w-full lg:w-auto">
+                                <Checkbox
+                                  onChange={() => handleSelectSkill(skill)}
+                                  checked={skills.includes(skill)}
+                                >
+                                  {skill}
+                                </Checkbox>
+                              </div>
+                              {skills.includes(skill) && (
+                                <div className="flex flex-row justify-left items-center gap-3 w-full lg:w-1/2">
+                                  <input
+                                    type="range"
+                                    min="1"
+                                    max="5"
+                                    value={skillLevels[skill] || 1}
+                                    onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                                    className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                                  />
+                                  <span className="text-sm min-w-fit text-[--light]">
+                                    {getSkillLevelLabel(skillLevels[skill] || 1)}
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="flex items-center justify-center h-32 text-gray-500">
-                        No skills found matching {'"'}{skillSearchTerm}{'"'}
-                      </div>
-                    )
-                  ) : (
-                    renderSkills(categorizedSkills)
-                  )}
+                          ))
+                        ) : (
+                          <div className="flex items-center justify-center h-32 text-gray-500">
+                            No skills found matching {'"'}{skillSearchTerm}{'"'}
+                          </div>
+                        )
+                      ) : (
+                        renderSkills(categorizedSkills)
+                      )}
                 </div>
                 <CardInputError>{skillsMessage}</CardInputError>
               </CardBlock>

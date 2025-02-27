@@ -299,19 +299,50 @@ def get_match():
                 "projectDescription": random_user.get("projectDescription", ""),
                 "helpDescription": random_user.get("helpDescription", ""),
                 "projectLink": random_user.get("projectLink", ""),
-                "timeFrame": int(random_user.get("timeFrame", "").replace("months", "").strip()),
+                "timeFrame": int(
+                    random_user.get("timeFrame", "").replace("months", "").strip()
+                ),
                 "skills": random_user.get("skills", []),
                 "skillLevels": random_user.get("skillLevels", {}),
                 "themes": random_user.get("themes", []),
             }
         return None
 
+    def calculate_score(
+        user_skills,
+        user_skill_levels,
+        match_skills,
+        match_skill_levels,
+        themes,
+        match_themes,
+    ):
+        score = 0
+        common_skills = []
+
+        for skill in user_skills:
+            if skill in match_skills:
+                common_skills.append(skill)
+                user_level = user_skill_levels.get(skill, 1)
+                match_level = match_skill_levels.get(skill, 1)
+
+                if match_level >= user_level:
+                    score += 1
+                    if match_level > user_level:
+                        score += 0.5 
+
+        common_themes = set(themes).intersection(set(match_themes))
+        score += len(common_themes) * 0.5
+
+        return score, list(common_skills), list(common_themes)
+
     if demo:
         print("\nDemo mode enabled.\n")
         print(f"Received: {received}")
 
         all_users = users.find({"needHelp": {"$ne": received.get("needHelp")}})
-        user_skills = received.get("skills")
+        user_skills = received.get("skills", [])
+        user_skill_levels = received.get("skillLevels", {})
+        user_themes = received.get("themes", [])
 
         matches = []
 
@@ -323,23 +354,20 @@ def get_match():
                 print("Potential match has missing fields. Skipping.")
                 continue
 
-            potential_match_skills = potential_match.get("skills")
+            potential_match_skills = potential_match.get("skills", [])
+            potential_match_skill_levels = potential_match.get("skillLevels", {})
+            potential_match_themes = potential_match.get("themes", [])
 
-            common_skills = []
+            score, common_skills, common_themes = calculate_score(
+                user_skills,
+                user_skill_levels,
+                potential_match_skills,
+                potential_match_skill_levels,
+                user_themes,
+                potential_match_themes,
+            )
 
-            for skill in user_skills:
-                for potential_match_skill in potential_match_skills:
-                    if skill.lower() == potential_match_skill.lower():
-                        common_skills.append(skill)
-
-                        print(f"Common skill found: {skill}")
-                        break
-
-            counter = 0
-            for skill in common_skills:
-                counter += 1
-
-            if counter > 0:
+            if score > 0:
                 matches.append(
                     {
                         "_id": str(potential_match.get("_id", "")),
@@ -356,15 +384,22 @@ def get_match():
                         "availability": potential_match.get("availability", ""),
                         "needHelp": potential_match.get("needHelp", False),
                         "projectName": potential_match.get("projectName", ""),
-                        "projectDescription": potential_match.get("projectDescription", ""),
+                        "projectDescription": potential_match.get(
+                            "projectDescription", ""
+                        ),
                         "helpDescription": potential_match.get("helpDescription", ""),
                         "projectLink": potential_match.get("projectLink", ""),
-                        "timeFrame": int(potential_match.get("timeFrame", "").replace("months", "").strip()),
+                        "timeFrame": int(
+                            potential_match.get("timeFrame", "")
+                            .replace("months", "")
+                            .strip()
+                        ),
                         "skills": potential_match.get("skills", []),
                         "skillLevels": potential_match.get("skillLevels", {}),
                         "themes": potential_match.get("themes", []),
-                        "commonSkills": list(common_skills),
-                        "score": counter,
+                        "commonSkills": common_skills,
+                        "commonThemes": common_themes,
+                        "score": score,
                     }
                 )
 
@@ -378,6 +413,7 @@ def get_match():
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
+        print(f"Matches: {json.dumps(matches, indent=4)}")
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
         return jsonify({"match": matches[0]})
@@ -390,7 +426,9 @@ def get_match():
             return jsonify({"settingsPresent": False})
 
         all_users = users.find({"needHelp": {"$ne": user.get("needHelp")}})
-        user_skills = user.get("skills")
+        user_skills = user.get("skills", [])
+        user_skill_levels = user.get("skillLevels", {})
+        user_themes = user.get("themes", [])
 
         matches = []
 
@@ -402,21 +440,20 @@ def get_match():
                 print("Potential match has missing fields. Skipping.")
                 continue
 
-            potential_match_skills = potential_match.get("skills")
+            potential_match_skills = potential_match.get("skills", [])
+            potential_match_skill_levels = potential_match.get("skillLevels", {})
+            potential_match_themes = potential_match.get("themes", [])
 
-            common_skills = []
+            score, common_skills, common_themes = calculate_score(
+                user_skills,
+                user_skill_levels,
+                potential_match_skills,
+                potential_match_skill_levels,
+                user_themes,
+                potential_match_themes,
+            )
 
-            for skill in user_skills:
-                for potential_match_skill in potential_match_skills:
-                    if skill.lower() == potential_match_skill.lower():
-                        common_skills.append(skill)
-                        break
-
-            counter = 0
-            for skill in common_skills:
-                counter += 1
-
-            if counter > 0:
+            if score > 0:
                 matches.append(
                     {
                         "_id": str(potential_match.get("_id", "")),
@@ -433,15 +470,22 @@ def get_match():
                         "availability": potential_match.get("availability", ""),
                         "needHelp": potential_match.get("needHelp", False),
                         "projectName": potential_match.get("projectName", ""),
-                        "projectDescription": potential_match.get("projectDescription", ""),
+                        "projectDescription": potential_match.get(
+                            "projectDescription", ""
+                        ),
                         "helpDescription": potential_match.get("helpDescription", ""),
                         "projectLink": potential_match.get("projectLink", ""),
-                        "timeFrame": int(potential_match.get("timeFrame", "").replace("months", "").strip()),
+                        "timeFrame": int(
+                            potential_match.get("timeFrame", "")
+                            .replace("months", "")
+                            .strip()
+                        ),
                         "skills": potential_match.get("skills", []),
                         "skillLevels": potential_match.get("skillLevels", {}),
                         "themes": potential_match.get("themes", []),
-                        "commonSkills": list(common_skills),
-                        "score": counter,
+                        "commonSkills": common_skills,
+                        "commonThemes": common_themes,
+                        "score": score,
                     }
                 )
 
@@ -456,29 +500,30 @@ def get_match():
 
         matches = sorted(matches, key=lambda x: x["score"], reverse=True)
 
-        if user.get("pastMatches"):
-            matches = [
-                match
-                for match in matches
-                if match.get("_id") not in user.get("pastMatches")
-            ]
+        # if user.get("pastMatches"):
+        #     matches = [
+        #         match
+        #         for match in matches
+        #         if match.get("_id") not in user.get("pastMatches")
+        #     ]
 
-            if not matches:
-                random_match = check_length(
-                    "No new matches, all have been matched in the past.",
-                    matches,
-                    user.get("needHelp"),
-                    user.get("_id"),
-                )
-                if random_match:
-                    return jsonify({"match": random_match, "noNewMatches": True}), 200
+        #     if not matches:
+        #         random_match = check_length(
+        #             "No new matches, all have been matched in the past.",
+        #             matches,
+        #             user.get("needHelp"),
+        #             user.get("_id"),
+        #         )
+        #         if random_match:
+        #             return jsonify({"match": random_match, "noNewMatches": True}), 200
 
-        past_matches = user.get("pastMatches", [])
-        past_matches.append(matches[0].get("_id", ""))
-        users.update_one(
-            {"_id": user.get("_id")}, {"$set": {"pastMatches": past_matches}}
-        )
+        # past_matches = user.get("pastMatches", [])
+        # past_matches.append(matches[0].get("_id", ""))
+        # users.update_one(
+        #     {"_id": user.get("_id")}, {"$set": {"pastMatches": past_matches}}
+        # )
 
+        print(f"Matches: {json.dumps(matches, indent=4)}")
         print(f"Match: {json.dumps(matches[0], indent=4)}")
 
         return jsonify({"match": matches[0]}), 200

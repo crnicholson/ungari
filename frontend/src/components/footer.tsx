@@ -10,7 +10,7 @@ export default function Footer() {
                 >
                     GitHub
                 </StyledLink>{" "}
-                and hosted on Vercel. Licensed under GPL v3.
+                and hosted on Vercel. Licensed under GPL v3. <StyledLink href="mailto:useungari@gmail.com">Contact or report abuse</StyledLink>.
             </p>
         </footer>
     );
