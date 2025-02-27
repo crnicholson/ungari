@@ -754,8 +754,8 @@ export default function Settings() {
                       value={tempImageLink}
                       onChange={(e) => setTempImageLink(e.target.value)}
                       placeholder="Make it blank to use the default image!"
-                          className="w-full"
-                          max={600}
+                      className="w-full"
+                      max={600}
                     />
                     <CardButton
                       onClick={() => {
@@ -969,8 +969,8 @@ export default function Settings() {
                     <CardInput
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
-                          placeholder="Automatic cereal feeder to save the rhinos"
-                          max={200}
+                      placeholder="Automatic cereal feeder to save the rhinos"
+                      max={200}
                     />
                     <CardInputError>{projectNameMessage}</CardInputError>
                   </CardBlock>
@@ -1036,43 +1036,43 @@ export default function Settings() {
 
               <CardBlock>
                 <div className="overflow-y-auto border p-3 rounded-xl max-h-[60vh]">
-                      {skillSearchTerm ? (
-                        filteredSkills.length > 0 ? (
-                          filteredSkills.map((skill) => (
-                            <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
-                              <div className="w-full lg:w-auto">
-                                <Checkbox
-                                  onChange={() => handleSelectSkill(skill)}
-                                  checked={skills.includes(skill)}
-                                >
-                                  {skill}
-                                </Checkbox>
-                              </div>
-                              {skills.includes(skill) && (
-                                <div className="flex flex-row justify-left items-center gap-3 w-full lg:w-1/2">
-                                  <input
-                                    type="range"
-                                    min="1"
-                                    max="5"
-                                    value={skillLevels[skill] || 1}
-                                    onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
-                                    className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
-                                  />
-                                  <span className="text-sm min-w-fit text-[--light]">
-                                    {getSkillLevelLabel(skillLevels[skill] || 1)}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="flex items-center justify-center h-32 text-gray-500">
-                            No skills found matching {'"'}{skillSearchTerm}{'"'}
+                  {skillSearchTerm ? (
+                    filteredSkills.length > 0 ? (
+                      filteredSkills.map((skill) => (
+                        <div key={skill} className="flex flex-col lg:flex-row items-start justify-start lg:items-center lg:justify-between gap-5 p-2 border border-transparent hover:border-[--border] rounded-xl">
+                          <div className="w-full lg:w-auto">
+                            <Checkbox
+                              onChange={() => handleSelectSkill(skill)}
+                              checked={skills.includes(skill)}
+                            >
+                              {skill}
+                            </Checkbox>
                           </div>
-                        )
-                      ) : (
-                        renderSkills(categorizedSkills)
-                      )}
+                          {skills.includes(skill) && (
+                            <div className="flex flex-row justify-left items-center gap-3 w-full lg:w-1/2">
+                              <input
+                                type="range"
+                                min="1"
+                                max="5"
+                                value={skillLevels[skill] || 1}
+                                onChange={(e) => handleSkillLevelChange(skill, parseInt(e.target.value))}
+                                className="w-full lg:w-1/2 h-1 rounded-xl appearance-none cursor-pointer accent-[--lighter] bg-[--border]"
+                              />
+                              <span className="text-sm min-w-fit text-[--light]">
+                                {getSkillLevelLabel(skillLevels[skill] || 1)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex items-center justify-center h-32 text-gray-500">
+                        No skills found matching {'"'}{skillSearchTerm}{'"'}
+                      </div>
+                    )
+                  ) : (
+                    renderSkills(categorizedSkills)
+                  )}
                 </div>
                 <CardInputError>{skillsMessage}</CardInputError>
               </CardBlock>

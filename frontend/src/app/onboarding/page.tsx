@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardInputError, CardBlock, CardButton, CardRow } from "../../components/card";
+import { Card, CardContainer, CardTitle, CardInput, CardSubtitle, CardInputError, CardBlock, CardButton, CardRow, CardContent } from "../../components/card";
 import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import Button from "../../components/button";
 import Checkbox from "../../components/checkbox";
@@ -165,61 +165,65 @@ export default function Onboarding() {
 
     // Skills
     const handleSkillLevelChange = (skill: string, level: number) => {
-        setSkillLevels(prev => ({
+        setSkillLevels((prev) => ({
             ...prev,
-            [skill]: level
+            [skill]: level,
         }));
     };
 
     const getSkillLevelLabel = (level: number) => {
         const labels = [
-            'Beginner',
-            'Advanced Beginner',
-            'Intermediate',
-            'Advanced',
-            'Expert'
+            "Beginner",
+            "Advanced Beginner",
+            "Intermediate",
+            "Advanced",
+            "Expert",
         ];
         return labels[level - 1] || labels[0];
     };
 
+    const flattenSkills = (items: any): string[] => {
+        if (Array.isArray(items)) {
+            return items;
+        } else if (typeof items === "object") {
+            return Object.values(items).flatMap((value) => flattenSkills(value));
+        }
+        return [];
+    };
+
     const filteredSkills = skillSearchTerm
-        ? Object.values(categorizedSkills).flatMap(category => {
-            if (typeof category === 'object' && !Array.isArray(category)) {
-                return Object.values(category)
-                    .flat()
-                    .filter((skill): skill is string =>
-                        typeof skill === 'string' &&
-                        skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
-                    );
-            }
-            return [];
-        }).sort((a, b) => a.localeCompare(b))
+        ? flattenSkills(categorizedSkills)
+            .filter((skill): skill is string =>
+                typeof skill === "string" &&
+                skill.toLowerCase().includes(skillSearchTerm.toLowerCase())
+            )
+            .sort((a, b) => a.localeCompare(b))
         : [];
 
     const handleSelectSkill = (skill: string) => {
         if (skills.includes(skill)) {
             setSkills(skills.filter((s) => s !== skill));
-            setSkillLevels(prev => {
+            setSkillLevels((prev) => {
                 const { [skill]: _, ...rest } = prev;
                 return rest;
             });
         } else {
             setSkills([...skills, skill]);
-            setSkillLevels(prev => ({
+            setSkillLevels((prev) => ({
                 ...prev,
-                [skill]: 1
+                [skill]: 1,
             }));
         }
     };
 
-    const toggleDropdown = (path) => {
+    const toggleDropdown = (path: string) => {
         setExpandedCategories((prev) => ({
             ...prev,
             [path]: !prev[path],
         }));
     };
 
-    const renderSkills = (items, path = "") => {
+    const renderSkills = (items: any, path = "") => {
         if (Array.isArray(items)) {
             return items.map((skill) => (
                 <div
@@ -288,6 +292,17 @@ export default function Onboarding() {
             theme.toLowerCase().includes(themeSearchTerm.toLowerCase())
         )
         .sort((a, b) => a.localeCompare(b));
+
+    // Themes + skills
+    function formatList(items: string[], type: string): string {
+        if (items.length === 0) return "";
+        if (items.length === 1) return `Current ${type} is: ${items[0]}`;
+        if (items.length === 2) return `Current ${type}s are: ${items[0]} and ${items[1]}`;
+
+        const lastItem = items[items.length - 1];
+        const otherItems = items.slice(0, -1);
+        return `Current ${type}s are: ${otherItems.join(", ")}, and ${lastItem}`;
+    }
 
     // Step processing
     const handlePreviousStep = () => {
@@ -572,7 +587,7 @@ export default function Onboarding() {
                                 value={linkedIn}
                                 onChange={(e) => {
                                     setLinkedIn(e.target.value)
-                                    setLinkedInMessage(e.target.value === "" || e.target.value.includes("linkedin.co") ? "" : "LinkedIn without linkedin.com? 🤔");
+                                    setLinkedInMessage(e.target.value === "" || e.target.value.includes("linkedin.com/in/") ? "" : "LinkedIn without linkedin.com/in/? 🤔");
                                 }}
                                 placeholder="To help with credibility"
                                 max={200}
@@ -830,6 +845,7 @@ export default function Onboarding() {
                     <>
                         <CardBlock>
                             <CardSubtitle className="mb-2">Skills {needHelp ? "I'm looking for" : "I have"} *</CardSubtitle>
+                            {skills.length > 0 && (<CardContent>{formatList(skills, "skill")}</CardContent>)}
                             <CardInput
                                 type="text"
                                 value={skillSearchTerm}
@@ -837,6 +853,7 @@ export default function Onboarding() {
                                 placeholder="Search across all categories..."
                             />
                         </CardBlock>
+
                         <CardBlock>
                             <div className="overflow-y-auto border p-3 rounded-xl max-h-[60vh]">
                                 {skillSearchTerm ? (
@@ -882,6 +899,7 @@ export default function Onboarding() {
 
                         <CardBlock>
                             <CardSubtitle className="mb-2">{!needHelp ? "Preferred project themes" : "Themes of your project"} *</CardSubtitle>
+                            {themes.length > 0 && (<CardContent>{formatList(themes, "theme")}</CardContent>)}
                             <CardInput
                                 type="text"
                                 value={themeSearchTerm}
