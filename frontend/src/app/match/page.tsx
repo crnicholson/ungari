@@ -211,7 +211,7 @@ export default function Home() {
       </Header>
 
       {errorMessage !== "" && (
-        <Error onClick={() => setErrorMessage("")} className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
+        <Error className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
       )}
 
       {warningMessage !== "" && (

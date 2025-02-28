@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request  # type: ignore
 from flask_cors import CORS  # type: ignore
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from pymongo import MongoClient  # type: ignore
 import json
 import os
+import datetime
 from dotenv import load_dotenv  # type: ignore
 
 load_dotenv(dotenv_path=f"{os.getcwd()}/.env.local")
@@ -14,9 +16,11 @@ MONGO_ADDRESS = "mongodb://localhost:27017"
 client = MongoClient(MONGO_ADDRESS)
 db = client["problem-dating-app"]
 users = db.users
+chats = db.chats
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 
 # EXPAND THIS FUNCTION TO CHECK FOR MORE FIELDS
@@ -581,6 +585,37 @@ def delete_saved_match():
     users.update_one({"id": received["id"]}, update_operation)
 
 
+@socketio.on("connect")
+def handle_connect():
+    print(f"Client connected: {request.sid}")
+    emit("chat_message", "Welcome to the chat!")
+
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    print(f"Client disconnected: {request.sid}")
+
+
+@socketio.on("chat_message")
+def handle_chat_message(message):
+    print(f"Message received from {request.sid}: {message}")
+    emit("chat_message", message, broadcast=True, include_self=False)
+
+
+@socketio.on("join_room")
+def on_join(room):
+    join_room(room)
+    print(f"Client {request.sid} joined room: {room}")
+    emit("chat_message", f"A user has joined room: {room}", room=room)
+
+
+@socketio.on("leave_room")
+def on_leave(room):
+    leave_room(room)
+    print(f"Client {request.sid} left room: {room}")
+    emit("chat_message", f"A user has left room: {room}", room=room)
+
+
 if __name__ == "__main__":
     try:
         client.admin.command("ping")
@@ -588,4 +623,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
 
-    app.run(debug=True, port=FLASK_PORT)
+    socketio.run(app, debug=True, port=FLASK_PORT)
