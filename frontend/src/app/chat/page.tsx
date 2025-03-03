@@ -7,15 +7,48 @@ import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
 import Warning from "../../components/warning";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from 'next/navigation';
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { socket } from "../socket";
+
+const SERVER = "http://127.0.0.1:38321";
+// const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
 
 export default function Home() {
     const [isConnected, setIsConnected] = useState(false);
     const [transport, setTransport] = useState("N/A");
+    const [polled, setPolled] = useState(false);
+
+    const [match_id, setMatch_id] = useState("");
+
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<{ text: string; fromSelf: boolean }[]>([]);
 
+    const [erorrMessage, setErrorMessage] = useState("");
+    const [warningMessage, setWarningMessage] = useState("");
+
+    const { user, isLoading } = useUser();
+    const router = useRouter();
+
+    // Basic auth
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.push("/api/auth/login");
+        }
+    }, [isLoading, user, router]);
+
+    // Get match _id 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const message = params.get('match_id');
+        if (message) {
+            setWarningMessage(message);
+            setMatch_id(message);
+        }
+    }, []);
+
+    // Websocket
     useEffect(() => {
         if (socket.connected) {
             onConnect();
@@ -50,13 +83,80 @@ export default function Home() {
         };
     }, []);
 
-    function sendMessage () {
+    function sendMessage() {
         if (message.trim()) {
             socket.emit("chat_message", message);
             setMessages(prev => [...prev, { text: message, fromSelf: true }]);
             setMessage("");
         }
     };
+
+    const createChat = useCallback(async () => {
+        try {
+            const response = await fetch(SERVER + "/api/create-chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id: user.sub, match_id: match_id }),
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                setErrorMessage("Server-side error: " + error.error);
+                setPolled(false);
+            } else {
+                setErrorMessage("");
+                setPolled(true);
+
+                const data = await response.json();
+
+                console.log(data);
+
+                setMessages(data.messages);
+            }
+        } catch (error) {
+            console.error("Error: Failed to fetch settings: ", error);
+            setErrorMessage("Client-side error: " + error);
+            setPolled(false);
+        }
+    }, [user, match_id]);
+
+    const getChat = useCallback(async () => {
+        try {
+            const response = await fetch(SERVER + "/api/get-chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id: user.sub, match_id: match_id }),
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                setErrorMessage("Server-side error: " + error.error);
+                setPolled(false);
+            } else {
+                setErrorMessage("");
+                setPolled(true);
+
+                const data = await response.json();
+
+                console.log(data);
+
+                setMessages(data.messages);
+            }
+        } catch (error) {
+            console.error("Error: Failed to fetch settings: ", error);
+            setErrorMessage("Client-side error: " + error);
+            setPolled(false);
+        }
+    }, [user, match_id]);
+
+    // Get match on page load 
+    useEffect(() => {
+        if (!isLoading && user) {
+            getChat();
+        }
+    }, [isLoading, user, getChat]);
 
     return (
         <>

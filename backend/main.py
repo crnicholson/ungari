@@ -6,6 +6,7 @@ import json
 import os
 import datetime
 from dotenv import load_dotenv  # type: ignore
+from bson.objectid import ObjectId  # Add this import at the top
 
 load_dotenv(dotenv_path=f"{os.getcwd()}/.env.local")
 
@@ -286,7 +287,8 @@ def get_match():
                 return check_length(message, array, not need_help, _id)
 
             return {
-                "_id": str(random_user.get("_id", "")),
+                "match_id": str(random_user.get("_id", "")),
+                "user_id": str(user.get("_id", "")),
                 "imageLink": random_user.get("imageLink", ""),
                 "name": random_user.get("name", ""),
                 "email": random_user.get("email", ""),
@@ -395,7 +397,8 @@ def get_match():
             if score > 0:
                 matches.append(
                     {
-                        "_id": str(potential_match.get("_id", "")),
+                        "match_id": str(potential_match.get("_id", "")),
+                        "user_id": str(user.get("_id", "")),
                         "imageLink": potential_match.get("imageLink", ""),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
@@ -480,7 +483,8 @@ def get_match():
             if score > 0:
                 matches.append(
                     {
-                        "_id": str(potential_match.get("_id", "")),
+                        "match_id": str(potential_match.get("_id", "")),
+                        "user_id": str(user.get("_id", "")),
                         "imageLink": potential_match.get("imageLink", ""),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
@@ -585,6 +589,68 @@ def delete_saved_match():
     users.update_one({"id": received["id"]}, update_operation)
 
 
+@app.route("/api/create-chat", methods=["POST"])
+def create_chat():
+    received = request.get_json()
+
+    user = users.find_one({"id": received.get("id")})
+    
+    user_id = ObjectId(user.get("_id"))  # _id of the user.
+    match_id = ObjectId(received.get("match_id"))  # _id of the match.
+
+    match_name = users.find_one({"_id": match_id}).get("name")
+    user_name = user.get("name")
+
+    if match_name and user_name:
+        new_chat = {
+            "participants": {
+                str(match_id): match_name,
+                str(user_id): user_name,
+            },
+            "messages": [],
+        }
+
+        chats.insert_one(new_chat)
+
+        return jsonify({"": ""}), 200
+    else:
+        return jsonify({"error": "Could not create chat."}), 404
+
+
+@app.route("/api/get-chat", methods=["POST"])
+def get_chat():
+    received = request.get_json()
+
+    user = users.find_one({"id": received.get("id")})
+
+    user_id = user.get("_id")  # _id of the user.
+    match_id = received.get("match_id")  # _id of the match.
+
+    chat = chats.find_one(
+        {
+            f"participants.{match_id}": {"$exists": True},
+            f"participants.{user_id}": {"$exists": True},
+        }
+    )
+
+    match_name = next(
+        (name for id, name in chat.get("participants", {}).items() if id != user_id), ""
+    )
+
+    return jsonify({"name": match_name, "messages": chat.get("messages", [])}), 200
+
+
+# @app.route("/api/get-chats", methods=["POST"])
+# def get_chats():
+#     received = request.get_json()
+
+#     user = users.find_one({"id": received.get("id")})
+
+#     all_chats = chats.find_one({"participants": {"$all": [user.get("_id")]}})
+
+#     return jsonify({"messages": chat.get("messages", [])}), 200
+
+
 @socketio.on("connect")
 def handle_connect():
     print(f"Client connected: {request.sid}")
@@ -600,20 +666,6 @@ def handle_disconnect():
 def handle_chat_message(message):
     print(f"Message received from {request.sid}: {message}")
     emit("chat_message", message, broadcast=True, include_self=False)
-
-
-@socketio.on("join_room")
-def on_join(room):
-    join_room(room)
-    print(f"Client {request.sid} joined room: {room}")
-    emit("chat_message", f"A user has joined room: {room}", room=room)
-
-
-@socketio.on("leave_room")
-def on_leave(room):
-    leave_room(room)
-    print(f"Client {request.sid} left room: {room}")
-    emit("chat_message", f"A user has left room: {room}", room=room)
 
 
 if __name__ == "__main__":
