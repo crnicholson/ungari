@@ -22,8 +22,13 @@ export default function Home() {
 
     const [match_id, setMatch_id] = useState("");
 
+    const [matchName, setMatchName] = useState("");
     const [message, setMessage] = useState("");
-    const [messages, setMessages] = useState<{ text: string; fromSelf: boolean }[]>([]);
+    const [messages, setMessages] = useState<{
+        content: string;
+        auth0_id: string;
+        timestamp: Date;
+    }[]>([]);
 
     const [erorrMessage, setErrorMessage] = useState("");
     const [warningMessage, setWarningMessage] = useState("");
@@ -43,7 +48,6 @@ export default function Home() {
         const params = new URLSearchParams(window.location.search);
         const message = params.get('match_id');
         if (message) {
-            setWarningMessage(message);
             setMatch_id(message);
         }
     }, []);
@@ -68,58 +72,46 @@ export default function Home() {
             setTransport("N/A");
         }
 
-        function onChatMessage(message: string) {
-            setMessages(prev => [...prev, { text: message, fromSelf: false }]);
+        function onMessage(message: {
+            content: string;
+            auth0_id: string;
+            timestamp: Date;
+        }) {
+            setMessages(prev => [...prev, {
+                content: message.content,
+                auth0_id: message.auth0_id,
+                timestamp: new Date(message.timestamp),
+            }]);
         }
 
         socket.on("connect", onConnect);
         socket.on("disconnect", onDisconnect);
-        socket.on("chat_message", onChatMessage);
+        socket.on("message", onMessage);
 
         return () => {
             socket.off("connect", onConnect);
             socket.off("disconnect", onDisconnect);
-            socket.off("chat_message", onChatMessage);
+            socket.off("message", onMessage);
         };
-    }, []);
+    }, [user]);
 
     function sendMessage() {
         if (message.trim()) {
-            socket.emit("chat_message", message);
-            setMessages(prev => [...prev, { text: message, fromSelf: true }]);
+            const messageData = {
+                content: message,
+                auth0_id: user.sub,
+                match_id: match_id
+            };
+
+            socket.emit("message", messageData);
+            setMessages(prev => [...prev, {
+                content: message,
+                auth0_id: user.sub,
+                timestamp: new Date()
+            }]);
             setMessage("");
         }
     };
-
-    const createChat = useCallback(async () => {
-        try {
-            const response = await fetch(SERVER + "/api/create-chat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ id: user.sub, match_id: match_id }),
-            });
-            if (!response.ok) {
-                const error = await response.json();
-                setErrorMessage("Server-side error: " + error.error);
-                setPolled(false);
-            } else {
-                setErrorMessage("");
-                setPolled(true);
-
-                const data = await response.json();
-
-                console.log(data);
-
-                setMessages(data.messages);
-            }
-        } catch (error) {
-            console.error("Error: Failed to fetch settings: ", error);
-            setErrorMessage("Client-side error: " + error);
-            setPolled(false);
-        }
-    }, [user, match_id]);
 
     const getChat = useCallback(async () => {
         try {
@@ -143,6 +135,7 @@ export default function Home() {
                 console.log(data);
 
                 setMessages(data.messages);
+                setMatchName(data.match_name);
             }
         } catch (error) {
             console.error("Error: Failed to fetch settings: ", error);
@@ -176,8 +169,9 @@ export default function Home() {
 
             <CardContainer className="w-2/3 mt-24">
                 <Card className="w-full">
-                    <CardTitle className={`${isConnected ? "mb-5" : ""}`} size={2}>Chat</CardTitle>
-                    {!isConnected ? (
+                    <CardTitle className="mb-5" size={2}>Chat {!polled ? "" : `with ${matchName}`}</CardTitle>
+                    <div className={`border-b border-[--border] h-fit w-full ${(isConnected && polled) ? "mb-5" : ""}`} />
+                    {(!isConnected || !polled) ? (
                         <p>Loading...</p>
                     ) : (
                         <>
@@ -185,12 +179,10 @@ export default function Home() {
                                 {messages.map((msg, index) => (
                                     <div
                                         key={index}
-                                        className={`mb-2 p-[10px] border-[--border] rounded-xl bg-[--bg] border w-fit min-w-[10%] max-w-[70%] ${msg.fromSelf
-                                            ? "ml-auto"
-                                            : "mr-auto"
+                                        className={`mb-2 p-[10px] border-[--border] rounded-xl bg-[--bg] border w-fit max-w-[70%] ${msg.auth0_id === user.sub ? "ml-auto" : "mr-auto"
                                             }`}
                                     >
-                                        {msg.text}
+                                        {msg.content}
                                     </div>
                                 ))}
                             </CardBlock>
@@ -201,13 +193,23 @@ export default function Home() {
                                     onChange={(e) => setMessage(e.target.value)}
                                     placeholder="Type your message..."
                                     className="w-full"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            sendMessage();
+                                        }
+                                    }}
                                 />
                                 <Button
                                     className="px-4 py-2"
                                     onClick={sendMessage}
                                     type="button"
                                 >
-                                    Send
+                                    <div className="h-full w-full flex justify-center items-center">
+                                        <span className="material-symbols-outlined">
+                                            send
+                                        </span>
+                                    </div>
                                 </Button>
                             </CardRow>
                         </>

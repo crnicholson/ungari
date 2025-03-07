@@ -11,6 +11,7 @@ import ProfileCard from "../../components/profileCard";
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from 'next/navigation';
+import { create } from "domain";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -108,6 +109,28 @@ export default function Home() {
   }
 
   // Syncing with backend
+  const createChat = useCallback(async () => {
+    try {
+      const response = await fetch(SERVER + "/api/create-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: user.sub, match_id: match_id }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        setErrorMessage("Server-side error: " + error.error);
+      } else {
+        const message = encodeURIComponent(match_id);
+        router.push(`/chat?match_id=${message}`);
+      }
+    } catch (error) {
+      console.error("Error: Failed to fetch settings: ", error);
+      setErrorMessage("Client-side error: " + error);
+    }
+  }, [user, match_id, router]);
+
   const saveForLater = useCallback(async () => {
     try {
       const response = await fetch(SERVER + "/api/save-match", {
@@ -257,7 +280,7 @@ export default function Home() {
                   themes,
                 }} />
               </CardBlock>
-              <CardButton onClick={getMatch}>Match!</CardButton>
+              <CardButton onClick={createChat}>Match!</CardButton>
               <div className="mt-3 flex flex-col md:flex-row gap-3">
                 <CardButton className="w-full" onClick={getMatch}>Save for later</CardButton>
                 <CardButton className="w-full" onClick={getMatch}>Find new match</CardButton>

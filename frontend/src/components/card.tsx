@@ -14,6 +14,7 @@ interface CardProps {
     type?: string;
     onClick?: () => void;
     max?: number;
+    onKeyDown?: (e) => void;
 }
 
 export function Card({ children, className }: CardProps) {
@@ -70,7 +71,7 @@ export function CardRow({ children, className }: CardProps) {
     );
 }
 
-export function CardInput({ placeholder, value, onChange, className, type, max=100000 }: CardProps) {
+export function CardInput({ placeholder, value, onChange, className, type, max=100000, onKeyDown }: CardProps) {
     return (
         <div className={`${className}`}>
             <input
@@ -80,6 +81,7 @@ export function CardInput({ placeholder, value, onChange, className, type, max=1
                 value={value}
                 onChange={onChange}
                 maxLength={max}
+                onKeyDown={onKeyDown}
             />
         </div>
     );

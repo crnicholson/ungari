@@ -398,7 +398,7 @@ def get_match():
                 matches.append(
                     {
                         "match_id": str(potential_match.get("_id", "")),
-                        "user_id": str(user.get("_id", "")),
+                        # "user_id": str(user.get("_id", "")),
                         "imageLink": potential_match.get("imageLink", ""),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
@@ -594,18 +594,18 @@ def create_chat():
     received = request.get_json()
 
     user = users.find_one({"id": received.get("id")})
-    
-    user_id = ObjectId(user.get("_id"))  # _id of the user.
-    match_id = ObjectId(received.get("match_id"))  # _id of the match.
 
-    match_name = users.find_one({"_id": match_id}).get("name")
+    user_id = user.get("_id")  # _id of the user.
+    match_id = received.get("match_id")  # _id of the match.
+
+    match_name = users.find_one({"_id": ObjectId(match_id)}).get("name")
     user_name = user.get("name")
 
     if match_name and user_name:
         new_chat = {
             "participants": {
-                str(match_id): match_name,
-                str(user_id): user_name,
+                match_id: match_name,
+                user_id: user_name,
             },
             "messages": [],
         }
@@ -621,10 +621,12 @@ def create_chat():
 def get_chat():
     received = request.get_json()
 
-    user = users.find_one({"id": received.get("id")})
+    print(f"Get chat request: {json.dumps(received, indent=4)}")
 
-    user_id = user.get("_id")  # _id of the user.
-    match_id = received.get("match_id")  # _id of the match.
+    user = users.find_one({"id": received.get("auth0_id")})
+
+    user_id = str(user.get("_id")) # _id of the user.
+    match_id = received.get("match_id") # _id of the match.
 
     chat = chats.find_one(
         {
@@ -637,7 +639,18 @@ def get_chat():
         (name for id, name in chat.get("participants", {}).items() if id != user_id), ""
     )
 
-    return jsonify({"name": match_name, "messages": chat.get("messages", [])}), 200
+    messages = []
+    for message in chat.get("messages", []):
+        messages.append(
+            {
+                "content": message.get("content", ""),
+                # "sender_id": message.get("sender_id", ""),
+                "auth0_id": message.get("auth0_id", ""),
+                "timestamp": message.get("timestamp", ""),
+            }
+        )
+
+    return jsonify({"match_name": match_name, "messages": messages}), 200
 
 
 # @app.route("/api/get-chats", methods=["POST"])
@@ -662,10 +675,38 @@ def handle_disconnect():
     print(f"Client disconnected: {request.sid}")
 
 
-@socketio.on("chat_message")
-def handle_chat_message(message):
-    print(f"Message received from {request.sid}: {message}")
-    emit("chat_message", message, broadcast=True, include_self=False)
+@socketio.on("message")
+def handle_chat_message(received):
+    # try:
+    print(f"Message: {json.dumps(received, indent=4)}")
+
+    user = users.find_one({"id": received.get("auth0_id")})
+    
+    user_id = str(user.get("_id")) # _id of the user.
+    match_id = received.get("match_id")  # _id of the match, already in string form.
+
+    new_message = {
+        "content": received.get("content", ""),
+        "sender_id": user_id,
+        "auth0_id": received.get("auth0_id", ""),
+        "timestamp": str(datetime.datetime.now(datetime.UTC)),
+    }
+
+    result = chats.update_one(
+        {
+            f"participants.{user_id}": {"$exists": True},
+            f"participants.{match_id}": {"$exists": True},
+        },
+        {"$push": {"messages": new_message}},
+    )
+
+    if result.modified_count == 1:
+        emit("message", new_message, broadcast=True, include_self=False)
+    else:
+        print("Error: Could not save message to database")
+
+    # except Exception as e:
+    #     print(f"Error handling chat message: {e}")
 
 
 if __name__ == "__main__":
