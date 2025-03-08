@@ -532,7 +532,7 @@ data = [
         "country": "USA",
         "email": "charlienicholsonr@gmail.com",
         "gitHub": "https://github.com/crnicholson",
-        "imageLink": "https://lh3.googleusercontent.com/a/ACg8ocKO3ED4ZmQKm93I88oTosqBBn9BcJXcGS6JT4gShX2c4hQiUoU=s96-c",
+        "image": "https://lh3.googleusercontent.com/a/ACg8ocKO3ED4ZmQKm93I88oTosqBBn9BcJXcGS6JT4gShX2c4hQiUoU=s96-c",
         "linkedIn": "https://linkedin.com/in/crnicholson",
         "name": "Charlie Nicholson",
         "needHelp": False,

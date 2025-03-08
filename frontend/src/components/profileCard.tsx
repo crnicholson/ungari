@@ -59,7 +59,7 @@ function SkillLevel({ level }) {
     );
 }
 
-function DesktopProfileCard({ match }) {
+function DesktopProfileCard({ user }) {
     const {
         name,
         email,
@@ -67,7 +67,7 @@ function DesktopProfileCard({ match }) {
         x,
         gitHub,
         personalWebsite,
-        imageLink,
+        image,
         bio,
         country,
         city,
@@ -81,7 +81,7 @@ function DesktopProfileCard({ match }) {
         skills,
         skillLevels,
         themes,
-    } = match;
+    } = user;
 
     console.log(timeFrame);
 
@@ -91,7 +91,7 @@ function DesktopProfileCard({ match }) {
                 <div className="flex gap-6">
                     <div className="flex-shrink-0">
                         <Image
-                            src={imageLink}
+                            src={image}
                             alt={`${name}'s profile`}
                             className="rounded-full object-cover ring-2 ring-[--border]"
                             width={96}
@@ -111,23 +111,23 @@ function DesktopProfileCard({ match }) {
             <div className="p-8 border-b border-[--border]">
                 <h1 className="text-xl font-semibold mb-4">Personal Information</h1>
                 <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-[--light]">
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                />
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                            </svg>
+                    <div className="flex items-center gap-2 text-[--light]">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                        </svg>
                         <span>{country === "Prefer not to say" ? "Prefer not to say" : `${city}, ${country}`}</span>
-                        </div>
+                    </div>
 
                     {linkedIn && (
                         <div className="flex items-center gap-2 text-[--light]">
@@ -230,7 +230,7 @@ function DesktopProfileCard({ match }) {
     );
 }
 
-function MobileProfileCard({ match }) {
+function MobileProfileCard({ user }) {
     const {
         name,
         email,
@@ -238,7 +238,7 @@ function MobileProfileCard({ match }) {
         x,
         gitHub,
         personalWebsite,
-        imageLink,
+        image,
         bio,
         country,
         city,
@@ -252,14 +252,14 @@ function MobileProfileCard({ match }) {
         skills,
         skillLevels,
         themes,
-    } = match;
+    } = user;
 
     return (
         <Card className="bg-[--bg] w-full rounded-xl shadow-lg overflow-hidden">
-            <div className="relative h-40 bg-[--accent]">
+            <div className="rounded-t-xl relative h-40 bg-[--accent]">
                 <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
                     <Image
-                        src={imageLink}
+                        src={image}
                         alt={`${name}'s profile`}
                         className="rounded-full object-cover ring-4 ring-[--card-bg]"
                         width={96}
@@ -391,7 +391,7 @@ function MobileProfileCard({ match }) {
     );
 }
 
-export default function ProfileCard({ match }) {
+export default function ProfileCard({ user }) {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -408,8 +408,8 @@ export default function ProfileCard({ match }) {
     }, []);
 
     return isMobile ? (
-        <MobileProfileCard match={match} />
+        <MobileProfileCard user={user} />
     ) : (
-        <DesktopProfileCard match={match} />
+        <DesktopProfileCard user={user} />
     );
 }

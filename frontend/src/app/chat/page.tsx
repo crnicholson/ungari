@@ -24,6 +24,7 @@ export default function Home() {
     const [match_id, setMatchID] = useState("");
 
     const [matchName, setMatchName] = useState("");
+    const [matchImage, setMatchImage] = useState("");
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<{
         content: string;
@@ -138,7 +139,8 @@ export default function Home() {
                 console.log(data);
 
                 setMessages(data.messages);
-                setMatchName(data.match_name);
+                setMatchName(data.matchName);
+                setMatchImage(data.matchImage);
             }
         } catch (error) {
             console.error("Error: Failed to fetch settings: ", error);
@@ -168,7 +170,7 @@ export default function Home() {
 
                 console.log(data);
 
-                setChats(data.chat_list);
+                setChats(data.chatList);
             }
         } catch (error) {
             console.error("Error: Failed to fetch settings: ", error);
@@ -206,12 +208,39 @@ export default function Home() {
 
             <CardContainer className="w-2/3 mt-24">
                 <Card className="w-full">
-                    <CardTitle className={`${match_id ? "mb-2" : "mb-5"}`} size={2}>{match_id ? `Chat${!polled ? "" : ` with ${matchName}`}` : "Choose your chat"}</CardTitle>
-                    {match_id && (
-                        <StyledLink className="mb-5 italic block" href="/chat" onClick={() => setMatchID("")}>
-                            Back to chat page
-                        </StyledLink>
+                    {match_id ? (
+                        <div className="flex items-center gap-4 mb-5">
+                            {match_id && matchImage && (
+                                <div className="h-full w-fit flex items-center">
+                                    <Image
+                                        src={matchImage}
+                                        alt={matchName || "Match profile"}
+                                        width={96}
+                                        height={96}
+                                        className="rounded-full"
+                                    />
+                                </div>
+                            )}
+                            <div className="h-fit">
+                                <CardTitle className="mb-2" size={2}>
+                                    Chat {!polled ? "" : ` with `}
+                                    {polled && matchName && (
+                                        <StyledLink href={`/user?_id=${match_id}`}>
+                                            {matchName}
+                                        </StyledLink>
+                                    )}
+                                </CardTitle>
+                                <StyledLink className="italic" href="/chat" onClick={() => setMatchID("")}>
+                                    Back to chat page
+                                </StyledLink>
+                            </div>
+                        </div>
+                    ) : (
+                        <CardTitle className="mb-5" size={2}>
+                            Choose your chat
+                        </CardTitle>
                     )}
+
                     <div className="border-b border-[--border] h-fit w-full mb-5" />
                     {(!isConnected || !polled) ? (
                         <p>Loading...</p>
@@ -268,8 +297,8 @@ export default function Home() {
                                         <div className="flex items-center space-x-4 p-4">
                                             <div className="flex-shrink-0">
                                                 <Image
-                                                    src={chat.match_image}
-                                                    alt={chat.match_name}
+                                                    src={chat.matchImage}
+                                                    alt={chat.matchName}
                                                     width={50}
                                                     height={50}
                                                     className="rounded-full"
@@ -277,14 +306,14 @@ export default function Home() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-left truncate border-b border-[--border] pb-2">
-                                                    {chat.match_name.length > 30 ? `${chat.match_name.slice(0, 30)}...` : chat.match_name}
+                                                    {chat.matchName.length > 30 ? `${chat.matchName.slice(0, 30)}...` : chat.matchName}
                                                 </p>
                                                 <div className="mt-2 font-normal text-base flex items-center gap-2">
                                                     <span className="h-full w-fit material-symbols-outlined">
                                                         mail
                                                     </span>
                                                     <p className="h-fit w-fit">
-                                                        {chat.last_message.length > 5 ? `${chat.last_message.slice(0, 5)}...` : chat.last_message}
+                                                        {chat.lastMessage.length > 5 ? `${chat.lastMessage.slice(0, 5)}...` : chat.lastMessage}
                                                     </p>
                                                 </div>
                                             </div>

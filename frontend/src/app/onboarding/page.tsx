@@ -33,9 +33,9 @@ export default function Onboarding() {
     const [personalWebsiteMessage, setPersonalWebsiteMessage] = useState("");
     const [gitHubMessage, setGitHubMessage] = useState("");
 
-    const [imageLink, setImageLink] = useState("");
+    const [image, setImage] = useState("");
 
-    const [tempImageLink, setTempImageLink] = useState("");
+    const [tempImage, setTempImage] = useState("");
     const [imageMessage, setImageMessage] = useState("");
 
     const [bio, setBio] = useState("");
@@ -146,11 +146,11 @@ export default function Onboarding() {
     useEffect(() => {
         if (step === 2) {
             if (user && user.picture === "") {
-                setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
-                setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                setImage("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                setTempImage("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
             } else if (user && user.picture) {
-                setImageLink(user.picture);
-                setTempImageLink(user.picture);
+                setImage(user.picture);
+                setTempImage(user.picture);
             }
         }
     }, [step, user, name]);
@@ -387,7 +387,7 @@ export default function Onboarding() {
                 }
                 break;
             case 2:
-                if (!imageLink) {
+                if (!image) {
                     missingFields.push("profile picture");
                     setImageMessage("Profile picture is required");
                     hasErrors = true;
@@ -520,7 +520,7 @@ export default function Onboarding() {
                     x: x,
                     personalWebsite: personalWebsite,
                     gitHub: gitHub,
-                    imageLink: imageLink,
+                    image: image,
                     bio: bio,
                     country: country,
                     city: city,
@@ -641,7 +641,7 @@ export default function Onboarding() {
                         <CardBlock>
                             <CardSubtitle className="mb-2">Does this profile picture look good?</CardSubtitle>
                             <Image
-                                src={imageLink}
+                                src={image}
                                 alt={`${name}'s profile`}
                                 className="rounded-full object-cover ring-2 ring-[--border]"
                                 width={96}
@@ -653,29 +653,29 @@ export default function Onboarding() {
                             <CardSubtitle className="mb-2">Enter a new image link (optional)</CardSubtitle>
                             <CardRow className="flex-col sm:flex-row">
                                 <CardInput
-                                    value={tempImageLink}
-                                    onChange={(e) => setTempImageLink(e.target.value)}
+                                    value={tempImage}
+                                    onChange={(e) => setTempImage(e.target.value)}
                                     placeholder="Make it blank to use the default image!"
                                     className="w-full"
                                     max={600}
                                 />
                                 <CardButton
                                     onClick={() => {
-                                        if (tempImageLink !== "") {
-                                            if (isValidURL(tempImageLink)) {
-                                                setImageLink(tempImageLink);
+                                        if (tempImage !== "") {
+                                            if (isValidURL(tempImage)) {
+                                                setImage(tempImage);
                                                 setImageMessage("");
                                             } else {
                                                 setImageMessage("Invalid URL!");
                                             }
                                         } else {
                                             if (user && user.picture === "") {
-                                                setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
-                                                setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                                                setImage("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                                                setTempImage("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
                                                 setImageMessage("");
                                             } else if (user && user.picture !== "") {
-                                                setImageLink(user.picture);
-                                                setTempImageLink(user.picture);
+                                                setImage(user.picture);
+                                                setTempImage(user.picture);
                                                 setImageMessage("");
                                             }
                                         }

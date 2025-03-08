@@ -31,9 +31,9 @@ export default function Settings() {
   const [personalWebsiteMessage, setPersonalWebsiteMessage] = useState("");
   const [gitHubMessage, setGitHubMessage] = useState("");
 
-  const [imageLink, setImageLink] = useState("");
+  const [image, setImage] = useState("");
 
-  const [tempImageLink, setTempImageLink] = useState("");
+  const [tempImage, setTempImage] = useState("");
   const [imageMessage, setImageMessage] = useState("");
   const [imageDialog, setImageDialog] = useState(false);
 
@@ -326,8 +326,8 @@ export default function Settings() {
             setPersonalWebsite(data.personalWebsite || "");
             setGitHub(data.gitHub || "");
 
-            setImageLink(data.imageLink || "");
-            setTempImageLink(data.imageLink || "");
+            setImage(data.image || "");
+            setTempImage(data.image || "");
 
             setBio(data.bio || "");
             setCountry(data.country || "");
@@ -347,7 +347,7 @@ export default function Settings() {
 
             let missingFields = [];
 
-            if (!data.imageLink) {
+            if (!data.image) {
               missingFields.push("profile picture");
               setImageMessage("Profile picture is required");
             } else {
@@ -492,7 +492,7 @@ export default function Settings() {
     console.log(skillLevels);
     console.log(skills);
 
-    if (!imageLink) {
+    if (!image) {
       missingFields.push("profile picture");
       setImageMessage("Profile picture is required");
       hasErrors = true;
@@ -662,7 +662,7 @@ export default function Settings() {
           },
           body: JSON.stringify({
             auth0_id: user.sub,
-            imageLink: imageLink,
+            image: image,
             name: name,
             email: email,
             linkedIn: linkedIn,
@@ -737,7 +737,7 @@ export default function Settings() {
               <CardBlock>
                 <button onClick={() => setImageDialog(!imageDialog)}>
                   <Image
-                    src={imageLink}
+                    src={image}
                     alt={`${name}'s profile`}
                     className="rounded-full object-cover ring-2 ring-[--border]"
                     width={96}
@@ -751,29 +751,29 @@ export default function Settings() {
                   <CardSubtitle className="mb-2">Enter a new image link</CardSubtitle>
                   <CardRow className="flex-col sm:flex-row">
                     <CardInput
-                      value={tempImageLink}
-                      onChange={(e) => setTempImageLink(e.target.value)}
+                      value={tempImage}
+                      onChange={(e) => setTempImage(e.target.value)}
                       placeholder="Make it blank to use the default image!"
                       className="w-full"
                       max={600}
                     />
                     <CardButton
                       onClick={() => {
-                        if (tempImageLink !== "") {
-                          if (isValidURL(tempImageLink)) {
-                            setImageLink(tempImageLink);
+                        if (tempImage !== "") {
+                          if (isValidURL(tempImage)) {
+                            setImage(tempImage);
                             setImageMessage("");
                           } else {
                             setImageMessage("Invalid URL!");
                           }
                         } else {
                           if (user && user.picture === "") {
-                            setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
-                            setTempImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                            setImage("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
+                            setTempImage("https://ui-avatars.com/api/?size=256&background=random&name=" + name.replace(" ", "+"));
                             setImageMessage("");
                           } else if (user && user.picture !== "") {
-                            setImageLink(user.picture);
-                            setTempImageLink(user.picture);
+                            setImage(user.picture);
+                            setTempImage(user.picture);
                             setImageMessage("");
                           }
                         }

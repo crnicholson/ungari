@@ -16,7 +16,7 @@ export default function Demo() {
 
     const [_id, setID] = useState("");
 
-    const [imageLink, setImageLink] = useState("");
+    const [image, setImage] = useState("");
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -99,10 +99,10 @@ export default function Demo() {
 
                 setNoMatches(data.noMatches || false);
 
-                if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
-                    setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
+                if (data.match.image === "" || !isValidURL(data.match.image)) {
+                    setImage("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
                 } else {
-                    setImageLink(data.match.imageLink);
+                    setImage(data.match.image);
                 }
             }
         } catch (error) {
@@ -170,14 +170,14 @@ export default function Demo() {
                             </CardBlock>
                         )}
                         <div className="flex flex-col gap-5">
-                            <ProfileCard match={{
+                            <ProfileCard user={{
                                 name,
                                 email,
                                 linkedIn,
                                 x,
                                 gitHub,
                                 personalWebsite,
-                                imageLink,
+                                image,
                                 bio,
                                 country,
                                 city,

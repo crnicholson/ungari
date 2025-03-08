@@ -21,7 +21,7 @@ export default function Home() {
   const [user_id, setUserID] = useState("");
   const [match_id, setMatchID] = useState("");
 
-  const [imageLink, setImageLink] = useState("");
+  const [image, setImage] = useState("");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -201,13 +201,13 @@ export default function Home() {
         setNoMatches(data.noMatches || false);
         setNoNewMatches(data.noNewMatches || false);
 
-        // if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
-        //   setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
+        // if (data.match.image === "" || !isValidURL(data.match.image)) {
+        //   setImage("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
         // } else {
-        //   setImageLink(data.match.imageLink);
+        //   setImage(data.match.image);
         // }
 
-        setImageLink(data.match.imageLink);
+        setImage(data.match.image);
       }
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);
@@ -260,14 +260,14 @@ export default function Home() {
                 </CardBlock>
               )}
               <CardBlock>
-                <ProfileCard match={{
+                <ProfileCard user={{
                   name,
                   email,
                   linkedIn,
                   x,
                   gitHub,
                   personalWebsite,
-                  imageLink,
+                  image,
                   bio,
                   country,
                   city,

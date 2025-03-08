@@ -19,7 +19,7 @@ const SERVER = "http://127.0.0.1:38321";
 export default function Home() {
     const [_id, setID] = useState("");
 
-    const [imageLink, setImageLink] = useState("");
+    const [image, setImage] = useState("");
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -44,9 +44,8 @@ export default function Home() {
     const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
     const [themes, setThemes] = useState([]);
 
-    const [noMatches, setNoMatches] = useState(false);
-    const [noNewMatches, setNoNewMatches] = useState(false);
     const [polled, setPolled] = useState(false);
+    const [noUser, setNoUser] = useState(false);
 
     const [warningMessage, setWarningMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -118,7 +117,9 @@ export default function Home() {
             });
             if (!response.ok) {
                 const error = await response.json();
-                setErrorMessage("Server-side error: " + error.error);
+                setErrorMessage(error.error);
+                // setErrorMessage("Server-side error: " + error.error);
+                setNoUser(error.noUser);
                 setPolled(false);
             } else {
                 setErrorMessage("");
@@ -128,34 +129,30 @@ export default function Home() {
 
                 console.log(data);
 
-                setName(data.match.name || "");
-                setEmail(data.match.email || "");
-                setLinkedIn(data.match.linkedIn || "");
-                setX(data.match.x || "");
-                setGitHub(data.match.gitHub || "");
-                setPersonalWebsite(data.match.personalWebsite || "");
+                setName(data.user.name || "");
+                setEmail(data.user.email || "");
+                setLinkedIn(data.user.linkedIn || "");
+                setX(data.user.x || "");
+                setGitHub(data.user.gitHub || "");
+                setPersonalWebsite(data.user.personalWebsite || "");
 
-                setBio(data.match.bio || "");
-                setCountry(data.match.country || "");
-                setCity(data.match.city || "");
-                setAvailability(data.match.availability || "");
+                setBio(data.user.bio || "");
+                setCountry(data.user.country || "");
+                setCity(data.user.city || "");
+                setAvailability(data.user.availability || "");
 
-                setNeedHelp(data.match.needHelp || false);
-                setProjectName(data.match.projectName || "");
-                setProjectDescription(data.match.projectDescription || "");
-                setHelpDescription(data.match.helpDescription || "");
-                setProjectLink(data.match.projectLink || "");
-                setTimeFrame(data.match.timeFrame || "");
+                setNeedHelp(data.user.needHelp || false);
+                setProjectName(data.user.projectName || "");
+                setProjectDescription(data.user.projectDescription || "");
+                setHelpDescription(data.user.helpDescription || "");
+                setProjectLink(data.user.projectLink || "");
+                setTimeFrame(data.user.timeFrame || "");
 
-                setSkills(data.match.skills || []);
-                setSkillLevels(data.match.skillLevels || {});
-                setThemes(data.match.themes || []);
+                setSkills(data.user.skills || []);
+                setSkillLevels(data.user.skillLevels || {});
+                setThemes(data.user.themes || []);
 
-                if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
-                    setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
-                } else {
-                    setImageLink(data.match.imageLink);
-                }
+                setImage(data.user.image);
             }
         } catch (error) {
             console.error("Error: Failed to fetch settings: ", error);
@@ -167,9 +164,9 @@ export default function Home() {
     // Get _id 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const message = params.get('_id');
-        if (message) {
-            setID(message);
+        const result = params.get('_id');
+        if (result) {
+            setID(result);
         } else {
             setErrorMessage("No _id provided.");
         }
@@ -206,40 +203,41 @@ export default function Home() {
 
             <CardContainer className={`sm:w-3/4 lg:w-2/3 xl:w-1/2 w-full ${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
                 <Card className="w-full">
-                    <CardTitle size={2}>Your match</CardTitle>
                     {isLoading && !user && !polled ? (
                         <p>Loading...</p>
                     ) : errorMessage !== "" ? (
-                        <p>Looks like you{"'"}re not getting this profile... our backend seems to be down. Try reloading or coming back later.</p>
+                        noUser ? (
+                            <p>This user does not exist!</p>
+                        ) : (
+                            <p>Looks like you{"'"}re not getting this profile... our backend might be down. Try reloading or coming back later.</p>
+                        )
                     ) : (
                         <>
-                            <CardBlock>
-                                <ProfileCard match={{
-                                    name,
-                                    email,
-                                    linkedIn,
-                                    x,
-                                    gitHub,
-                                    personalWebsite,
-                                    imageLink,
-                                    bio,
-                                    country,
-                                    city,
-                                    availability,
-                                    needHelp,
-                                    projectName,
-                                    projectDescription,
-                                    helpDescription,
-                                    projectLink,
-                                    timeFrame,
-                                    skills,
-                                    skillLevels,
-                                    themes,
-                                }} />
-                            </CardBlock>
+                            <ProfileCard user={{
+                                name,
+                                email,
+                                linkedIn,
+                                x,
+                                gitHub,
+                                personalWebsite,
+                                image,
+                                bio,
+                                country,
+                                city,
+                                availability,
+                                needHelp,
+                                projectName,
+                                projectDescription,
+                                helpDescription,
+                                projectLink,
+                                timeFrame,
+                                skills,
+                                skillLevels,
+                                themes,
+                            }} />
                         </>
                     )}
-                </Card >
+                </Card>
             </CardContainer >
         </>
     );

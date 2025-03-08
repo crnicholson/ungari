@@ -92,8 +92,8 @@ def get_settings():
     return (
         jsonify(
             {
-                "imageLink": user.get(
-                    "imageLink",
+                "image": user.get(
+                    "image",
                     f"https://ui-avatars.com/api/?size=256&background=random&name={user.get("name").replace(' ', '+')}",
                 ),
                 "name": user.get("name", ""),
@@ -133,7 +133,7 @@ def set_onboarding_settings():
     personalWebsite = received.get("personalWebsite", "")
     gitHub = received.get("gitHub", "")
 
-    imageLink = received.get("imageLink", f"https://ui-avatars.com/api/?size=256&background=random&name={received.get("name").replace(' ', '+')}")
+    image = received.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={received.get("name").replace(' ', '+')}")
 
     bio = received.get("bio", "")
     country = received.get("country", "")
@@ -163,7 +163,7 @@ def set_onboarding_settings():
         "x": x,
         "personalWebsite": personalWebsite,
         "gitHub": gitHub,
-        "imageLink": imageLink,
+        "image": image,
         "bio": bio,
         "country": country,
         "city": city,
@@ -204,7 +204,7 @@ def set_settings():
 
     name = received.get("name", "")
 
-    imageLink = received.get("imageLink", f"https://ui-avatars.com/api/?size=256&background=random&name={name.replace(' ', '+')}")
+    image = received.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={name.replace(' ', '+')}")
     email = received.get("email", "")
     linkedIn = received.get("linkedIn", "")
     x = received.get("x", "")
@@ -228,7 +228,7 @@ def set_settings():
     themes = received.get("themes", [])
 
     update_fields = {
-        "imageLink": imageLink,
+        "image": image,
         "name": name,
         "email": email,
         "linkedIn": linkedIn,
@@ -267,6 +267,57 @@ def set_settings():
     return jsonify({"": ""}), 200
 
 
+@app.route("/api/get-profile", methods=["POST"])
+def get_profile():
+    received = request.get_json()
+    
+    _id = received.get("_id", "")
+    
+    try:
+        _id = ObjectId(_id)
+    except:
+        return jsonify({"error": "User not found", "noUser": True}), 404
+
+    user = users.find_one({"_id": _id})
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+        
+    user_data = {
+        "match_id": str(user.get("_id", "")),
+        "image": user.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={user.get("name").replace(' ', '+')}"),
+        "name": user.get("name", ""),
+        "email": user.get("email", ""),
+        "linkedIn": user.get("linkedIn", ""),
+        "x": user.get("x", ""),
+        "personalWebsite": user.get("personalWebsite", ""),
+        "gitHub": user.get("gitHub", ""),
+        "bio": user.get("bio", ""),
+        "country": user.get("country", ""),
+        "city": user.get("city", ""),
+        "availability": user.get("availability", ""),
+        "needHelp": user.get("needHelp", False),
+        "projectName": user.get("projectName", ""),
+        "projectDescription": user.get(
+            "projectDescription", ""
+        ),
+        "helpDescription": user.get("helpDescription", ""),
+        "projectLink": user.get("projectLink", ""),
+        "timeFrame": int(
+            user.get("timeFrame", "")
+            .replace("months", "")
+            .strip()
+        ),
+        "skills": user.get("skills", []),
+        "skillLevels": user.get("skillLevels", {}),
+        "themes": user.get("themes", []),
+    }
+            
+    print(f"User data: {json.dumps(user_data, indent=4)}")
+
+    return jsonify({"user": user_data})
+
+
 @app.route("/api/get-match", methods=["POST"])
 def get_match():
     received = request.get_json()
@@ -293,7 +344,7 @@ def get_match():
             return {
                 "match_id": str(random_user.get("_id", "")),
                 "user_id": str(user.get("_id", "")),
-                "imageLink": random_user.get("imageLink", f"https://ui-avatars.com/api/?size=256&background=random&name={random_user.get("name").replace(' ', '+')}"),
+                "image": random_user.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={random_user.get("name").replace(' ', '+')}"),
                 "name": random_user.get("name", ""),
                 "email": random_user.get("email", ""),
                 "linkedIn": random_user.get("linkedIn", ""),
@@ -403,7 +454,7 @@ def get_match():
                     {
                         "match_id": str(potential_match.get("_id", "")),
                         # "user_id": str(user.get("_id", "")),
-                        "imageLink": potential_match.get("imageLink", f"https://ui-avatars.com/api/?size=256&background=random&name={potential_match/get("name").replace(' ', '+')}"),
+                        "image": potential_match.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={potential_match/get("name").replace(' ', '+')}"),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
                         "linkedIn": potential_match.get("linkedIn", ""),
@@ -489,7 +540,7 @@ def get_match():
                     {
                         "match_id": str(potential_match.get("_id", "")),
                         "user_id": str(user.get("_id", "")),
-                        "imageLink": potential_match.get("imageLink", f"https://ui-avatars.com/api/?size=256&background=random&name={potential_match.get("name").replace(' ', '+')}"),
+                        "image": potential_match.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={potential_match.get("name").replace(' ', '+')}"),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
                         "linkedIn": potential_match.get("linkedIn", ""),
@@ -602,14 +653,14 @@ def create_chat():
     user_id = user.get("_id")  # _id of the user.
     match_id = received.get("match_id")  # _id of the match.
 
-    match_name = users.find_one({"_id": ObjectId(match_id)}).get("name")
-    user_name = user.get("name")
+    matchName = users.find_one({"_id": ObjectId(match_id)}).get("name")
+    userName = user.get("name")
 
-    if match_name and user_name:
+    if matchName and userName:
         new_chat = {
             "participants": {
-                match_id: match_name,
-                user_id: user_name,
+                match_id: matchName,
+                user_id: userName,
             },
             "messages": [],
         }
@@ -633,10 +684,10 @@ def get_chat():
     match_id = received.get("match_id") # _id of the match.
 
     match = users.find_one({"_id": ObjectId(match_id)})
-    match_name = match.get("name")
-    match_image = match.get(
-        "imageLink",
-        f"https://ui-avatars.com/api/?size=256&background=random&name={match_name.replace(' ', '+')}",
+    matchName = match.get("name")
+    matchImage = match.get(
+        "image",
+        f"https://ui-avatars.com/api/?size=256&background=random&name={matchName.replace(' ', '+')}",
     )
     
     chat = chats.find_one(
@@ -656,7 +707,7 @@ def get_chat():
             }
         )
 
-    return jsonify({"match_name": match_name, "match_image": match_image, "messages": messages}), 200
+    return jsonify({"matchName": matchName, "matchImage": matchImage, "messages": messages}), 200
 
 
 @app.route("/api/get-chats", methods=["POST"])
@@ -681,12 +732,12 @@ def get_chats():
                 chat_list.append(
                     {
                         "match_id": participant_id,
-                        "match_name": participant_name,
-                        "match_image": match_profile.get(
-                            "imageLink",
+                        "matchName": participant_name,
+                        "matchImage": match_profile.get(
+                            "image",
                             f"https://ui-avatars.com/api/?size=256&background=random&name={participant_name.replace(' ', '+')}",
                         ),
-                        "last_message": (
+                        "lastMessage": (
                             chat.get("messages", [{}])[-1].get("content", "")
                             if chat.get("messages")
                             else ""
@@ -696,7 +747,7 @@ def get_chats():
 
     print(chat_list)
 
-    return jsonify({"chat_list": chat_list}), 200
+    return jsonify({"chatList": chat_list}), 200
 
 
 @socketio.on("connect")
