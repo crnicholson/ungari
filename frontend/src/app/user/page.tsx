@@ -168,16 +168,19 @@ export default function Home() {
         if (result) {
             setID(result);
         } else {
-            setErrorMessage("No _id provided.");
+            setErrorMessage("No _id provided. Redirecting to home page...");
+            setTimeout(() => {
+                router.push("/");
+            }, 1000);
         }
-    }, []);
+    }, [router]);
 
     // Get profile on page load 
     useEffect(() => {
-        if (!isLoading && user) {
+        if (!isLoading && user && _id !== "") {
             getProfile();
         }
-    }, [isLoading, user, getProfile]);
+    }, [isLoading, user, getProfile, _id]);
 
     return (
         <>
@@ -214,6 +217,7 @@ export default function Home() {
                     ) : (
                         <>
                             <ProfileCard user={{
+                                match_id: _id,
                                 name,
                                 email,
                                 linkedIn,

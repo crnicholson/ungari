@@ -247,7 +247,7 @@ export default function Home() {
 
       <CardContainer className={`sm:w-3/4 lg:w-2/3 xl:w-1/2 w-full ${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
         <Card className="w-full">
-          <CardTitle size={2}>Your match</CardTitle>
+          <CardTitle size={2} className="mb-3">Your match</CardTitle>
           {isLoading && !user && !polled ? (
             <p>Loading...</p>
           ) : errorMessage !== "" ? (
@@ -261,6 +261,7 @@ export default function Home() {
               )}
               <CardBlock>
                 <ProfileCard user={{
+                  match_id,
                   name,
                   email,
                   linkedIn,

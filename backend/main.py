@@ -454,7 +454,7 @@ def get_match():
                     {
                         "match_id": str(potential_match.get("_id", "")),
                         # "user_id": str(user.get("_id", "")),
-                        "image": potential_match.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={potential_match/get("name").replace(' ', '+')}"),
+                        "image": potential_match.get("image", f"https://ui-avatars.com/api/?size=256&background=random&name={potential_match.get("name").replace(' ', '+')}"),
                         "name": potential_match.get("name", ""),
                         "email": potential_match.get("email", ""),
                         "linkedIn": potential_match.get("linkedIn", ""),

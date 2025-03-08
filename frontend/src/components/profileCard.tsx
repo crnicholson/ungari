@@ -61,6 +61,7 @@ function SkillLevel({ level }) {
 
 function DesktopProfileCard({ user }) {
     const {
+        match_id,
         name,
         email,
         linkedIn,
@@ -101,7 +102,7 @@ function DesktopProfileCard({ user }) {
 
                     <div className="flex-1">
                         <div className="flex items-start justify-between">
-                            <h1 className="text-3xl font-[family-name:var(--tiempos)] font-bold">{name}</h1>
+                            <StyledLink href={`/user?_id=${match_id}`} className="text-3xl font-[family-name:var(--tiempos)] font-bold">{name}</StyledLink>
                         </div>
                         <ExpandableText className="mt-2" text={bio} />
                     </div>
@@ -232,6 +233,7 @@ function DesktopProfileCard({ user }) {
 
 function MobileProfileCard({ user }) {
     const {
+        match_id,
         name,
         email,
         linkedIn,
@@ -270,7 +272,7 @@ function MobileProfileCard({ user }) {
 
             <div className="pt-16 px-6 pb-6">
                 <div className="text-center">
-                    <h1 className="text-2xl font-[family-name:var(--tiempos)] font-bold mb-2">{name}</h1>
+                    <StyledLink href={`/user?_id=${match_id}`} className="text-2xl font-[family-name:var(--tiempos)] font-bold mb-2">{name}</StyledLink>
                     <ExpandableText className="text-sm text-[--light] mb-4" text={bio} maxLength={100} />
                 </div>
 
