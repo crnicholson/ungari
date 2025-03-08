@@ -231,7 +231,7 @@ export default function Home() {
         </HeaderLogo>
         <HeaderNav>
           <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
-            <span className="material-symbols-outlined">settings</span>
+            <span title="Settings" className="material-symbols-outlined">settings</span>
           </StyledLink>
           <Button href="/api/auth/logout">Logout</Button>
         </HeaderNav>

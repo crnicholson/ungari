@@ -189,8 +189,11 @@ export default function Home() {
                     <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
                 </HeaderLogo>
                 <HeaderNav>
+                    <StyledLink href="/match" className="h-full w-fit flex items-center no-underline">
+                        <span title="Match" className="material-symbols-outlined">hub</span>
+                    </StyledLink>
                     <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
-                        <span className="material-symbols-outlined">settings</span>
+                        <span title="Settings" className="material-symbols-outlined">settings</span>
                     </StyledLink>
                     <Button href="/api/auth/logout">Logout</Button>
                 </HeaderNav>
