@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from 'next/navigation';
 import { create } from "domain";
+import { set } from "@auth0/nextjs-auth0/dist/session";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -71,7 +72,7 @@ export default function Home() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id: user.sub }),
+            body: JSON.stringify({ auth0_id: user.sub }),
           });
           if (!response.ok) {
             const error = await response.json();
@@ -116,7 +117,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: user.sub, match_id: match_id }),
+        body: JSON.stringify({ auth0_id: user.sub, match_id: match_id }),
       });
       if (!response.ok) {
         const error = await response.json();
@@ -138,7 +139,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: user.sub, match_id: match_id }),
+        body: JSON.stringify({ auth0_id: user.sub, match_id: match_id }),
       });
       if (!response.ok) {
         const error = await response.json();
@@ -157,7 +158,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: user.sub }),
+        body: JSON.stringify({ auth0_id: user.sub }),
       });
       if (!response.ok) {
         const error = await response.json();
@@ -200,11 +201,13 @@ export default function Home() {
         setNoMatches(data.noMatches || false);
         setNoNewMatches(data.noNewMatches || false);
 
-        if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
-          setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
-        } else {
-          setImageLink(data.match.imageLink);
-        }
+        // if (data.match.imageLink === "" || !isValidURL(data.match.imageLink)) {
+        //   setImageLink("https://ui-avatars.com/api/?size=256&background=random&name=" + data.match.name.replace(" ", "+"));
+        // } else {
+        //   setImageLink(data.match.imageLink);
+        // }
+
+        setImageLink(data.match.imageLink);
       }
     } catch (error) {
       console.error("Error: Failed to fetch settings: ", error);

@@ -94,7 +94,7 @@ export default function Settings() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id: user.sub }),
+            body: JSON.stringify({ auth0_id: user.sub }),
           });
           if (!response.ok) {
             const error = await response.json();
@@ -311,7 +311,7 @@ export default function Settings() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id: user.sub }),
+            body: JSON.stringify({ auth0_id: user.sub }),
           });
           if (!response.ok) {
             const error = await response.json();
@@ -661,7 +661,7 @@ export default function Settings() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            id: user.sub,
+            auth0_id: user.sub,
             imageLink: imageLink,
             name: name,
             email: email,

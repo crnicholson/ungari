@@ -25,7 +25,7 @@ export default function Redirect() {
                         headers: {
                             "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({ id: user.sub }),
+                        body: JSON.stringify({ auth0_id: user.sub }),
                     });
                     if (!response.ok) {
                         const error = await response.json();
@@ -61,7 +61,7 @@ export default function Redirect() {
                 </HeaderLogo>
             </Header>
 
-            {errorMessage !== "" && <Error onClick={() => setErrorMessage("")}>{errorMessage}</Error>}
+            {errorMessage !== "" && <Error>{errorMessage}</Error>}
 
             <CardContainer className={`${errorMessage !== "" ? "mt-5" : "mt-0"}`}>
                 <Card className="w-full">

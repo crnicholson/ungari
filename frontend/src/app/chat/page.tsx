@@ -8,6 +8,7 @@ import Error from "../../components/error";
 import Warning from "../../components/warning";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { socket } from "../socket";
@@ -20,7 +21,7 @@ export default function Home() {
     const [transport, setTransport] = useState("N/A");
     const [polled, setPolled] = useState(false);
 
-    const [match_id, setMatch_id] = useState("");
+    const [match_id, setMatchID] = useState("");
 
     const [matchName, setMatchName] = useState("");
     const [message, setMessage] = useState("");
@@ -29,6 +30,8 @@ export default function Home() {
         auth0_id: string;
         timestamp: Date;
     }[]>([]);
+
+    const [chats, setChats] = useState([]);
 
     const [erorrMessage, setErrorMessage] = useState("");
     const [warningMessage, setWarningMessage] = useState("");
@@ -48,7 +51,7 @@ export default function Home() {
         const params = new URLSearchParams(window.location.search);
         const message = params.get('match_id');
         if (message) {
-            setMatch_id(message);
+            setMatchID(message);
         }
     }, []);
 
@@ -120,7 +123,7 @@ export default function Home() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ id: user.sub, match_id: match_id }),
+                body: JSON.stringify({ auth0_id: user.sub, match_id: match_id }),
             });
             if (!response.ok) {
                 const error = await response.json();
@@ -144,12 +147,46 @@ export default function Home() {
         }
     }, [user, match_id]);
 
+    const getChats = useCallback(async () => {
+        try {
+            const response = await fetch(SERVER + "/api/get-chats", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ auth0_id: user.sub }),
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                setErrorMessage("Server-side error: " + error.error);
+                setPolled(false);
+            } else {
+                setErrorMessage("");
+                setPolled(true);
+
+                const data = await response.json();
+
+                console.log(data);
+
+                setChats(data.chat_list);
+            }
+        } catch (error) {
+            console.error("Error: Failed to fetch settings: ", error);
+            setErrorMessage("Client-side error: " + error);
+            setPolled(false);
+        }
+    }, [user]);
+
     // Get match on page load 
     useEffect(() => {
         if (!isLoading && user) {
-            getChat();
+            if (match_id) {
+                getChat();
+            } else {
+                getChats();
+            }
         }
-    }, [isLoading, user, getChat]);
+    }, [isLoading, user, getChat, getChats, match_id]);
 
     return (
         <>
@@ -169,53 +206,96 @@ export default function Home() {
 
             <CardContainer className="w-2/3 mt-24">
                 <Card className="w-full">
-                    <CardTitle className="mb-5" size={2}>Chat {!polled ? "" : `with ${matchName}`}</CardTitle>
-                    <div className={`border-b border-[--border] h-fit w-full ${(isConnected && polled) ? "mb-5" : ""}`} />
+                    <CardTitle className={`${match_id ? "mb-2" : "mb-5"}`} size={2}>{match_id ? `Chat${!polled ? "" : ` with ${matchName}`}` : "Choose your chat"}</CardTitle>
+                    {match_id && (
+                        <StyledLink className="mb-5 italic block" href="/chat" onClick={() => setMatchID("")}>
+                            Back to chat page
+                        </StyledLink>
+                    )}
+                    <div className="border-b border-[--border] h-fit w-full mb-5" />
                     {(!isConnected || !polled) ? (
                         <p>Loading...</p>
                     ) : (
-                        <>
-                            <CardBlock className="mb-5">
-                                {messages.map((msg, index) => (
-                                    <div
-                                        key={index}
-                                        className={`mb-2 p-[10px] border-[--border] rounded-xl bg-[--bg] border w-fit max-w-[70%] ${msg.auth0_id === user.sub ? "ml-auto" : "mr-auto"
-                                            }`}
-                                    >
-                                        {msg.content}
-                                    </div>
-                                ))}
-                            </CardBlock>
+                        match_id ? (
+                            <>
+                                <CardBlock className="mb-5">
+                                    {messages.map((msg, index) => (
+                                        <div
+                                            key={index}
+                                            className={`mb-2 p-[10px] border-[--border] rounded-xl bg-[--bg] border w-fit max-w-[70%] break-words ${msg.auth0_id === user.sub ? "ml-auto" : "mr-auto"
+                                                }`}
+                                        >
+                                            {msg.content}
+                                        </div>
+                                    ))}
+                                </CardBlock>
 
-                            <CardRow>
-                                <CardInput
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    placeholder="Type your message..."
-                                    className="w-full"
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            sendMessage();
-                                        }
-                                    }}
-                                />
-                                <Button
-                                    className="px-4 py-2"
-                                    onClick={sendMessage}
-                                    type="button"
-                                >
-                                    <div className="h-full w-full flex justify-center items-center">
-                                        <span className="material-symbols-outlined">
-                                            send
-                                        </span>
-                                    </div>
-                                </Button>
-                            </CardRow>
-                        </>
+                                <CardRow>
+                                    <CardInput
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                        placeholder="Type your message..."
+                                        className="w-full"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                sendMessage();
+                                            }
+                                        }}
+                                    />
+                                    <Button
+                                        className="px-4 py-2"
+                                        onClick={sendMessage}
+                                        type="button"
+                                    >
+                                        <div className="h-full w-full flex justify-center items-center">
+                                            <span className="material-symbols-outlined">
+                                                send
+                                            </span>
+                                        </div>
+                                    </Button>
+                                </CardRow>
+                            </>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {chats.map((chat) => (
+                                    <Button
+                                        key={chat.match_id}
+                                        href={`/chat?match_id=${chat.match_id}`}
+                                        className="w-full hover:bg-[--bg-hover] transition-colors duration-200"
+                                        onClick={() => setMatchID(chat.match_id)}
+                                    >
+                                        <div className="flex items-center space-x-4 p-4">
+                                            <div className="flex-shrink-0">
+                                                <Image
+                                                    src={chat.match_image}
+                                                    alt={chat.match_name}
+                                                    width={50}
+                                                    height={50}
+                                                    className="rounded-full"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-left truncate border-b border-[--border] pb-2">
+                                                    {chat.match_name.length > 30 ? `${chat.match_name.slice(0, 30)}...` : chat.match_name}
+                                                </p>
+                                                <div className="mt-2 font-normal text-base flex items-center gap-2">
+                                                    <span className="h-full w-fit material-symbols-outlined">
+                                                        mail
+                                                    </span>
+                                                    <p className="h-fit w-fit">
+                                                        {chat.last_message.length > 5 ? `${chat.last_message.slice(0, 5)}...` : chat.last_message}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Button>
+                                ))}
+                            </div>
+                        )
                     )}
                 </Card>
-            </CardContainer>
+            </CardContainer >
         </>
     );
 }
