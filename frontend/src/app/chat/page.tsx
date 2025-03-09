@@ -7,12 +7,11 @@ import StyledLink from "../../components/styledLink"
 import Error from "../../components/error";
 import Warning from "../../components/warning";
 
-import { useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { socket } from "../socket";
-import { set } from "@auth0/nextjs-auth0/dist/session";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -38,6 +37,7 @@ export default function Home() {
     const [errorMessage, setErrorMessage] = useState("");
     const [warningMessage, setWarningMessage] = useState("");
     const [noUser, setNoUser] = useState(false);
+    const [unReadMessages, setUnreadMessages] = useState(0);
 
     const { user, isLoading } = useUser();
     const router = useRouter();
@@ -151,9 +151,9 @@ export default function Home() {
                 setMessages(data.messages);
                 setMatchName(data.matchName);
                 setMatchImage(data.matchImage);
+                setUnreadMessages(data.unreadMessages);
             }
         } catch (error) {
-            console.error("Error: Failed to fetch settings: ", error);
             setErrorMessage("Client-side error: " + error);
             setPolled(false);
         }
@@ -183,11 +183,28 @@ export default function Home() {
                 setChats(data.chatList);
             }
         } catch (error) {
-            console.error("Error: Failed to fetch settings: ", error);
             setErrorMessage("Client-side error: " + error);
             setPolled(false);
         }
     }, [user]);
+
+    const setMessagesRead = useCallback(async () => {
+        try {
+            const response = await fetch(SERVER + "/api/set-messages-read", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ auth0_id: user.sub, _id: _id }),
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                setErrorMessage(error.error);
+            }
+        } catch (error) {
+            setErrorMessage("Client-side error: " + error);
+        }
+    }, [user, _id]);
 
     // Get match on page load 
     useEffect(() => {
@@ -252,7 +269,7 @@ export default function Home() {
                                         <StyledLink href={`/user?_id=${_id}`}>
                                             {matchName}
                                         </StyledLink>
-                                    )}
+                                    )}, {unReadMessages > 0 ? `you have ${unReadMessages} unread messages` : "you are up to date"}
                                 </CardTitle>
                                 <StyledLink className="italic" href="/chat" onClick={() => setID("")}>
                                     Back to chat page
@@ -265,7 +282,7 @@ export default function Home() {
                         </CardTitle>
                     )}
 
-                    <div className="border-b border-[--border] h-fit w-full mb-5" />
+                    {/* <div className="border-b border-[--border] h-fit w-full mb-5" /> */}
                     {(isLoading && !user && !polled) ? (
                         <p>Loading...</p>
                     ) : errorMessage !== "" ? (
@@ -277,7 +294,18 @@ export default function Home() {
                     ) : (
                         _id ? (
                             <>
-                                <CardBlock className="mb-5">
+                                <CardBlock
+                                    className="p-3 mb-5 border border-[--border] rounded-xl overflow-y-auto max-h-[500px]"
+                                    onScroll={(e) => {
+                                        const element = e.target as HTMLDivElement;
+                                        const isBottom = Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
+                                        if (isBottom) {
+                                            console.log('Scrolled to bottom!');
+                                            setMessagesRead();
+                                            setUnreadMessages(0);
+                                        }
+                                    }}
+                                >
                                     {messages.map((msg, index) => (
                                         <div
                                             key={index}

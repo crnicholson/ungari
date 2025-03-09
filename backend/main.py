@@ -700,6 +700,11 @@ def get_chat():
             f"participants.{user_id}": {"$exists": True},
         }
     )
+    
+    unreadMessages = 0
+    for message in chat.get("messages", []):
+        if not message.get("read", False):
+            unreadMessages += 1
 
     messages = []
     for message in chat.get("messages", []):
@@ -708,10 +713,11 @@ def get_chat():
                 "content": message.get("content", ""),
                 "auth0_id": message.get("auth0_id", ""),
                 "timestamp": message.get("timestamp", ""),
+                "read": message.get("read", False),
             }
         )
 
-    return jsonify({"matchName": matchName, "matchImage": matchImage, "messages": messages}), 200
+    return jsonify({"matchName": matchName, "matchImage": matchImage, "messages": messages, "unreadMessages": unreadMessages}), 200
 
 
 @app.route("/api/get-chats", methods=["POST"])
@@ -733,6 +739,12 @@ def get_chats():
         for participant_id, participant_name in chat.get("participants").items():
             if participant_id != user_id:
                 match_profile = users.find_one({"_id": ObjectId(participant_id)})
+                
+                unreadMessages = 0
+                for message in chat.get("messages", []):
+                    if not message.get("read", False):
+                        unreadMessages += 1
+                    
                 chat_list.append(
                     {
                         "_id": participant_id,
@@ -746,6 +758,7 @@ def get_chats():
                             if chat.get("messages")
                             else ""
                         ),
+                        "unreadMessages": unreadMessages,
                     }
                 )
 
@@ -753,6 +766,32 @@ def get_chats():
     
     return jsonify({"chatList": chat_list}), 200
 
+
+@app.route("/api/set-messages-read", methods=["POST"])
+def set_messages_read():
+    received = request.get_json()
+    
+    print(f"Message: {json.dumps(received, indent=4)}")
+
+    user = users.find_one({"id": received.get("auth0_id")})
+    
+    user_id = str(user.get("_id")) # _id of the user.
+    _id = received.get("_id")  # _id of the match, already in string form.
+
+    try:
+        chats.update_one(
+            {
+                f"participants.{user_id}": {"$exists": True},
+                f"participants.{_id}": {"$exists": True},
+            },
+            {"$set": {"messages.$[].read": True}},
+        )
+    except:
+        return jsonify({"error": "Could not update messages"}), 404
+
+    print("Set messages as read.")
+    return jsonify({}), 200
+    
 
 @socketio.on("connect")
 def handle_connect():
@@ -780,6 +819,7 @@ def handle_chat_message(received):
         "sender_id": user_id,
         "auth0_id": received.get("auth0_id", ""),
         "timestamp": str(datetime.datetime.now(datetime.UTC)),
+        "read": False,
     }
 
     result = chats.update_one(

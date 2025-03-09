@@ -15,6 +15,7 @@ interface CardProps {
     onClick?: () => void;
     max?: number;
     onKeyDown?: (e) => void;
+    onScroll?: (e) => void;
 }
 
 export function Card({ children, className }: CardProps) {
@@ -71,7 +72,7 @@ export function CardRow({ children, className }: CardProps) {
     );
 }
 
-export function CardInput({ placeholder, value, onChange, className, type, max=100000, onKeyDown }: CardProps) {
+export function CardInput({ placeholder, value, onChange, className, type, max = 100000, onKeyDown }: CardProps) {
     return (
         <div className={`${className}`}>
             <input
@@ -87,9 +88,9 @@ export function CardInput({ placeholder, value, onChange, className, type, max=1
     );
 }
 
-export function CardBlock({ children, className }: CardProps) {
+export function CardBlock({ children, className, onScroll }: CardProps) {
     return (
-        <div className={`mb-3 ${className}`}>
+        <div onScroll={onScroll} className={`mb-3 ${className}`}>
             {children}
         </div>
     );
