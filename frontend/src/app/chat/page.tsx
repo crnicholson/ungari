@@ -45,10 +45,10 @@ export default function Home() {
     const firstUnreadMessageRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (unReadMessages > 0 && firstUnreadMessageRef.current) {
+        if (firstUnreadMessageRef.current) {
             firstUnreadMessageRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [unReadMessages]);
+    }, [unReadMessages, messages]);
 
     // Basic auth
     useEffect(() => {
@@ -306,7 +306,6 @@ export default function Home() {
                                         if (isBottom) {
                                             console.log('Scrolled to bottom!');
                                             setMessagesRead();
-                                            setUnreadMessages(0);
                                         }
                                     }}
                                 >
@@ -314,14 +313,38 @@ export default function Home() {
                                         <React.Fragment key={index}>
                                             {unReadMessages > 0 && index === messages.length - unReadMessages && (
                                                 <>
-                                                    <div
+                                                    {/* <div
                                                         ref={firstUnreadMessageRef}
                                                         className="w-full border-t-2 border-red-300"
                                                     />
-                                                    <div>
-                                                        <p className="text-sm px-1 pb-1 rounded-b-xl h-fit w-fit text-[--bg] bg-red-300">New messages below</p>
+                                                    <div className="text-sm text-[--bg] px-2 pb-1 h-fit w-fit rounded-b-xl flex justify-center items-center gap-2 bg-red-300">
+                                                        <p className="">New messages below</p>
+                                                        <span className="material-symbols-outlined">
+                                                            close
+                                                        </span>
+                                                    </div> */}
+                                                    {/* <div className="mb-2 mx-auto text-sm border-red-400 bg-red-100 text-red-700 px-2 py-1 rounded-xl h-fit w-fit flex justify-center items-center gap-1" ref={firstUnreadMessageRef}>
+                                                        <p className="">New messages below</p>
+                                                        <button className="h-fit w-fit flex justify-center items-center" onClick={() => setUnreadMessages(0)}>
+                                                            <span className="material-symbols-outlined">
+                                                                close
+                                                            </span>
+                                                        </button>
+                                                    </div> */}
+                                                    <div ref={firstUnreadMessageRef} className="px-3 mb-2 w-full flex justify-center items-center h-fit gap-1">
+                                                        <div className="w-full border-t border-red-400" />
+                                                        <p className="text-red-400 text-sm">New</p>
+                                                        <button onClick={() => setUnreadMessages(0)} className="h-fit w-fit flex justify-center items-center">
+                                                            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="#f87171">
+                                                                <line x1="4" y1="4" x2="12" y2="12" stroke-width="2" />
+                                                                <line x1="12" y1="4" x2="4" y2="12" stroke-width="2" />
+                                                            </svg>
+                                                        </button>
                                                     </div>
                                                 </>
+                                            )}
+                                            {unReadMessages === 0 && index === messages.length - 1 && (
+                                                <div ref={firstUnreadMessageRef} />
                                             )}
                                             <div
                                                 className={`mb-2 p-[10px] border-[--border] rounded-xl bg-[--bg] border w-fit max-w-[70%] break-words ${msg.auth0_id === user.sub ? "ml-auto" : "mr-auto"

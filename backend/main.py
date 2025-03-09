@@ -705,6 +705,8 @@ def get_chat():
     for message in chat.get("messages", []):
         if not message.get("read", False):
             unreadMessages += 1
+            
+    unreadMessages = 13
 
     messages = []
     for message in chat.get("messages", []):
@@ -744,7 +746,7 @@ def get_chats():
                 for message in chat.get("messages", []):
                     if not message.get("read", False):
                         unreadMessages += 1
-                    
+                                            
                 chat_list.append(
                     {
                         "_id": participant_id,
