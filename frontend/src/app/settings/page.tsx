@@ -706,6 +706,9 @@ export default function Settings() {
           <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
         </HeaderLogo>
         <HeaderNav>
+          <StyledLink href="/chat" className="h-full w-fit flex items-center no-underline">
+            <span title="Chat" className="material-symbols-outlined">mail</span>
+          </StyledLink>
           <StyledLink href="/match" className="h-full w-fit flex items-center no-underline">
             <span title="Match" className="material-symbols-outlined">hub</span>
           </StyledLink>

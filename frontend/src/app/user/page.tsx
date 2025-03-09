@@ -171,7 +171,7 @@ export default function Home() {
             setErrorMessage("No _id provided. Redirecting to home page...");
             setTimeout(() => {
                 router.push("/");
-            }, 1000);
+            }, 2500);
         }
     }, [router]);
 
@@ -189,6 +189,9 @@ export default function Home() {
                     <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
                 </HeaderLogo>
                 <HeaderNav>
+                    <StyledLink href="/chat" className="h-full w-fit flex items-center no-underline">
+                        <span title="Chat" className="material-symbols-outlined">mail</span>
+                    </StyledLink>
                     <StyledLink href="/match" className="h-full w-fit flex items-center no-underline">
                         <span title="Match" className="material-symbols-outlined">hub</span>
                     </StyledLink>

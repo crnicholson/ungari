@@ -230,6 +230,9 @@ export default function Home() {
           <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
         </HeaderLogo>
         <HeaderNav>
+          <StyledLink href="/chat" className="h-full w-fit flex items-center no-underline">
+            <span title="Chat" className="material-symbols-outlined">mail</span>
+          </StyledLink>
           <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
             <span title="Settings" className="material-symbols-outlined">settings</span>
           </StyledLink>

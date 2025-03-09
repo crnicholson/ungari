@@ -12,6 +12,7 @@ import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { socket } from "../socket";
+import { set } from "@auth0/nextjs-auth0/dist/session";
 
 const SERVER = "http://127.0.0.1:38321";
 // const SERVER = "https://problem-dating-app.cnicholson.hackclub.app";
@@ -21,7 +22,7 @@ export default function Home() {
     const [transport, setTransport] = useState("N/A");
     const [polled, setPolled] = useState(false);
 
-    const [match_id, setMatchID] = useState("");
+    const [_id, setID] = useState("");
 
     const [matchName, setMatchName] = useState("");
     const [matchImage, setMatchImage] = useState("");
@@ -34,8 +35,9 @@ export default function Home() {
 
     const [chats, setChats] = useState([]);
 
-    const [erorrMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const [warningMessage, setWarningMessage] = useState("");
+    const [noUser, setNoUser] = useState(false);
 
     const { user, isLoading } = useUser();
     const router = useRouter();
@@ -50,9 +52,9 @@ export default function Home() {
     // Get match _id 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const message = params.get('match_id');
-        if (message) {
-            setMatchID(message);
+        const result = params.get('_id');
+        if (result) {
+            setID(result);
         }
     }, []);
 
@@ -104,7 +106,7 @@ export default function Home() {
             const messageData = {
                 content: message,
                 auth0_id: user.sub,
-                match_id: match_id
+                _id: _id
             };
 
             socket.emit("message", messageData);
@@ -124,12 +126,20 @@ export default function Home() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ auth0_id: user.sub, match_id: match_id }),
+                body: JSON.stringify({ auth0_id: user.sub, _id: _id }),
             });
             if (!response.ok) {
                 const error = await response.json();
-                setErrorMessage("Server-side error: " + error.error);
+                setErrorMessage(error.error);
+                setNoUser(error.noUser);
                 setPolled(false);
+
+                if (error.noUser) {
+                    setTimeout(() => {
+                        router.push("/chat");
+                        setID("");
+                    }, 2500);
+                }
             } else {
                 setErrorMessage("");
                 setPolled(true);
@@ -147,7 +157,7 @@ export default function Home() {
             setErrorMessage("Client-side error: " + error);
             setPolled(false);
         }
-    }, [user, match_id]);
+    }, [user, _id, router]);
 
     const getChats = useCallback(async () => {
         try {
@@ -160,7 +170,7 @@ export default function Home() {
             });
             if (!response.ok) {
                 const error = await response.json();
-                setErrorMessage("Server-side error: " + error.error);
+                setErrorMessage(error.error);
                 setPolled(false);
             } else {
                 setErrorMessage("");
@@ -182,13 +192,13 @@ export default function Home() {
     // Get match on page load 
     useEffect(() => {
         if (!isLoading && user) {
-            if (match_id) {
+            if (_id) {
                 getChat();
             } else {
                 getChats();
             }
         }
-    }, [isLoading, user, getChat, getChats, match_id]);
+    }, [isLoading, user, getChat, getChats, _id]);
 
     return (
         <>
@@ -197,6 +207,12 @@ export default function Home() {
                     <span className="text-[--accent] text-xl font-bold">⁂</span> Ungari
                 </HeaderLogo>
                 <HeaderNav>
+                    <StyledLink href="/match" className="h-full w-fit flex items-center no-underline">
+                        <span title="Match" className="material-symbols-outlined">hub</span>
+                    </StyledLink>
+                    <StyledLink href="/settings" className="h-full w-fit flex items-center no-underline">
+                        <span title="Settings" className="material-symbols-outlined">settings</span>
+                    </StyledLink>
                     <Button href="/api/auth/logout">Logout</Button>
                 </HeaderNav>
             </Header>
@@ -206,11 +222,19 @@ export default function Home() {
                 <p>Transport: {transport}</p>
             </Card> */}
 
-            <CardContainer className="w-2/3 mt-24">
+            {errorMessage !== "" && (
+                <Error className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
+            )}
+
+            {warningMessage !== "" && (
+                <Warning onClick={() => setWarningMessage("")} className={`w-full sm:w-1/2 ${errorMessage !== "" ? 'mt-5' : 'mt-24'}`}>{warningMessage}</Warning>
+            )}
+
+            <CardContainer className={`sm:w-3/4 lg:w-2/3 xl:w-1/2 w-full ${(errorMessage !== "" || warningMessage !== "") ? 'mt-5' : 'mt-24'}`}>
                 <Card className="w-full">
-                    {match_id ? (
+                    {_id ? (
                         <div className="flex items-center gap-4 mb-5">
-                            {match_id && matchImage && (
+                            {_id && matchImage && (
                                 <div className="h-full w-fit flex items-center">
                                     <Image
                                         src={matchImage}
@@ -225,12 +249,12 @@ export default function Home() {
                                 <CardTitle className="mb-2" size={2}>
                                     Chat {!polled ? "" : ` with `}
                                     {polled && matchName && (
-                                        <StyledLink href={`/user?_id=${match_id}`}>
+                                        <StyledLink href={`/user?_id=${_id}`}>
                                             {matchName}
                                         </StyledLink>
                                     )}
                                 </CardTitle>
-                                <StyledLink className="italic" href="/chat" onClick={() => setMatchID("")}>
+                                <StyledLink className="italic" href="/chat" onClick={() => setID("")}>
                                     Back to chat page
                                 </StyledLink>
                             </div>
@@ -242,10 +266,16 @@ export default function Home() {
                     )}
 
                     <div className="border-b border-[--border] h-fit w-full mb-5" />
-                    {(!isConnected || !polled) ? (
+                    {(isLoading && !user && !polled) ? (
                         <p>Loading...</p>
+                    ) : errorMessage !== "" ? (
+                        noUser ? (
+                            <p>User does not exist! The _id field of the URL may be wrong. Redirecting...</p>
+                        ) : (
+                            <p>Looks like you{"'"}re not getting your chat... our backend seems to be down. Try reloading or coming back later.</p>
+                        )
                     ) : (
-                        match_id ? (
+                        _id ? (
                             <>
                                 <CardBlock className="mb-5">
                                     {messages.map((msg, index) => (
@@ -286,41 +316,45 @@ export default function Home() {
                                 </CardRow>
                             </>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {chats.map((chat) => (
-                                    <Button
-                                        key={chat.match_id}
-                                        href={`/chat?match_id=${chat.match_id}`}
-                                        className="w-full hover:bg-[--bg-hover] transition-colors duration-200"
-                                        onClick={() => setMatchID(chat.match_id)}
-                                    >
-                                        <div className="flex items-center space-x-4 p-4">
-                                            <div className="flex-shrink-0">
-                                                <Image
-                                                    src={chat.matchImage}
-                                                    alt={chat.matchName}
-                                                    width={50}
-                                                    height={50}
-                                                    className="rounded-full"
-                                                />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-left truncate border-b border-[--border] pb-2">
-                                                    {chat.matchName.length > 30 ? `${chat.matchName.slice(0, 30)}...` : chat.matchName}
-                                                </p>
-                                                <div className="mt-2 font-normal text-base flex items-center gap-2">
-                                                    <span className="h-full w-fit material-symbols-outlined">
-                                                        mail
-                                                    </span>
-                                                    <p className="h-fit w-fit">
-                                                        {chat.lastMessage.length > 5 ? `${chat.lastMessage.slice(0, 5)}...` : chat.lastMessage}
+                            chats.length === 0 ? (
+                                <p>No conversations found, please match with someone to start chatting!</p>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {chats.map((chat) => (
+                                        <Button
+                                            key={chat._id}
+                                            href={`/chat?_id=${chat._id}`}
+                                            className="w-full hover:bg-[--bg-hover] transition-colors duration-200"
+                                            onClick={() => setID(chat._id)}
+                                        >
+                                            <div className="flex items-center space-x-4 p-4">
+                                                <div className="flex-shrink-0">
+                                                    <Image
+                                                        src={chat.matchImage}
+                                                        alt={chat.matchName}
+                                                        width={50}
+                                                        height={50}
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-left truncate border-b border-[--border] pb-2">
+                                                        {chat.matchName.length > 30 ? `${chat.matchName.slice(0, 30)}...` : chat.matchName}
                                                     </p>
+                                                    <div className="mt-2 font-normal text-base flex items-center gap-2">
+                                                        <span className="h-full w-fit material-symbols-outlined">
+                                                            mail
+                                                        </span>
+                                                        <p className="h-fit w-fit">
+                                                            {chat.lastMessage.length > 5 ? `${chat.lastMessage.slice(0, 5)}...` : chat.lastMessage}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </Button>
-                                ))}
-                            </div>
+                                        </Button>
+                                    ))}
+                                </div>
+                            )
                         )
                     )}
                 </Card>

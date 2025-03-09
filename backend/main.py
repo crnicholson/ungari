@@ -276,12 +276,12 @@ def get_profile():
     try:
         _id = ObjectId(_id)
     except:
-        return jsonify({"error": "User not found", "noUser": True}), 404
+        return jsonify({"error": "User not found.", "noUser": True}), 404
 
     user = users.find_one({"_id": _id})
     
     if not user:
-        return jsonify({"error": "User not found"}), 404
+        return jsonify({"error": "User not found."}), 404
         
     user_data = {
         "match_id": str(user.get("_id", "")),
@@ -651,15 +651,15 @@ def create_chat():
     user = users.find_one({"id": received.get("id")})
 
     user_id = user.get("_id")  # _id of the user.
-    match_id = received.get("match_id")  # _id of the match.
+    _id = received.get("_id")  # _id of the match.
 
-    matchName = users.find_one({"_id": ObjectId(match_id)}).get("name")
+    matchName = users.find_one({"_id": ObjectId(_id)}).get("name")
     userName = user.get("name")
 
     if matchName and userName:
         new_chat = {
             "participants": {
-                match_id: matchName,
+                _id: matchName,
                 user_id: userName,
             },
             "messages": [],
@@ -681,9 +681,13 @@ def get_chat():
     user = users.find_one({"id": received.get("auth0_id")})
 
     user_id = str(user.get("_id")) # _id of the user.
-    match_id = received.get("match_id") # _id of the match.
+    _id = received.get("_id") # _id of the match.
 
-    match = users.find_one({"_id": ObjectId(match_id)})
+    try:
+        match = users.find_one({"_id": ObjectId(_id)})
+    except:
+        return jsonify({"error": "User does not exist, chat not found.", "noUser": True}), 404
+    
     matchName = match.get("name")
     matchImage = match.get(
         "image",
@@ -692,7 +696,7 @@ def get_chat():
     
     chat = chats.find_one(
         {
-            f"participants.{match_id}": {"$exists": True},
+            f"participants.{_id}": {"$exists": True},
             f"participants.{user_id}": {"$exists": True},
         }
     )
@@ -731,7 +735,7 @@ def get_chats():
                 match_profile = users.find_one({"_id": ObjectId(participant_id)})
                 chat_list.append(
                     {
-                        "match_id": participant_id,
+                        "_id": participant_id,
                         "matchName": participant_name,
                         "matchImage": match_profile.get(
                             "image",
@@ -746,7 +750,7 @@ def get_chats():
                 )
 
     print(chat_list)
-
+    
     return jsonify({"chatList": chat_list}), 200
 
 
@@ -769,7 +773,7 @@ def handle_chat_message(received):
     user = users.find_one({"id": received.get("auth0_id")})
     
     user_id = str(user.get("_id")) # _id of the user.
-    match_id = received.get("match_id")  # _id of the match, already in string form.
+    _id = received.get("_id")  # _id of the match, already in string form.
 
     new_message = {
         "content": received.get("content", ""),
@@ -781,7 +785,7 @@ def handle_chat_message(received):
     result = chats.update_one(
         {
             f"participants.{user_id}": {"$exists": True},
-            f"participants.{match_id}": {"$exists": True},
+            f"participants.{_id}": {"$exists": True},
         },
         {"$push": {"messages": new_message}},
     )
