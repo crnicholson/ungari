@@ -1,13 +1,13 @@
 "use client";
 
-import { Card, CardInput, CardContainer, CardTitle, CardBlock, CardButton, CardRow } from "../../components/card"
-import { Header, HeaderLogo, HeaderNav } from "../../components/header"
+import { Card, CardInput, CardContainer, CardTitle, CardBlock, CardButton, CardRow } from "../../components/card";
+import { Header, HeaderLogo, HeaderNav } from "../../components/header";
 import Button from "../../components/button";
-import StyledLink from "../../components/styledLink"
+import StyledLink from "../../components/styledLink";
 import Error from "../../components/error";
 import Warning from "../../components/warning";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import { useUser } from "@auth0/nextjs-auth0/client";
@@ -41,6 +41,14 @@ export default function Home() {
 
     const { user, isLoading } = useUser();
     const router = useRouter();
+
+    const firstUnreadMessageRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (unReadMessages > 0 && firstUnreadMessageRef.current) {
+            firstUnreadMessageRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [unReadMessages]);
 
     // Basic auth
     useEffect(() => {
@@ -152,6 +160,8 @@ export default function Home() {
                 setMatchName(data.matchName);
                 setMatchImage(data.matchImage);
                 setUnreadMessages(data.unreadMessages);
+
+                console.log(data.unreadMessages);
             }
         } catch (error) {
             setErrorMessage("Client-side error: " + error);
@@ -234,11 +244,6 @@ export default function Home() {
                 </HeaderNav>
             </Header>
 
-            {/* <Card className="mt-24 mb-5">
-                <p>Status: {isConnected ? "connected" : "disconnected"}</p>
-                <p>Transport: {transport}</p>
-            </Card> */}
-
             {errorMessage !== "" && (
                 <Error className="w-full sm:w-1/2 mt-24">{errorMessage}</Error>
             )}
@@ -282,7 +287,6 @@ export default function Home() {
                         </CardTitle>
                     )}
 
-                    {/* <div className="border-b border-[--border] h-fit w-full mb-5" /> */}
                     {(isLoading && !user && !polled) ? (
                         <p>Loading...</p>
                     ) : errorMessage !== "" ? (
@@ -307,13 +311,25 @@ export default function Home() {
                                     }}
                                 >
                                     {messages.map((msg, index) => (
-                                        <div
-                                            key={index}
-                                            className={`mb-2 p-[10px] border-[--border] rounded-xl bg-[--bg] border w-fit max-w-[70%] break-words ${msg.auth0_id === user.sub ? "ml-auto" : "mr-auto"
-                                                }`}
-                                        >
-                                            {msg.content}
-                                        </div>
+                                        <React.Fragment key={index}>
+                                            {unReadMessages > 0 && index === messages.length - unReadMessages && (
+                                                <>
+                                                    <div
+                                                        ref={firstUnreadMessageRef}
+                                                        className="w-full border-t-2 border-red-300"
+                                                    />
+                                                    <div>
+                                                        <p className="text-sm px-1 pb-1 rounded-b-xl h-fit w-fit text-[--bg] bg-red-300">New messages below</p>
+                                                    </div>
+                                                </>
+                                            )}
+                                            <div
+                                                className={`mb-2 p-[10px] border-[--border] rounded-xl bg-[--bg] border w-fit max-w-[70%] break-words ${msg.auth0_id === user.sub ? "ml-auto" : "mr-auto"
+                                                    }`}
+                                            >
+                                                {msg.content}
+                                            </div>
+                                        </React.Fragment>
                                     ))}
                                 </CardBlock>
 
@@ -386,7 +402,7 @@ export default function Home() {
                         )
                     )}
                 </Card>
-            </CardContainer >
+            </CardContainer>
         </>
     );
 }
