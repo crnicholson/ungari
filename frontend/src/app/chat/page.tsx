@@ -37,7 +37,7 @@ export default function Home() {
     const [errorMessage, setErrorMessage] = useState("");
     const [warningMessage, setWarningMessage] = useState("");
     const [noUser, setNoUser] = useState(false);
-    const [unReadMessages, setUnreadMessages] = useState(0);
+    const [unreadMessages, setUnreadMessages] = useState(0);
 
     const { user, isLoading } = useUser();
     const router = useRouter();
@@ -48,7 +48,7 @@ export default function Home() {
         if (firstUnreadMessageRef.current) {
             firstUnreadMessageRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [unReadMessages, messages]);
+    }, [unreadMessages, messages]);
 
     // Basic auth
     useEffect(() => {
@@ -274,7 +274,7 @@ export default function Home() {
                                         <StyledLink href={`/user?_id=${_id}`}>
                                             {matchName}
                                         </StyledLink>
-                                    )}, {unReadMessages > 0 ? `you have ${unReadMessages} unread messages` : "you are up to date"}
+                                    )}
                                 </CardTitle>
                                 <StyledLink className="italic" href="/chat" onClick={() => setID("")}>
                                     Back to chat page
@@ -305,45 +305,29 @@ export default function Home() {
                                         const isBottom = Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
                                         if (isBottom) {
                                             console.log('Scrolled to bottom!');
-                                            setMessagesRead();
+                                            if (messages.length > 0 && messages[messages.length - 1].auth0_id !== user.sub) {
+                                                setMessagesRead();
+                                            }
                                         }
                                     }}
                                 >
                                     {messages.map((msg, index) => (
                                         <React.Fragment key={index}>
-                                            {unReadMessages > 0 && index === messages.length - unReadMessages && (
+                                            {unreadMessages > 0 && index === messages.length - unreadMessages && (
                                                 <>
-                                                    {/* <div
-                                                        ref={firstUnreadMessageRef}
-                                                        className="w-full border-t-2 border-red-300"
-                                                    />
-                                                    <div className="text-sm text-[--bg] px-2 pb-1 h-fit w-fit rounded-b-xl flex justify-center items-center gap-2 bg-red-300">
-                                                        <p className="">New messages below</p>
-                                                        <span className="material-symbols-outlined">
-                                                            close
-                                                        </span>
-                                                    </div> */}
-                                                    {/* <div className="mb-2 mx-auto text-sm border-red-400 bg-red-100 text-red-700 px-2 py-1 rounded-xl h-fit w-fit flex justify-center items-center gap-1" ref={firstUnreadMessageRef}>
-                                                        <p className="">New messages below</p>
-                                                        <button className="h-fit w-fit flex justify-center items-center" onClick={() => setUnreadMessages(0)}>
-                                                            <span className="material-symbols-outlined">
-                                                                close
-                                                            </span>
-                                                        </button>
-                                                    </div> */}
                                                     <div ref={firstUnreadMessageRef} className="px-3 mb-2 w-full flex justify-center items-center h-fit gap-1">
                                                         <div className="w-full border-t border-red-400" />
                                                         <p className="text-red-400 text-sm">New</p>
                                                         <button onClick={() => setUnreadMessages(0)} className="h-fit w-fit flex justify-center items-center">
                                                             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="#f87171">
-                                                                <line x1="4" y1="4" x2="12" y2="12" stroke-width="2" />
-                                                                <line x1="12" y1="4" x2="4" y2="12" stroke-width="2" />
+                                                                <line x1="4" y1="4" x2="12" y2="12" strokeWidth="2" />
+                                                                <line x1="12" y1="4" x2="4" y2="12" strokeWidth="2" />
                                                             </svg>
                                                         </button>
                                                     </div>
                                                 </>
                                             )}
-                                            {unReadMessages === 0 && index === messages.length - 1 && (
+                                            {unreadMessages === 0 && index === messages.length - 1 && (
                                                 <div ref={firstUnreadMessageRef} />
                                             )}
                                             <div
@@ -410,11 +394,12 @@ export default function Home() {
                                                     </p>
                                                     <div className="mt-2 font-normal text-base flex items-center gap-2">
                                                         <span className="h-full w-fit material-symbols-outlined">
-                                                            mail
+                                                            {chat.unreadMessages === 0 ? "mail" : "mark_email_unread"}
                                                         </span>
-                                                        <p className="h-fit w-fit">
+                                                        {/* <p className="h-fit w-fit">
                                                             {chat.lastMessage.length > 5 ? `${chat.lastMessage.slice(0, 5)}...` : chat.lastMessage}
-                                                        </p>
+                                                        </p> */}
+                                                        <p>{chat.unreadMessages}</p>
                                                     </div>
                                                 </div>
                                             </div>

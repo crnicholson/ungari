@@ -46,6 +46,7 @@ export default function Home() {
 
     const [polled, setPolled] = useState(false);
     const [noUser, setNoUser] = useState(false);
+    const [unreadMessages, setUnreadMessages] = useState(0);
 
     const [warningMessage, setWarningMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -105,6 +106,35 @@ export default function Home() {
             return false;
         }
     }
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            const getUnreadMessages = async () => {
+                try {
+                    const response = await fetch(SERVER + "/api/get-unread-messages", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ auth0_id: user.sub }),
+                    });
+                    if (!response.ok) {
+                        const error = await response.json();
+                        setErrorMessage(error.error);
+                    } else {
+                        const data = await response.json();
+
+                        setUnreadMessages(data.unreadMessages);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setErrorMessage("Client-side error: " + error);
+                }
+            };
+
+            getUnreadMessages();
+        }
+    }, [isLoading, user, router]);
 
     const getProfile = useCallback(async () => {
         try {
@@ -190,7 +220,9 @@ export default function Home() {
                 </HeaderLogo>
                 <HeaderNav>
                     <StyledLink href="/chat" className="h-full w-fit flex items-center no-underline">
-                        <span title="Chat" className="material-symbols-outlined">mail</span>
+                        <span title="Chat" className="material-symbols-outlined">{unreadMessages === 0 ? "mail" : "mark_email_unread"}</span>{unreadMessages > 0 && (
+                            <span className="ml-1 bg-[--accent] text-white text-[10px] font-semibold rounded-full px-[6px] py-[2px]">{unreadMessages}</span>
+                        )}
                     </StyledLink>
                     <StyledLink href="/match" className="h-full w-fit flex items-center no-underline">
                         <span title="Match" className="material-symbols-outlined">hub</span>

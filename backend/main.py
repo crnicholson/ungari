@@ -703,11 +703,9 @@ def get_chat():
     
     unreadMessages = 0
     for message in chat.get("messages", []):
-        if not message.get("read", False):
+        if not message.get("read", False) and message.get("sender_id") != user_id:
             unreadMessages += 1
             
-    unreadMessages = 13
-
     messages = []
     for message in chat.get("messages", []):
         messages.append(
@@ -744,9 +742,9 @@ def get_chats():
                 
                 unreadMessages = 0
                 for message in chat.get("messages", []):
-                    if not message.get("read", False):
+                    if not message.get("read", False) and message.get("sender_id") != user_id:
                         unreadMessages += 1
-                                            
+                                                                    
                 chat_list.append(
                     {
                         "_id": participant_id,
@@ -793,6 +791,29 @@ def set_messages_read():
 
     print("Set messages as read.")
     return jsonify({}), 200
+
+
+@app.route("/api/get-unread-messages", methods=["POST"])
+def get_unread_messages():
+    received = request.get_json()
+    
+    print(f"Message: {json.dumps(received, indent=4)}")
+
+    user = users.find_one({"id": received.get("auth0_id")})
+    
+    user_id = str(user.get("_id")) # _id of the user.
+
+    all_chats = list(chats.find({
+        f"participants.{user_id}": {"$exists": True}
+    }))
+    
+    unreadMessages = 0
+    for chat in all_chats:
+        for message in chat.get("messages", []):
+            if not message.get("read", False) and message.get("sender_id") != user_id:
+                unreadMessages += 1
+    
+    return jsonify({"unreadMessages": unreadMessages}), 200
     
 
 @socketio.on("connect")
